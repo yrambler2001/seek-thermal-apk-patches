@@ -13,6 +13,7 @@ from seekpatch.patches import (
     debug_log,
     full_fps,
     no_smoothing,
+    photo_1x,
     png_photos,
     sharp_scaling,
 )
@@ -165,12 +166,37 @@ def test_png_photos_needs_the_preference(make_project):
         png_photos.apply(SmaliTree(str(root)), Options())
 
 
+# photo_1x ---------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_photo_1x(make_project, shape):
+    tree = tree_of(make_project, shape)
+    photo_1x.apply(tree, Options())
+    pipeline = text(tree, "Lfix/Pipeline;")
+    e0 = next(m for m in methods(pipeline) if m.name == "e0")
+    assert re.search(r"\.locals 5\n\n\s+# seek-patch photo_1x[^\n]*\n\s+iget-object v0, p0, Lfix/Pipeline;->ctx:"
+                     r"Landroid/content/Context;\n\s+invoke-static \{v0, p2\}, Lseekpatch/Photo1x;->capture\("
+                     r"Landroid/content/Context;Landroid/graphics/Bitmap;\)V\n\n\s+new-instance v0", e0.body)
+    exif = next(m for m in methods(pipeline) if m.name == "T")
+    assert re.search(r"invoke-static \{\}, Lfix/Pipeline;->o0\(\)I\n\s+move-result v0\n\s+invoke-static \{p2, v0\}, "
+                     r"Lseekpatch/Photo1x;->saved\(Ljava/io/File;I\)V\n\n\s+return-void", exif.body)
+    assert tree.path_of("Lseekpatch/Photo1x;")
+
+
+def test_photo_1x_needs_the_exif_writer(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Pipeline.smali"
+    p.write_text(p.read_text().replace("saveAttributes", "getThumbnail"))
+    with pytest.raises(PatchError, match="EXIF method"):
+        photo_1x.apply(SmaliTree(str(root)), Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {
-    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "debug_log"],
-    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "png_photos", "debug_log"],
+    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "debug_log"],
+    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "debug_log"],
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "debug_log"],
 }
 
 

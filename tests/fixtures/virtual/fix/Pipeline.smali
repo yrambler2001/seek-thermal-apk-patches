@@ -8,6 +8,8 @@
 
 .field private M:Z
 
+.field private ctx:Landroid/content/Context;
+
 
 # direct methods
 .method private c0(J)V
@@ -51,6 +53,8 @@
     :save
     const-string v4, "_thermal"
 
+    iget-object v4, p0, Lfix/Pipeline;->ctx:Landroid/content/Context;
+
     const-string v4, ".jpg"
 
     iget-boolean v1, p0, Lfix/Pipeline;->M:Z
@@ -60,9 +64,48 @@
     const-string v4, ".png"
 
     :jpeg
+    const-string v1, "deleteme"
+
     sget-object v1, Landroid/graphics/Bitmap$CompressFormat;->PNG:Landroid/graphics/Bitmap$CompressFormat;
 
     return-void
+.end method
+
+# the EXIF writer (photo_1x): tags the temp file, copies it to its final name
+.method private T(Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;)V
+    .locals 3
+
+    invoke-static {}, Lfix/Pipeline;->o0()I
+
+    move-result v1
+
+    new-instance v0, Landroid/media/ExifInterface;
+
+    invoke-virtual {p1}, Ljava/io/File;->getAbsolutePath()Ljava/lang/String;
+
+    move-result-object v2
+
+    invoke-direct {v0, v2}, Landroid/media/ExifInterface;-><init>(Ljava/lang/String;)V
+
+    const-string v2, "Orientation"
+
+    invoke-static {v1}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
+
+    move-result-object v1
+
+    invoke-virtual {v0, v2, v1}, Landroid/media/ExifInterface;->setAttribute(Ljava/lang/String;Ljava/lang/String;)V
+
+    invoke-virtual {v0}, Landroid/media/ExifInterface;->saveAttributes()V
+
+    return-void
+.end method
+
+.method private static o0()I
+    .locals 1
+
+    const/4 v0, 0x6
+
+    return v0
 .end method
 
 # the photo format flag (png_photos)

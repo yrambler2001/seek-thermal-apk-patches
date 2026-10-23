@@ -34,6 +34,9 @@ version = { attr = "seekpatch.__version__" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"seekpatch.helpers" = ["*.smali"]
+
 [tool.ruff]
 line-length = 120
 target-version = "py39"

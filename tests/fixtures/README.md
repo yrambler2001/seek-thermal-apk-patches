@@ -11,7 +11,7 @@ patches can be tested without an APK.
 | `virtual/`  | Seek Thermal 1.9 - 2.0   | inner classes, package-private methods via `invoke-virtual` |
 | `common/`   | all                      | shader program, per-frame features, native lib, logger, the "Save Uncompressed" reader |
 
-The photo method (with its PNG flag) lives in each shape's `Pipeline.smali`.
+The photo method (with its EXIF writer and PNG flag) lives in each shape's `Pipeline.smali`.
 
 `project/` is an `apktool d -r` style project (apktool.yml, binary AndroidManifest.xml and
 resources.arsc) the trees are copied into, so `apktool b` can assemble the patched smali.  The

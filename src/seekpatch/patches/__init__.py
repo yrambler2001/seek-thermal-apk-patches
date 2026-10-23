@@ -12,12 +12,13 @@ from . import (
                debug_log,
                full_fps,
                no_smoothing,
+               photo_1x,
                png_photos,
                sharp_scaling,
 )
 from .base import Options
 
-ALL: list[ModuleType] = [full_fps, sharp_scaling, no_smoothing, png_photos, debug_log]
+ALL: list[ModuleType] = [full_fps, sharp_scaling, no_smoothing, png_photos, photo_1x, debug_log]
 BY_NAME = {p.NAME: p for p in ALL}
 RECOMMENDED = [p.NAME for p in ALL if p.RECOMMENDED]
 

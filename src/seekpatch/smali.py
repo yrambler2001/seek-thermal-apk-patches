@@ -85,7 +85,31 @@ def const_strings(text: str) -> Iterator[re.Match]:
     return re.finditer(r'const-string(?:/jumbo)? ' + REG + r', "((?:[^"\\]|\\.)*)"', text)
 
 
+_TYPE = re.compile(r"\[*(?:L[^;]+;|[ZBSCIJFD])")
 _DIRECTIVE = re.compile(r"[ \t]*(?:$|#|\.locals |\.registers |\.param |\.end param|\.prologue|\.line |\.source )")
+
+
+def param_registers(m: Method) -> list[str]:
+    """The p-register of each parameter, in order (this not included; long / double take two)."""
+    sig = m.descriptor[m.descriptor.index("(") + 1:m.descriptor.index(")")]
+    n = 0 if "static" in m.header.split() else 1
+    out = []
+    for t in _TYPE.findall(sig):
+        out.append(f"p{n}")
+        n += 2 if t in ("J", "D") else 1
+    return out
+
+
+def locals_count(body: str) -> int:
+    m = re.search(r"^[ \t]*\.locals (\d+)$", body, re.M)
+    if not m:
+        raise PatchError("method without a .locals line")
+    return int(m.group(1))
+
+
+def register_number(reg: str, body: str) -> int:
+    """v-number of a register (p registers follow the locals)."""
+    return int(reg[1:]) + (locals_count(body) if reg[0] == "p" else 0)
 
 
 def code_start(body: str) -> int:
