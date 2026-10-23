@@ -40,6 +40,30 @@ is written until `save()`; the CLI wraps each patch in `tree.transaction()`, so 
 leaves the tree exactly as it found it.  That is what lets the default set skip a patch that does not
 apply to a given version, while patches named with `-p` must all apply.
 
+## Java helpers
+
+A hook of a few instructions is written in smali by the patch.  Anything bigger — choosing an
+encoder, a permission flow, writing a file — goes into a helper class in
+[`helpers/java/seekpatch/`](../helpers/java/seekpatch), and the patch only adds a call to it.
+
+```
+helpers/java/seekpatch/*.java ──javac (Java 8 bytecode)──► d8 --release --min-api 23 ──► apktool d
+    ──► src/seekpatch/helpers/*.smali   (committed; patching needs no Android SDK)
+```
+
+- Run `python3 helpers/build.py` after changing a helper (needs a JDK and the Android SDK's
+  `build-tools;35.0.0` + `platforms;android-35`) and commit the result; `--check` tells you if
+  the committed smali is stale.
+- The patch adds a helper with `add_helpers(tree, "Mic")` (from `seekpatch.helpers`); inner classes
+  (`Mic$1`, …) come along.
+- Values from the command line go into a small class the patch writes itself (e.g. `VideoConfig`,
+  see `video_quality.py`).  Its compile-time stand-in is in `helpers/stubs/` and is not shipped.
+  Read those values from non-`final` fields, so javac does not inline them.
+- The app's minSdk is 23: guard newer APIs with `Build.VERSION.SDK_INT`.  Constants (`MediaFormat.KEY_*`)
+  are inlined by javac and safe on any version.
+- Helpers must not fail the app: catch, log under the tag `seek-patch`, and fall back to what the
+  app did.
+
 ## Rules
 
 1. **Find code by behaviour, never by name.**  Seek's build is obfuscated and every release renames
