@@ -8,6 +8,8 @@
 
 .field camera:Landroid/graphics/SurfaceTexture;
 
+.field protected g:Lfix/Window;
+
 .field thermalTexture:I
 
 
@@ -104,6 +106,35 @@
     move-object v0, p1
 
     invoke-direct {p0, v0, p2, p3}, Lfix/Render;->i(Ljava/nio/ByteBuffer;II)V
+
+    return-void
+.end method
+
+# the live view's window (resume_fix): created on start, dropped on pause
+.method o(Landroid/view/Surface;)V
+    .locals 3
+
+    new-instance v0, Lfix/Core;
+
+    invoke-direct {v0}, Lfix/Core;-><init>()V
+
+    new-instance v1, Lfix/Window;
+
+    const/4 v2, 0x1
+
+    invoke-direct {v1, v0, p1, v2}, Lfix/Window;-><init>(Lfix/Core;Landroid/view/Surface;Z)V
+
+    iput-object v1, p0, Lfix/Render;->g:Lfix/Window;
+
+    return-void
+.end method
+
+.method private synthetic v()V
+    .locals 1
+
+    const/4 v0, 0x0
+
+    iput-object v0, p0, Lfix/Render;->g:Lfix/Window;
 
     return-void
 .end method

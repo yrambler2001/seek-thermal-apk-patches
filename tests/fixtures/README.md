@@ -12,8 +12,8 @@ patches can be tested without an APK.
 | `common/`   | all                      | shader program, per-frame features, native lib, logger, the "Save Uncompressed" reader, the video and sound recorders, the encoder thread |
 
 The photo method (with its EXIF writer and PNG flag) lives in each shape's `Pipeline.smali`; the
-render threads of `lambda/` and `accessor/` also hand frames to the video encoder
-(`video_quality`), which `virtual/` lacks, so that patch refuses it.
+render threads of `lambda/` and `accessor/` also hand frames to the video encoder and create / drop
+a window surface (`video_quality`, `resume_fix`), which `virtual/` lacks, so those patches refuse it.
 
 `project/` is an `apktool d -r` style project (apktool.yml, binary AndroidManifest.xml and
 resources.arsc) the trees are copied into, so `apktool b` can assemble the patched smali.  The

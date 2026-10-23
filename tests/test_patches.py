@@ -15,6 +15,7 @@ from seekpatch.patches import (
     no_smoothing,
     photo_1x,
     png_photos,
+    resume_fix,
     sharp_scaling,
     video_quality,
 )
@@ -252,11 +253,30 @@ def test_video_quality_refuses_a_reused_format_register(make_project):
         video_quality.apply(SmaliTree(str(root)), Options())
 
 
+# resume_fix -------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_resume_fix(make_project, shape):
+    tree = tree_of(make_project, shape)
+    resume_fix.apply(tree, Options())
+    pause = next(m for m in methods(text(tree, "Lfix/Render;")) if m.name == "v")
+    assert re.search(r"invoke-static \{\}, Lseekpatch/Egl;->releaseWindow\(\)V\n\n\s+const/4 v0, 0x0\n\s+"
+                     r"iput-object v0, p0, Lfix/Render;->g:Lfix/Window;", pause.body)
+    assert tree.path_of("Lseekpatch/Egl;")
+
+
+def test_resume_fix_needs_the_window(make_project):
+    with pytest.raises(PatchError, match="window-surface field"):
+        resume_fix.apply(tree_of(make_project, "virtual"), Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {
-    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "debug_log"],
-    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "debug_log"],
+    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
+               "debug_log"],
+    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
+                 "debug_log"],
     "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "debug_log"],
 }
 
