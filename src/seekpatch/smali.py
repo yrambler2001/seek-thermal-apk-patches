@@ -18,6 +18,9 @@ from .axml import decoded_identity
 REG = r"[vp]\d+"
 """A smali register (v0, p1, ...)."""
 
+GAP = r"\n(?:[ \t]*(?:\.line \d+)?[ \t]*\n)*[ \t]*"
+"""Between two consecutive instructions: the line break, any blank / .line lines, the indent."""
+
 
 class PatchError(Exception):
     """A patch could not find, or could not safely change, the code it targets."""
@@ -80,6 +83,24 @@ def class_descriptor(text: str) -> str:
 def const_strings(text: str) -> Iterator[re.Match]:
     """const-string instructions; group(1) is the literal as written in smali (escapes kept)."""
     return re.finditer(r'const-string(?:/jumbo)? ' + REG + r', "((?:[^"\\]|\\.)*)"', text)
+
+
+_DIRECTIVE = re.compile(r"[ \t]*(?:$|#|\.locals |\.registers |\.param |\.end param|\.prologue|\.line |\.source )")
+
+
+def code_start(body: str) -> int:
+    """Offset in a method body of its first instruction (after .locals, .param blocks, annotations)."""
+    pos, in_annotation = 0, False
+    for line in body.splitlines(keepends=True):
+        s = line.strip()
+        if in_annotation:
+            in_annotation = s != ".end annotation"
+        elif s.startswith(".annotation "):
+            in_annotation = True
+        elif not _DIRECTIVE.match(line):
+            return pos
+        pos += len(line)
+    raise PatchError("method without instructions")
 
 
 def smali_escape(s: str) -> str:

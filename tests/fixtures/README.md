@@ -9,7 +9,9 @@ patches can be tested without an APK.
 | `lambda/`   | Seek Thermal 2.3.x       | lambda methods of the render thread, `invoke-direct {p0}` |
 | `accessor/` | Seek Thermal 2.1 - 2.2   | inner Runnable classes, static synthetic accessors |
 | `virtual/`  | Seek Thermal 1.9 - 2.0   | inner classes, package-private methods via `invoke-virtual` |
-| `common/`   | all                      | shader program, photo saver, per-frame features, native lib, logger |
+| `common/`   | all                      | shader program, per-frame features, native lib, logger, the "Save Uncompressed" reader |
+
+The photo method (with its PNG flag) lives in each shape's `Pipeline.smali`.
 
 `project/` is an `apktool d -r` style project (apktool.yml, binary AndroidManifest.xml and
 resources.arsc) the trees are copied into, so `apktool b` can assemble the patched smali.  The

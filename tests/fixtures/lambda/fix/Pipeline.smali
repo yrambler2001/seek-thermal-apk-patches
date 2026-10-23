@@ -6,6 +6,8 @@
 # instance fields
 .field private C:Z
 
+.field private M:Z
+
 
 # direct methods
 .method private c0(J)V
@@ -53,6 +55,28 @@
     :save
     const-string v4, "_thermal"
 
+    const-string v4, ".jpg"
+
+    iget-boolean v1, p0, Lfix/Pipeline;->M:Z
+
+    if-eqz v1, :jpeg
+
+    const-string v4, ".png"
+
+    :jpeg
+    sget-object v1, Landroid/graphics/Bitmap$CompressFormat;->PNG:Landroid/graphics/Bitmap$CompressFormat;
+
+    return-void
+.end method
+
+# the photo format flag (png_photos)
+.method public O0(Z)V
+    .locals 0
+
+    .line 1
+    iput-boolean p1, p0, Lfix/Pipeline;->M:Z
+
+    .line 2
     return-void
 .end method
 

@@ -7,7 +7,15 @@ import re
 import pytest
 from conftest import SHAPES
 
-from seekpatch.patches import BY_NAME, Options, debug_log, full_fps, no_smoothing, sharp_scaling
+from seekpatch.patches import (
+    BY_NAME,
+    Options,
+    debug_log,
+    full_fps,
+    no_smoothing,
+    png_photos,
+    sharp_scaling,
+)
 from seekpatch.smali import AlreadyApplied, PatchError, SmaliTree, methods
 
 
@@ -134,12 +142,35 @@ def test_debug_log_refuses_a_real_method(make_project):
         debug_log.apply(SmaliTree(str(root)), Options())
 
 
+# png_photos -------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_png_photos(make_project, shape):
+    tree = tree_of(make_project, shape)
+    png_photos.apply(tree, Options())
+    reader = next(m for m in methods(text(tree, "Lfix/Prefs;")) if m.name == "H")
+    assert re.search(r"sget v0, Landroid/os/Build\$VERSION;->SDK_INT:I\n\s+const/16 v1, 0x1e\n\s+if-lt v0, v1, "
+                     r":seekpatch_stock\n\s+const/4 v0, 0x1\n\s+return v0\n\s+:seekpatch_stock", reader.body)
+    setter = next(m for m in methods(text(tree, "Lfix/Pipeline;")) if m.name == "O0")
+    assert ".locals 2" in setter.body and "const/4 p1, 0x1" in setter.body
+    # Android 10 and older keep the app's value: p1 is not touched on that path
+    assert setter.body.index(":seekpatch_stock") < setter.body.index("iput-boolean p1, p0, Lfix/Pipeline;->M:Z")
+    assert "const/16 p1" not in setter.body
+
+
+def test_png_photos_needs_the_preference(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Prefs.smali").unlink()
+    with pytest.raises(PatchError, match="lossless_comp_key"):
+        png_photos.apply(SmaliTree(str(root)), Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {
-    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "debug_log"],
-    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "debug_log"],
+    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "debug_log"],
+    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "debug_log"],
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "debug_log"],
 }
 
 

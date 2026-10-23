@@ -8,10 +8,16 @@ from __future__ import annotations
 
 from types import ModuleType
 
-from . import debug_log, full_fps, no_smoothing, sharp_scaling
+from . import (
+               debug_log,
+               full_fps,
+               no_smoothing,
+               png_photos,
+               sharp_scaling,
+)
 from .base import Options
 
-ALL: list[ModuleType] = [full_fps, sharp_scaling, no_smoothing, debug_log]
+ALL: list[ModuleType] = [full_fps, sharp_scaling, no_smoothing, png_photos, debug_log]
 BY_NAME = {p.NAME: p for p in ALL}
 RECOMMENDED = [p.NAME for p in ALL if p.RECOMMENDED]
 

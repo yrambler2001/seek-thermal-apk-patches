@@ -19,7 +19,8 @@ APK_DIR = os.environ.get("SEEK_APK_DIR")
 APKS = sorted(glob.glob(os.path.join(os.path.expanduser(APK_DIR), "*.apk"))) if APK_DIR else []
 
 # first version each patch supports (all run through 2.3.4)
-FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0), "no_smoothing": (2, 2, 0)}
+FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0), "no_smoothing": (2, 2, 0),
+         "png_photos": (2, 1, 2)}
 
 pytestmark = pytest.mark.skipif(not APKS, reason="set SEEK_APK_DIR to a folder of Seek Thermal apks")
 

@@ -12,7 +12,7 @@ def test_list(capsys):
     out = capsys.readouterr().out
     for p in ALL:
         assert p.NAME in out and p.VERSIONS in out
-    assert RECOMMENDED == ["full_fps", "sharp_scaling", "no_smoothing"]
+    assert RECOMMENDED == ["full_fps", "sharp_scaling", "no_smoothing", "png_photos"]
 
 
 def test_version(capsys):
