@@ -1,0 +1,118 @@
+"""flat_field: a "Flat field" button that removes the gradient of an unevenly warmed camera.
+
+libseekip's gradient stage (filter bit 0x80, on in both "Image smoothing" positions) subtracts a
+smooth correction map and learns that map only from frames that already look flat: no 16x16 block
+with more detail than feature 30100, no step between neighbouring blocks beyond 30102.  The map
+starts empty on every connect, and a camera that has warmed unevenly puts its own gradient into
+every frame, so after a warm restart it never learns.  Feature 30105 makes the stage learn from
+every frame regardless; neither the app nor the library ever sets it.
+
+The patch adds:
+    a button in the camera screen's top bar      seekpatch.Flat.attach, after setContentView
+    a call right after the per-frame feature 900  seekpatch.Flat.frame(handle): on a tap it sets
+                                                  30105 until the update counter (30104) has gone
+                                                  up by 40 -- the map moves 1/8 per frame -- then
+                                                  clears it
+    seekpatch.SeekIP                              the app's seekIPsetFeature / seekIPgetFeature
+
+Versions: the gradient features are verified in libseekip 2.10.5.0 (app 2.2.2) and 2.11.3.2
+(2.2.3 - 2.3.4); the patch keeps to the apps no_smoothing is verified on.  Source of the helper:
+helpers/java/seekpatch/Flat.java; see docs/flat-field.md.
+"""
+from __future__ import annotations
+
+import re
+
+from ..helpers import add_helpers
+from ..smali import REG, PatchError, SmaliTree, class_descriptor, methods
+from .base import Options, ensure_unpatched, mark
+from .seek import FEATURE_SIG, feature_900_call, seekip_feature
+
+NAME = "flat_field"
+SUMMARY = 'a "Flat field" button: point at a uniform surface, tap, and the camera\'s own gradient is removed'
+VERSIONS = "2.2.0 - 2.3.4"
+MIN_VERSION_CODE = 260  # 2.2.0
+RECOMMENDED = True
+
+MARK = mark(NAME)
+ON_CREATE = "onCreate(Landroid/os/Bundle;)V"
+SET_CONTENT_VIEW = "setContentView(I)V"
+
+SEEKIP_SMALI = """.class public final Lseekpatch/SeekIP;
+.super Ljava/lang/Object;
+.source "seek-patch flat_field"
+
+{mark}: the app's own image-library feature calls, for seekpatch.Flat
+
+
+# direct methods
+.method public static getFeature{sig}
+    .locals 1
+
+    invoke-static/range {{p0 .. p4}}, {getfeature}
+
+    move-result v0
+
+    return v0
+.end method
+
+.method public static setFeature{sig}
+    .locals 1
+
+    invoke-static/range {{p0 .. p4}}, {setfeature}
+
+    move-result v0
+
+    return v0
+.end method
+"""
+
+
+def _camera_activity(tree: SmaliTree) -> tuple[str, int]:
+    """The live view's activity: its onCreate sets the layout and looks up the SurfaceView.
+    Returns (path, offset just past the setContentView call)."""
+    hits = []
+    for p in tree.containing(SET_CONTENT_VIEW, "Landroid/view/SurfaceView;"):
+        text = tree.get(p)
+        for m in methods(text):
+            if m.descriptor == ON_CREATE and SET_CONTENT_VIEW in m.body and "Landroid/view/SurfaceView;" in m.body:
+                calls = list(re.finditer(r"^[ \t]*invoke-virtual \{p0, " + REG + r"\}, L[\w/$]+;->"
+                                         + re.escape(SET_CONTENT_VIEW) + r"\n", text[m.start:m.end], re.M))
+                hits += [(p, m.start, c) for c in calls]
+    if len(hits) != 1:
+        raise PatchError(f"{NAME}: expected one setContentView in an onCreate that finds the SurfaceView, "
+                         f"found {len(hits)}")
+    path, offset, call = hits[0]
+    return path, offset + call.end()
+
+
+def apply(tree: SmaliTree, opts: Options) -> list[str]:
+    ensure_unpatched(tree, NAME)
+    code = tree.version_code
+    if code is None:
+        raise PatchError(f"{NAME}: cannot tell the app version, and the patch is only verified on {VERSIONS}")
+    if code < MIN_VERSION_CODE:
+        raise PatchError(f"{NAME}: app {tree.identity.get('versionName')} (versionCode {code}) predates the image "
+                         f"libraries whose gradient stage the patch is verified on (apps {VERSIONS})")
+    call = feature_900_call(tree, NAME)
+    setfeature = seekip_feature(tree, NAME, "seekIPsetFeature")
+    getfeature = seekip_feature(tree, NAME, "seekIPgetFeature")
+    activity_path, after_layout = _camera_activity(tree)
+    activity = class_descriptor(tree.get(activity_path))
+
+    text = tree.get(call.path)
+    hook = (f"\n{call.indent}{MARK}: the Flat field button's request, before the frame is processed\n"
+            f"{call.indent}invoke-static {{p1, p2}}, Lseekpatch/Flat;->frame(J)V\n")
+    tree.set(call.path, text[:call.end] + hook + text[call.end:])
+
+    text = tree.get(activity_path)
+    indent = re.match(r"[ \t]*", text[text.rfind("\n", 0, after_layout - 1) + 1:]).group(0)
+    hook = (f"\n{indent}{MARK}: the Flat field button, in the top bar\n"
+            f"{indent}invoke-static {{p0}}, Lseekpatch/Flat;->attach(Landroid/app/Activity;)V\n")
+    tree.set(activity_path, text[:after_layout] + hook + text[after_layout:])
+
+    tree.add_class("Lseekpatch/SeekIP;", SEEKIP_SMALI.format(mark=MARK, sig=FEATURE_SIG, getfeature=getfeature,
+                                                             setfeature=setfeature))
+    add_helpers(tree, "Flat")
+    return [f"{tree.rel(call.path)}: Flat.frame after the feature-900 call; features via {setfeature} / {getfeature}",
+            f"{tree.rel(activity_path)}: the button after {activity.split('/')[-1][:-1]}.setContentView"]

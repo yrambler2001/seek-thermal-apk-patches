@@ -13,7 +13,7 @@ def test_list(capsys):
     for p in ALL:
         assert p.NAME in out and p.VERSIONS in out
     assert RECOMMENDED == ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality",
-                           "resume_fix", "mic_prompt"]
+                           "resume_fix", "mic_prompt", "flat_field"]
 
 
 def test_version(capsys):

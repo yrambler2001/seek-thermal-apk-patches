@@ -154,3 +154,24 @@
     :cond_1
     return-void
 .end method
+
+# the live view's layout: setContentView, then the SurfaceView (flat_field puts its button after it)
+.method protected onCreate(Landroid/os/Bundle;)V
+    .locals 1
+
+    invoke-super {p0, p1}, Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
+
+    const v0, 0x7f0b001c
+
+    invoke-virtual {p0, v0}, Landroid/app/Activity;->setContentView(I)V
+
+    const v0, 0x7f080047
+
+    invoke-virtual {p0, v0}, Lfix/Main;->findViewById(I)Landroid/view/View;
+
+    move-result-object v0
+
+    check-cast v0, Landroid/view/SurfaceView;
+
+    return-void
+.end method

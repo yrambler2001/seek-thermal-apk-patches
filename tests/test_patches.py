@@ -11,6 +11,7 @@ from seekpatch.patches import (
     BY_NAME,
     Options,
     debug_log,
+    flat_field,
     full_fps,
     mic_prompt,
     no_smoothing,
@@ -300,13 +301,62 @@ def test_mic_prompt_needs_the_check(make_project):
         mic_prompt.apply(SmaliTree(str(root)), Options())
 
 
+# flat_field -------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_flat_field(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = flat_field.apply(tree, Options())
+    assert re.search(r"Lfix/Pipeline;->set\(JLfix/Features;I\)V\n\n\s+# seek-patch flat_field: .*\n\s+"
+                     r"invoke-static \{p1, p2\}, Lseekpatch/Flat;->frame\(J\)V\n", text(tree, "Lfix/Pipeline;"))
+    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch flat_field: .*\n\s+"
+                     r"invoke-static \{p0\}, Lseekpatch/Flat;->attach\(Landroid/app/Activity;\)V\n", text(tree, "Lfix/Main;"))
+    seekip = text(tree, "Lseekpatch/SeekIP;")
+    assert "invoke-static/range {p0 .. p4}, Lfix/NativeLib;->c(JILjava/nio/ByteBuffer;I)I" in seekip
+    assert "invoke-static/range {p0 .. p4}, Lfix/NativeLib;->g(JILjava/nio/ByteBuffer;I)I" in seekip
+    assert all(tree.path_of(f"Lseekpatch/Flat{s};") for s in ("", "$1", "$2", "$3", "$4", "$5"))
+    assert "Lfix/NativeLib;->c(" in report[0]
+
+
+def test_flat_field_shares_the_feature_call_with_no_smoothing(make_project):
+    tree = tree_of(make_project, "lambda")
+    no_smoothing.apply(tree, Options())
+    flat_field.apply(tree, Options())
+    pipeline = text(tree, "Lfix/Pipeline;")
+    assert "invoke-static {p1, p2}, Lseekpatch/Flat;->frame(J)V" in pipeline
+    assert "invoke-static/range {p0 .. p2}, Lfix/Pipeline;->seekpatch_nosmoothing_apply(Lfix/Pipeline;J)V" in pipeline
+
+
+def test_flat_field_refuses_older_apps(make_project):
+    tree = tree_of(make_project, "lambda")
+    tree._identity = {"versionCode": 240, "versionName": "2.1.6"}
+    with pytest.raises(PatchError, match="2.1.6"):
+        flat_field.apply(tree, Options())
+
+
+def test_flat_field_needs_the_camera_activity(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Main.smali"
+    p.write_text(p.read_text().replace("Landroid/view/SurfaceView;", "Landroid/view/TextureView;"))
+    with pytest.raises(PatchError, match="SurfaceView"):
+        flat_field.apply(SmaliTree(str(root)), Options())
+
+
+def test_flat_field_needs_a_callable_getfeature(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "NativeLib.smali"
+    p.write_text(p.read_text().replace(".method public static c(", ".method static c("))
+    with pytest.raises(PatchError, match="callable seekIPgetFeature"):
+        flat_field.apply(SmaliTree(str(root)), Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {
     "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-               "mic_prompt", "debug_log"],
+               "mic_prompt", "flat_field", "debug_log"],
     "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-                 "mic_prompt", "debug_log"],
+                 "mic_prompt", "flat_field", "debug_log"],
     "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "debug_log"],
 }
 

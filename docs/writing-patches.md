@@ -59,6 +59,9 @@ helpers/java/seekpatch/*.java ──javac (Java 8 bytecode)──► d8 --releas
 - Values from the command line go into a small class the patch writes itself (e.g. `VideoConfig`,
   see `video_quality.py`).  Its compile-time stand-in is in `helpers/stubs/` and is not shipped.
   Read those values from non-`final` fields, so javac does not inline them.
+- The same goes for calls into the app, whose names change every release: the patch writes a
+  class that forwards to the method it found (e.g. `SeekIP` → the app's feature wrappers, see
+  `flat_field.py`), and the helper compiles against the stub.
 - The app's minSdk is 23: guard newer APIs with `Build.VERSION.SDK_INT`.  Constants (`MediaFormat.KEY_*`)
   are inlined by javac and safe on any version.
 - Helpers must not fail the app: catch, log under the tag `seek-patch`, and fall back to what the
