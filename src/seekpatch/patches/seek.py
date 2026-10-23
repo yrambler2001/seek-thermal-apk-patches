@@ -4,15 +4,20 @@
 The live view is drawn by a GL thread that names itself "ThermalPlusRenderThread" (q/g in 2.3.4,
 com/tyriansystems/Seekware/OpenGL/RenderManager in 1.9.1, the one build with names kept).  It owns
 the thermal texture upload: a (ByteBuffer, int width, int height) method around glTexImage2D.
+
+Before every frame the camera pipeline sends the image library its features; the "Image smoothing"
+switch goes out as feature 900 (featureEnhancedProcessing), which rewrites the filter-stage mask.
 """
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 from ..smali import REG, Method, PatchError, SmaliTree, class_descriptor, method_at, methods
 
 GL_TEX_IMAGE = "Landroid/opengl/GLES20;->glTexImage2D(IIIIIIIILjava/nio/Buffer;)V"
 UPLOAD_SIG = "(Ljava/nio/ByteBuffer;II)V"
+FEATURE_SIG = "(JILjava/nio/ByteBuffer;I)I"
 
 
 def render_thread(tree: SmaliTree, patch: str) -> tuple[str, str]:
@@ -65,3 +70,72 @@ def static_accessors(tree: SmaliTree, path: str, cls: str) -> dict[str, str]:
                 out[m.descriptor] = calls[0]
     return out
 
+
+def seekip_feature(tree: SmaliTree, patch: str, native: str) -> str:
+    """A `native` ("seekIPsetFeature" / "seekIPgetFeature") another class can call: the native itself
+    if public, else its public static wrapper."""
+    found = []
+    for p in tree.containing(f"{native}{FEATURE_SIG}"):
+        cls = class_descriptor(tree.get(p))
+        for m in methods(tree.get(p)):
+            words = m.header.split()
+            if "public" not in words or "static" not in words:  # called from another class
+                continue
+            if m.descriptor == f"{native}{FEATURE_SIG}" and "native" in words:
+                found.append(f"{cls}->{m.descriptor}")
+            elif ("native" not in words and m.descriptor.endswith(FEATURE_SIG)
+                  and f"->{native}{FEATURE_SIG}" in m.body):
+                found.append(f"{cls}->{m.descriptor}")
+    if len(found) != 1:
+        raise PatchError(f"{patch}: expected one callable {native}, found {found}")
+    return found[0]
+
+
+@dataclass(frozen=True)
+class FeatureCall:
+    """The per-frame feature-900 call; code inserted at `end` runs right after it, once per frame."""
+    path: str
+    end: int
+    indent: str
+    cls: str     # the class that sends the features
+    flag: str    # its "Image smoothing" switch field
+    enum: str    # descriptor of the feature enum
+    field: str   # the enum constant of featureEnhancedProcessing
+
+
+def _feature_900(tree: SmaliTree, patch: str) -> tuple[str, str]:
+    """(enum descriptor, field) of featureEnhancedProcessing; the enum constant names are obfuscated."""
+    for p in tree.containing('"featureEnhancedProcessing"'):
+        text = tree.get(p)
+        enum = class_descriptor(text)
+        m = re.search(r'const-string ' + REG + r', "featureEnhancedProcessing".*?sput-object ' + REG + ", "
+                      + re.escape(enum) + r"->([\w$]+):" + re.escape(enum), text, re.S)
+        if m:
+            return enum, m.group(1)
+    raise PatchError(f"{patch}: featureEnhancedProcessing enum constant not found")
+
+
+def feature_900_call(tree: SmaliTree, patch: str) -> FeatureCall:
+    """The call that sends feature 900 before every frame, in a method whose p1/p2 is the library handle."""
+    enum, field = _feature_900(tree, patch)
+    e = re.escape(enum)
+    # sget-object vA, <enum>-><900>; iget-boolean vB, p0, <cls>-><flag>:Z;
+    # [ up to 2.3.0 the switch is passed as  flag ? 1 : 0 :  if-eqz vB / const 1 / goto / const 0 ]
+    # invoke-direct {p0, p1, p2, vA, vB}, <cls>->set(J<enum>I)V      (handle = p1/p2, a long)
+    gap = r"(?:[ \t]*(?:\.line \d+)?[ \t]*\n)*"
+    call = re.compile(
+        r"sget-object (" + REG + "), " + e + "->" + re.escape(field) + ":" + e + r"\n" + gap +
+        r"[ \t]*iget-boolean (" + REG + r"), p0, (L[\w/$]+;)->([\w$]+):Z\n" + gap +
+        r"(?:[ \t]*if-eqz \2, :(\w+)\n" + gap + r"[ \t]*const/4 \2, 0x1\n" + gap + r"[ \t]*goto :(\w+)\n" + gap +
+        r"[ \t]*:\5\n" + gap + r"[ \t]*const/4 \2, 0x0\n" + gap + r"[ \t]*:\6\n" + gap + ")?"
+        r"([ \t]*)invoke-direct \{p0, (p\d+), (p\d+), \1, \2\}, \3->[\w$]+\(J" + e + r"I\)V\n")
+    hits = [(p, m) for p in tree.containing(f"{enum}->{field}:") for m in call.finditer(tree.get(p))]
+    if len(hits) != 1:
+        raise PatchError(f"{patch}: expected one feature-900 call, found {len(hits)}")
+    path, h = hits[0]
+    cls, flag, indent, lo, hi = h.group(3), h.group(4), h.group(7), h.group(8), h.group(9)
+    if (lo, hi) != ("p1", "p2"):
+        raise PatchError(f"{patch}: handle is in {lo}/{hi}, expected p1/p2 -- the per-frame feature method changed shape")
+    if class_descriptor(tree.get(path)) != cls:
+        raise PatchError(f"{patch}: the switch field lives in {cls}, not in the class that sends feature 900")
+    return FeatureCall(path, h.end(), indent, cls, flag, enum, field)

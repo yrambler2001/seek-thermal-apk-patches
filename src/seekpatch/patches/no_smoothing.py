@@ -21,10 +21,9 @@ library whose feature 900 works differently, so the patch refuses them.
 """
 from __future__ import annotations
 
-import re
-
-from ..smali import REG, AlreadyApplied, PatchError, SmaliTree, class_descriptor, methods
+from ..smali import AlreadyApplied, PatchError, SmaliTree
 from .base import Options, ensure_unpatched, mark
+from .seek import feature_900_call, seekip_feature
 
 NAME = "no_smoothing"
 SUMMARY = 'make the "Image smoothing" switch really turn smoothing off (no temporal / spatial filter)'
@@ -33,7 +32,6 @@ MIN_VERSION_CODE = 260  # 2.2.0
 RECOMMENDED = True
 
 MARK = mark(NAME)
-SETFEATURE_SIG = "(JILjava/nio/ByteBuffer;I)I"
 
 HELPERS = """
 {mark}: called right after the feature-900 preset; clears alpf (102) and aslpf (100) when off
@@ -72,37 +70,6 @@ HELPERS = """
 """
 
 
-def _feature_900(tree: SmaliTree) -> tuple[str, str]:
-    """(enum descriptor, field) of featureEnhancedProcessing; the enum constant names are obfuscated."""
-    for p in tree.containing('"featureEnhancedProcessing"'):
-        text = tree.get(p)
-        enum = class_descriptor(text)
-        m = re.search(r'const-string ' + REG + r', "featureEnhancedProcessing".*?sput-object ' + REG + ", "
-                      + re.escape(enum) + r"->([\w$]+):" + re.escape(enum), text, re.S)
-        if m:
-            return enum, m.group(1)
-    raise PatchError(f"{NAME}: featureEnhancedProcessing enum constant not found")
-
-
-def _setfeature(tree: SmaliTree) -> str:
-    """A seekIPsetFeature another class can call: the native itself if public, else its public static wrapper."""
-    found = []
-    for p in tree.containing(f"seekIPsetFeature{SETFEATURE_SIG}"):
-        cls = class_descriptor(tree.get(p))
-        for m in methods(tree.get(p)):
-            words = m.header.split()
-            if "public" not in words or "static" not in words:  # called from another class
-                continue
-            if m.descriptor == f"seekIPsetFeature{SETFEATURE_SIG}" and "native" in words:
-                found.append(f"{cls}->{m.descriptor}")
-            elif ("native" not in words and m.descriptor.endswith(SETFEATURE_SIG)
-                  and f"->seekIPsetFeature{SETFEATURE_SIG}" in m.body):
-                found.append(f"{cls}->{m.descriptor}")
-    if len(found) != 1:
-        raise PatchError(f"{NAME}: expected one callable seekIPsetFeature, found {found}")
-    return found[0]
-
-
 def apply(tree: SmaliTree, opts: Options) -> list[str]:
     ensure_unpatched(tree, NAME)
     if tree.containing("nosmoothing_apply("):  # the same hook from an earlier tools/repack build
@@ -113,32 +80,14 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
     if code < MIN_VERSION_CODE:
         raise PatchError(f"{NAME}: app {tree.identity.get('versionName')} (versionCode {code}) predates the image "
                          "library whose feature 900 the patch is verified on (apps 2.2.0 - 2.3.4)")
-    enum, field = _feature_900(tree)
-    setfeature = _setfeature(tree)
-    e = re.escape(enum)
-    # sget-object vA, <enum>-><900>; iget-boolean vB, p0, <cls>-><flag>:Z;
-    # [ up to 2.3.0 the switch is passed as  flag ? 1 : 0 :  if-eqz vB / const 1 / goto / const 0 ]
-    # invoke-direct {p0, p1, p2, vA, vB}, <cls>->set(J<enum>I)V      (handle = p1/p2, a long)
-    gap = r"(?:[ \t]*(?:\.line \d+)?[ \t]*\n)*"
-    call = re.compile(
-        r"sget-object (" + REG + "), " + e + "->" + re.escape(field) + ":" + e + r"\n" + gap +
-        r"[ \t]*iget-boolean (" + REG + r"), p0, (L[\w/$]+;)->([\w$]+):Z\n" + gap +
-        r"(?:[ \t]*if-eqz \2, :(\w+)\n" + gap + r"[ \t]*const/4 \2, 0x1\n" + gap + r"[ \t]*goto :(\w+)\n" + gap +
-        r"[ \t]*:\5\n" + gap + r"[ \t]*const/4 \2, 0x0\n" + gap + r"[ \t]*:\6\n" + gap + ")?"
-        r"([ \t]*)invoke-direct \{p0, (p\d+), (p\d+), \1, \2\}, \3->[\w$]+\(J" + e + r"I\)V\n")
-    hits = [(p, m) for p in tree.containing(f"{enum}->{field}:") for m in call.finditer(tree.get(p))]
-    if len(hits) != 1:
-        raise PatchError(f"{NAME}: expected one feature-900 call, found {len(hits)}")
-    path, h = hits[0]
-    cls, flag, indent, lo, hi = h.group(3), h.group(4), h.group(7), h.group(8), h.group(9)
-    if (lo, hi) != ("p1", "p2"):
-        raise PatchError(f"{NAME}: handle is in {lo}/{hi}, expected p1/p2 -- the per-frame feature method changed shape")
-    if class_descriptor(tree.get(path)) != cls:
-        raise PatchError(f"{NAME}: the switch field lives in {cls}, not in the class that sends feature 900")
-    text = tree.get(path)
-    hook = f"\n{indent}{MARK}\n{indent}invoke-static/range {{p0 .. {hi}}}, {cls}->seekpatch_nosmoothing_apply({cls}J)V\n"
-    text = text[:h.end()] + hook + text[h.end():]
-    text = text.rstrip("\n") + "\n" + HELPERS.format(mark=MARK, cls=cls, flag=flag, setfeature=setfeature)
-    tree.set(path, text)
-    return [f"featureEnhancedProcessing = {enum}->{field}, switch = {cls}->{flag}:Z, setFeature = {setfeature}",
-            f"{tree.rel(path)}: hook after the feature-900 call, +2 helper methods"]
+    call = feature_900_call(tree, NAME)
+    setfeature = seekip_feature(tree, NAME, "seekIPsetFeature")
+    cls, indent = call.cls, call.indent
+    text = tree.get(call.path)
+    hook = f"\n{indent}{MARK}\n{indent}invoke-static/range {{p0 .. p2}}, {cls}->seekpatch_nosmoothing_apply({cls}J)V\n"
+    text = text[:call.end] + hook + text[call.end:]
+    text = text.rstrip("\n") + "\n" + HELPERS.format(mark=MARK, cls=cls, flag=call.flag, setfeature=setfeature)
+    tree.set(call.path, text)
+    return [f"featureEnhancedProcessing = {call.enum}->{call.field}, switch = {cls}->{call.flag}:Z, "
+            f"setFeature = {setfeature}",
+            f"{tree.rel(call.path)}: hook after the feature-900 call, +2 helper methods"]
