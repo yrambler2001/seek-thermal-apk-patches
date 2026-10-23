@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.2.0 — 2026-10-23
+
+Photos, videos, the microphone and a flat-field button.  All new patches are in the default set.
+
+- `png_photos`: photos as lossless PNG — the app's hidden *Save Uncompressed* setting, forced on
+  (Android 11+; 2.1.2 – 2.3.4).
+- `photo_1x`: with every photo, the thermal frame at the sensor's resolution as a PNG in
+  `Pictures/Seek Thermal 1x/` (2.1.1 – 2.3.4).
+- `video_quality`: HEVC (or H.264, `--video-codec avc`) at the photo's 960×1280, constant QP
+  (`--video-qp`, default 18, chosen by measurement), one frame per thermal frame instead of 15 fps,
+  keyframes every second, BT.709 tags; stereo 48 kHz AAC at 256 kbit/s (2.1.2 – 2.3.4).
+- `mic_prompt`: only starting a video asks for the microphone, and the video starts once answered;
+  photos and the gallery no longer need it; a settings / record-without-sound dialog once Android
+  stops asking (2.3.3 – 2.3.4).
+- `flat_field`: a *Flat field* button in the top bar.  Point at a uniform surface and tap; the
+  image library's gradient stage learns the camera's own gradient from the next 40 frames, which it
+  otherwise does only from frames that already look flat — never on an unevenly warmed camera
+  (2.2.0 – 2.3.4).
+- `resume_fix`: the app no longer crashes when it comes back from Android's permission dialog — the
+  live view's EGL surface is destroyed on pause (1.9.1 – 2.3.4).
+- Java helpers (`helpers/java`) compiled to committed smali by `helpers/build.py` (`--check`: is the
+  committed smali up to date).
+- `tools/codecs.py`: list the phone's encoders, and score a QP ladder against a reference recording.
+
 ## 0.1.0 — 2026-10-23
 
 First release.

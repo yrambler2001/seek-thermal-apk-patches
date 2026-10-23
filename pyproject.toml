@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "seek-patch"
 dynamic = ["version"]
-description = "Unofficial patches for the Seek Thermal Android app: full camera frame rate, iOS-like sharp scaling, a working smoothing switch"
+description = "Unofficial patches for the Seek Thermal Android app: full frame rate, iOS-like sharp scaling, a working smoothing switch, lossless photos, photo-quality video"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

@@ -2,7 +2,9 @@
 
 Unofficial patches for the **Seek Thermal** Android app (`com.tyriansystems.SeekThermal`, 1.9.1 – 2.3.4).
 Bring your own APK; get a live view that runs at the camera's real frame rate and is upscaled like
-the iOS app, and an "Image smoothing" switch that does what it says.
+the iOS app, an "Image smoothing" switch that does what it says, lossless photos with the sensor's
+own pixels beside them, videos as good as the photos, and a button that flattens the gradient of a
+warm camera.
 
 [![CI](https://github.com/yrambler2001/seek-thermal-apk-patches/actions/workflows/ci.yml/badge.svg)](https://github.com/yrambler2001/seek-thermal-apk-patches/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -24,6 +26,12 @@ its own colour span.</sub>
 | **Frame rate** | **15 fps** on screen: the live view redraws only when the phone's *own rear camera* delivers a frame, and the app runs that camera at 15 fps | **~28 fps**, every thermal frame (the Compact sends ~30) | `full_fps` |
 | **Upscaling** | plain bilinear: each sensor pixel is smeared across its whole width | iOS-style: each pixel stays sharp, blending only across the middle half | `sharp_scaling` |
 | **"Image smoothing" switch** | *off* is the smoother picture: it adds a 3×3 blur, and the temporal smoothing stays on either way | *off* turns temporal and spatial smoothing off | `no_smoothing` |
+| **Photos** | JPEG, quality 100 but 4:2:0 colour; the PNG setting is hidden | lossless PNG (the app's own *Save Uncompressed*, turned on) | `png_photos` |
+| **Sensor pixels** | only the 1280×960 upscaled photo | also the frame at the sensor's resolution, PNG, no overlays, in `Pictures/Seek Thermal 1x/` | `photo_1x` |
+| **Video** | H.264 480×640 at a fixed 1.5 Mbit/s, **15 fps** (the phone camera's clock), mono 44.1 kHz 64 kbit/s sound | HEVC **960×1280** at constant quality (~50 dB PSNR), **every thermal frame**, stereo 48 kHz 256 kbit/s | `video_quality` |
+| **Microphone** | Android 11+: photos, videos and the gallery all ask for the microphone and drop the tap; after two denials none of them starts again | only starting a video asks, and the video then starts by itself; when Android won't ask again, a dialog offers the settings page or recording without sound | `mic_prompt` |
+| **Warm camera** | once the camera has warmed unevenly, every picture has a gradient (bright edges, dark middle), even of a uniform wall | a **Flat field** button: point at a uniform surface, tap, and the gradient is gone (14 °F across a wall → under 1 °F) | `flat_field` |
+| **Returning from a dialog** | the app crashes (`glError 0x506`) after Android's permission dialog | the live view comes back | `resume_fix` |
 | **Diagnostics** | the SDK's USB / frame-timing log is compiled out | `adb logcat -s Seekware` | `debug_log` (opt-in) |
 
 Nothing else changes: the same app and the same calibration.  The patches never touch USB or the
@@ -74,10 +82,12 @@ seek-patch doctor                       Java, the pinned apktool + uber-apk-sign
 
 | `patch` option | |
 |---|---|
-| *(none)* | the default set: `full_fps`, `sharp_scaling`, `no_smoothing` — those that apply to this version |
+| *(none)* | the default set — every patch but `debug_log` — skipping those that do not apply to this version |
 | `-p NAME` | pick patches yourself (repeatable), e.g. `-p full_fps -p debug_log`; each must apply |
 | `--all` | every patch, `debug_log` included; each must apply |
 | `--sharpness N` | `sharp_scaling`'s blend width, 1/N of a pixel: `2` = iOS (default), `3`–`4` crisper, larger approaches visible pixels |
+| `--video-codec hevc\|avc` | `video_quality`'s codec: HEVC (default; H.264 is the automatic fallback) or H.264 first, for players without HEVC |
+| `--video-qp N` | `video_quality`'s constant quantizer, 10 – 40: lower is better and bigger; `18` (default) ≈ 68 MB/min on a still scene |
 | `--side-by-side` | new package name (`<original>.patched`) and label, so it installs next to the store app; `--package`, `--label` to choose them |
 | `--install` | `adb install -r` the result |
 | `-o FILE`, `-f` | output file (default `<input>-patched.apk`), overwrite it |
@@ -89,11 +99,19 @@ seek-patch doctor                       Java, the pinned apktool + uber-apk-sign
 Measured on a Pixel 8 Pro (Android 16) with a Seek Compact (firmware 1.3.0.0) — see
 [docs/measuring.md](docs/measuring.md) to repeat any of it.
 
-| | stock 2.3.4 | patched |
+| live view | stock 2.3.4 | patched |
 |---|---|---|
 | frames from the camera | ~30 fps | ~30 fps |
 | frames on screen (SurfaceFlinger) | **14.9 fps** | **27.5 fps** (the rest: shutter frames, and the panel dropping to 30 Hz) |
 | render-thread CPU | 11 % of a core | 11 % of a core (the scaling runs in the shader) |
+
+| recording | stock 2.3.4 | patched (defaults) |
+|---|---|---|
+| video | H.264 High, 480×640, 1.5 Mbit/s | HEVC Main (hardware), 960×1280, QP 18: ~9 – 10 Mbit/s on a still scene |
+| frame rate | 15.0 fps | 24.6 – 27.7 fps: every thermal frame, pausing only for the shutter |
+| quality vs a near-lossless recording | – | 51.6 dB PSNR, SSIM 0.992, 99.6 % of the sensor noise kept |
+| sound | AAC mono 44.1 kHz, 64 kbit/s | AAC stereo 48 kHz, 250 kbit/s |
+| photo | JPEG q100, 4:2:0 | PNG, plus a 156×206 PNG of the sensor frame |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/kernel-dark.svg">
@@ -116,6 +134,12 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `full_fps` | 1.9.1 – 2.3.4 | |
 | `sharp_scaling` | 2.0 – 2.3.4 | 1.9.x saves photos differently |
 | `no_smoothing` | 2.2.0 – 2.3.4 | the feature ids are verified in the image library these versions ship; it refuses older ones |
+| `png_photos` | 2.1.2 – 2.3.4 | Android 11+ (older Android cannot write EXIF into a PNG; it keeps the setting) |
+| `photo_1x` | 2.1.1 – 2.3.4 | |
+| `video_quality` | 2.1.2 – 2.3.4 | |
+| `resume_fix` | 1.9.1 – 2.3.4 | |
+| `mic_prompt` | 2.3.3 – 2.3.4 | older releases ask for the microphone with storage and never block on it |
+| `flat_field` | 2.2.0 – 2.3.4 | the gradient features are verified in the image library these versions ship; it refuses older ones |
 | `debug_log` | 2.0 – 2.3.4 | 1.9.x has no frame-timing log |
 
 `seek-patch check` tells you for your file, and suggests the command to use.
@@ -131,25 +155,45 @@ the shape is not what they expect.
 - [`full_fps`](docs/full-fps.md) — moves the redraw from the phone-camera callback to the thermal upload.
 - [`sharp_scaling`](docs/sharp-scaling.md) — a "sharp bilinear" remap in the thermal fragment shader; photos get the same kernel on the CPU.
 - [`no_smoothing`](docs/smoothing-switch.md) — after the app sends the smoothing preset, clears the temporal and spatial filter stages when the switch is off.
+- [`png_photos`](docs/png-photos.md) — turns on the app's hidden *Save Uncompressed* setting.
+- [`photo_1x`](docs/photo-1x.md) — keeps the photo method's sensor-sized frame and writes it once the photo is saved.
+- [`video_quality`](docs/video-quality.md) — picks and configures the encoder, hands it every thermal frame, records 48 kHz stereo.  How the QP was chosen is in there.
+- [`mic_prompt`](docs/mic-prompt.md) — routes the app's microphone check and request through a small helper, and starts the video once the camera runs again.
+- [`flat_field`](docs/flat-field.md) — adds the button; a tap has the library's gradient stage learn its correction map from the next 40 frames, which it otherwise does only for frames that already look flat.
+- [`resume_fix`](docs/resume-fix.md) — destroys the live view's EGL surface before the app drops it on pause.
 - [`debug_log`](docs/debug-log.md) — gives the SDK's stripped log methods a body.
 
-By default only the code is decoded (`apktool -r`): resources and the binary manifest are carried
-over byte for byte, so a rebuild cannot break them.  `--side-by-side` decodes resources too, to rename
-the package.
+Patches that need more than a few instructions add helper classes written in Java
+([`helpers/java`](helpers/java)) and compiled to smali, which is committed: patching needs no Android
+SDK.  By default only the code is decoded (`apktool -r`): resources and the binary manifest are
+carried over byte for byte, so a rebuild cannot break them.  `--side-by-side` decodes resources too,
+to rename the package.
 
 ## FAQ
 
-**Are temperatures affected?**  `full_fps` and `sharp_scaling` only change when and how the image is
-drawn.  `no_smoothing` turns off the library's temporal and spatial filters, and the temperature
-readout is computed from the filtered frame — so with the switch off, spot readings fluctuate frame
-to frame like the image does, instead of being averaged.  The calibration is untouched.
+**Are temperatures affected?**  `full_fps`, `sharp_scaling` and the photo and video patches only
+change when and how the image is drawn and saved.  `no_smoothing` turns off the library's temporal
+and spatial filters, and the temperature readout is computed from the filtered frame — so with the
+switch off, spot readings fluctuate frame to frame like the image does, instead of being averaged.
+`flat_field` changes readings only when you tap it: the correction it learns applies to the
+temperatures as well as the picture.  The camera's own gradient leaves the readings, and the centre
+of the image keeps its value.  The calibration is untouched.  For per-pixel temperatures, the app's own *Store All Thermal Data*
+setting saves a radiometric TIFF with each photo.
+
+**How big are the videos?**  About 68 MB a minute at the default QP on a still scene, more when the
+camera moves; `--video-qp 20` is ~55 MB, `24` ~30 MB (see the table in
+[docs/video-quality.md](docs/video-quality.md)).  Choose `--video-codec avc` if something you play
+them on lacks HEVC; it costs ~20 % more.
+
+**Why no 4:4:4 video?**  No encoder on the phone supports it.  At 960×1280, 4:2:0 still stores colour
+at three times the Compact sensor's resolution, so no sensor pixel loses its colour.
 
 **Will the app update itself?**  No: the Play Store will not update an app signed with another key.
 Patch the new version when there is one.
 
-**Thermal+ / video recording?**  Not tested on a phone yet.  By design both keep working:
-`full_fps` leaves the phone-camera callback in place (it still feeds Thermal+ and the video
-encoder), so recordings keep that camera's 15 fps clock.
+**Thermal+?**  Not tested on a phone yet.  By design it keeps working: the phone-camera callback still
+latches the camera image Thermal+ blends in, and the video encoder draws the same scene as the
+screen.
 
 **Which GPUs?**  The shader is plain OpenGL ES 2.0, written for any Android GPU; it has been run on
 the Pixel 8 Pro's Mali.  GPUs without high-precision fragment shaders (old Mali-400 / 450, early
@@ -168,10 +212,11 @@ own risk.
 pip install -e '.[dev]'
 pytest                     # unit tests on synthetic smali (tests/fixtures), no APK needed
 SEEK_APK_DIR=~/apks SEEK_BUILD=1 pytest tests/test_real_apks.py    # against your own apks
+python3 helpers/build.py   # after changing a Java helper (needs the Android SDK)
 ```
 
 Adding a patch: [docs/writing-patches.md](docs/writing-patches.md).  The tools in `tools/` measure
-frame rate and upscaling kernels ([docs/measuring.md](docs/measuring.md)).
+frame rate, upscaling kernels and the phone's video encoders ([docs/measuring.md](docs/measuring.md)).
 
 ## License
 
