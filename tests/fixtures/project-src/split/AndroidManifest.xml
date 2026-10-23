@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A config split of the synthetic test app: the native code for one ABI, shaped like the store's
+     config.arm64_v8a.apk (no code, no resources; the libraries are added by the tests). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.example.seekfixture"
+    android:versionCode="294"
+    android:splitTypes="base__abi"
+    split="config.arm64_v8a">
+    <application android:hasCode="false" android:extractNativeLibs="false" />
+</manifest>

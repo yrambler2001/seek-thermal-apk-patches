@@ -182,8 +182,8 @@ def read_apk_manifest(apk: str) -> dict[str, object]:
             try:
                 manifest = z.read("AndroidManifest.xml")
             except KeyError:
-                raise AxmlError(f"{apk}: no AndroidManifest.xml -- an .xapk / .apks bundle?  seek-patch needs a "
-                                "single, complete (universal) apk") from None
+                raise AxmlError(f"{apk}: no AndroidManifest.xml and no apks inside -- neither an apk nor a "
+                                "split bundle") from None
             arsc = z.read("resources.arsc") if "resources.arsc" in z.namelist() else None
     except zipfile.BadZipFile:
         raise AxmlError(f"{apk}: not an apk (not a zip file)") from None

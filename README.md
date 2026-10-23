@@ -64,12 +64,17 @@ or keep both, with the patched one as a separate app called "Seek (patched)":
 seek-patch patch Seek+Thermal_2.3.4.apk --side-by-side --install
 ```
 
-**Getting the APK** – seek-patch needs one complete ("universal") `.apk` that contains the app's
-native libraries.  Installs from the Play Store are usually *split*: `adb shell pm path
-com.tyriansystems.SeekThermal` then lists a `base.apk` plus `split_config.*.apk` files, and the base
-alone is refused (its native code is in a split).  If `pm path` prints a single path, `adb pull` it
-(drop the `package:` prefix).  Otherwise use a universal APK of the release you want; split bundles
-(`.xapk`, `.apks`) are not supported yet.  `seek-patch check FILE` tells you whether a file is usable.
+**Getting the APK** – seek-patch takes one complete ("universal") `.apk`, or a split bundle:
+`.xapk` (APKPure), `.apks`, or `.apkm` (APKMirror, unless encrypted).  A bundle is first merged into
+one apk with [APKEditor](https://github.com/REAndroid/APKEditor), fetched on first use.  The merged
+app has the native code of the ABIs the bundle includes; APKPure's `.xapk` of the Seek app has only
+`arm64-v8a`, which every recent phone runs.
+
+To start from the app on your phone, run `adb shell pm path com.tyriansystems.SeekThermal`.  If it
+prints a single path, `adb pull` it (drop the `package:` prefix).  If it lists a `base.apk` plus
+`split_config.*.apk` files (a split install from the Play Store), pull them all into an empty folder
+and zip them into one bundle: `zip seek.apks *.apk`.  The base alone is refused, because its native
+code is in a split.  `seek-patch check FILE` tells you whether a file is usable.
 
 ## Usage
 
@@ -77,8 +82,10 @@ alone is refused (its native code is in a split).  If `pm path` prints a single 
 seek-patch list                         the patches, their tested versions, the default set
 seek-patch check APP.apk                dry run: which patches apply to this apk, and why not
 seek-patch patch APP.apk [options]      patch, rebuild, align, sign
-seek-patch doctor                       Java, the pinned apktool + uber-apk-signer, your signing key
+seek-patch doctor                       Java, the pinned apktool + uber-apk-signer + APKEditor, your signing key
 ```
+
+`APP.apk` can also be a split bundle (`.xapk`, `.apks`, `.apkm`); the result is always one `.apk`.
 
 | `patch` option | |
 |---|---|
@@ -138,7 +145,7 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `photo_1x` | 2.1.1 – 2.3.4 | |
 | `video_quality` | 2.1.2 – 2.3.4 | |
 | `resume_fix` | 1.9.1 – 2.3.4 | |
-| `mic_prompt` | 2.3.3 – 2.3.4 | older releases ask for the microphone with storage and never block on it |
+| `mic_prompt` | 2.3.1 – 2.3.4 | older releases ask for the microphone with storage and never block on it |
 | `flat_field` | 2.2.0 – 2.3.4 | the gradient features are verified in the image library these versions ship; it refuses older ones |
 | `debug_log` | 2.0 – 2.3.4 | 1.9.x has no frame-timing log |
 
@@ -150,7 +157,8 @@ The app is decoded to smali with apktool, edited, rebuilt and signed.  The code 
 differently in every release, so the patches never use class names: they find code by what it does —
 the GL thread that names itself `ThermalPlusRenderThread`, the method that uploads a `ByteBuffer`
 with `glTexImage2D`, the shader that samples `thermalTexture` — and refuse, changing nothing, when
-the shape is not what they expect.
+the shape is not what they expect.  A split bundle is merged into one apk first, by APKEditor, which
+also drops the manifest attributes that make Android require the splits.
 
 - [`full_fps`](docs/full-fps.md) — moves the redraw from the phone-camera callback to the thermal upload.
 - [`sharp_scaling`](docs/sharp-scaling.md) — a "sharp bilinear" remap in the thermal fragment shader; photos get the same kernel on the CPU.
@@ -247,4 +255,5 @@ frame rate, upscaling kernels and the phone's video encoders ([docs/measuring.md
 
 ## License
 
-[MIT](LICENSE).  apktool and uber-apk-signer (Apache-2.0) are downloaded on first use, not bundled.
+[MIT](LICENSE).  apktool, uber-apk-signer and APKEditor (Apache-2.0) are downloaded on first use, not
+bundled.

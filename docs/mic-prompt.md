@@ -1,6 +1,6 @@
 # `mic_prompt` — ask for the microphone when a video starts
 
-**Stock (2.3.3 / 2.3.4, Android 11+):** the photo, video and gallery buttons all check the
+**Stock (2.3.1 – 2.3.4, Android 11+):** the photo, video and gallery buttons all check the
 microphone permission first.  Without it the app asks for it and drops the tap — there is no
 `onRequestPermissionsResult`.  After two denials Android stops showing the dialog; from then on the
 app asks, Android answers "no" without a dialog, and none of the three buttons does anything.
@@ -34,6 +34,6 @@ which is why the patch offers that page instead of asking.  It remembers that An
 Returning from that dialog crashed the stock app's live view; [`resume_fix`](resume-fix.md) fixes
 that, and is part of the default set.
 
-Versions: 2.3.3 and 2.3.4.  Older releases check and request the microphone together with storage
+Versions: 2.3.1 – 2.3.4.  Older releases check and request the microphone together with storage
 and never block on it, so the patch does not apply.  Source:
 [`helpers/java/seekpatch/Mic.java`](../helpers/java/seekpatch/Mic.java).

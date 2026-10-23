@@ -1,8 +1,10 @@
-"""The external tools: a Java runtime, apktool and uber-apk-signer, plus a per-user signing key.
+"""The external tools: a Java runtime, apktool, uber-apk-signer and APKEditor, plus a per-user
+signing key.
 
-The two jars are pinned by version and sha256 and downloaded from their GitHub releases on first
-use into the cache directory (override with SEEK_PATCH_HOME); SEEK_PATCH_APKTOOL /
-SEEK_PATCH_SIGNER point at local copies instead (offline use; the hash is still checked).
+The jars are pinned by version and sha256 and downloaded from their GitHub releases on first use
+into the cache directory (override with SEEK_PATCH_HOME); APKEditor, which only merges split
+bundles, is fetched the first time a bundle needs it.  SEEK_PATCH_APKTOOL / SEEK_PATCH_SIGNER /
+SEEK_PATCH_APKEDITOR point at local copies instead (offline use; the hash is still checked).
 """
 from __future__ import annotations
 
@@ -41,6 +43,9 @@ APKTOOL = Jar("apktool", "3.0.3",
 SIGNER = Jar("uber-apk-signer", "1.3.0",
              "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar",
              "e1299fd6fcf4da527dd53735b56127e8ea922a321128123b9c32d619bba1d835", "SEEK_PATCH_SIGNER")
+APKEDITOR = Jar("APKEditor", "1.4.9",
+                "https://github.com/REAndroid/APKEditor/releases/download/V1.4.9/APKEditor-1.4.9.jar",
+                "a9cd40df818845456be6d696de6110c89edf4b0a0580cb83438ed6b25a366e67", "SEEK_PATCH_APKEDITOR")
 
 KEY_ALIAS = "seek-patch"
 KEY_PASSWORD = "seek-patch"  # a local, per-user key: it only has to stay the same across updates
@@ -146,13 +151,18 @@ class Toolchain:
     java_version: str
     apktool: str
     signer: str
+    download: bool = True
 
     @classmethod
     def load(cls, download: bool = True, log=print) -> Toolchain:
         java, version = find_java()
         if java_major(version) < 11:
             raise ToolchainError(f"{java}: {version} -- Java 11 or newer is needed")
-        return cls(java, version, ensure_jar(APKTOOL, download, log), ensure_jar(SIGNER, download, log))
+        return cls(java, version, ensure_jar(APKTOOL, download, log), ensure_jar(SIGNER, download, log), download)
+
+    def merger(self, log=print) -> str:
+        """APKEditor, for split bundles only: fetched on first use."""
+        return ensure_jar(APKEDITOR, self.download, log)
 
     def run_jar(self, jar: str, args: list[str], what: str) -> str:
         r = subprocess.run([self.java, "-jar", jar, *args], capture_output=True, text=True)

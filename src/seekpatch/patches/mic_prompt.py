@@ -30,7 +30,7 @@ from .seek import render_thread, upload_call
 
 NAME = "mic_prompt"
 SUMMARY = "ask for the microphone when a video starts; photos and the gallery never need it"
-VERSIONS = "2.3.3 - 2.3.4"
+VERSIONS = "2.3.1 - 2.3.4"
 RECOMMENDED = True
 
 MARK = mark(NAME)

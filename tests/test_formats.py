@@ -1,13 +1,14 @@
-"""zipalign, the binary manifest / resource table reader, and the --side-by-side manifest rename."""
+"""zipalign, the binary manifest / resource table reader, the --side-by-side manifest rename, and
+reading split bundles."""
 from __future__ import annotations
 
 import struct
 import zipfile
 
 import pytest
-from conftest import FIXTURES
+from conftest import FIXTURES, split_apk, zip_bytes
 
-from seekpatch import apk, axml, manifest, zipalign
+from seekpatch import apk, axml, bundle, manifest, zipalign
 from seekpatch.smali import SmaliTree
 
 # zipalign ---------------------------------------------------------------------------------------
@@ -126,3 +127,70 @@ def test_missing_native_libraries(make_project, tmp_path, libs, missing):
         for name in libs:
             z.writestr(name, b"\x7fELF")
     assert apk.missing_native_libraries(str(path), tree) == missing
+
+
+# split bundles ----------------------------------------------------------------------------------
+
+BASE = zip_bytes({"AndroidManifest.xml": (FIXTURES / "project" / "AndroidManifest.xml").read_bytes(),
+                  "resources.arsc": (FIXTURES / "project" / "resources.arsc").read_bytes(), "classes.dex": b""})
+SPLIT = split_apk()
+LAYOUTS = {  # base entry, split entry and the rest, as each format names them
+    "xapk": ("org.example.seekfixture.apk", "config.arm64_v8a.apk", {"manifest.json": b"{}", "icon.png": b""}),
+    "apkm": ("base.apk", "split_config.arm64_v8a.apk", {"info.json": b"{}"}),
+    "apks": ("splits/base-master.apk", "splits/base-arm64_v8a.apk",
+             {"toc.pb": b"", "standalones/standalone-arm64_v8a.apk": BASE}),  # a complete apk, not merged
+}
+
+
+def _write(path, entries):
+    path.write_bytes(zip_bytes(entries))
+    return str(path)
+
+
+@pytest.mark.parametrize("kind", LAYOUTS)
+def test_bundle_base_and_splits(tmp_path, kind):
+    base, split, rest = LAYOUTS[kind]
+    path = _write(tmp_path / f"app.{kind}", {split: SPLIT, **rest, base: BASE})  # the manifests tell, not the order
+    assert bundle.is_bundle(path)
+    b = bundle.inspect(path)
+    assert b.base == base and b.splits == {split: "config.arm64_v8a"}
+    info = apk.app_info(path)
+    assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture", "2.3.4", 294)
+
+
+def test_an_apk_is_not_a_bundle(tmp_path):
+    assert not bundle.is_bundle(_write(tmp_path / "app.apk", {"AndroidManifest.xml": b"", "classes.dex": b""}))
+    assert not bundle.is_bundle(_write(tmp_path / "notes.zip", {"readme.txt": b""}))
+    (tmp_path / "text.xapk").write_text("not a zip")
+    assert not bundle.is_bundle(str(tmp_path / "text.xapk"))
+
+
+def _encrypted(entries):
+    data = bytearray(zip_bytes(entries))
+    data[data.find(b"PK\x01\x02") + 8] |= 1  # the central directory's "encrypted" flag
+    return bytes(data)
+
+
+def _other_release(split: bytes) -> bytes:
+    """The split with versionCode 295: its Res_value (size 8, type int, data 294) rewritten."""
+    m = (FIXTURES / "split" / "AndroidManifest.xml").read_bytes()
+    value = struct.pack("<HBBI", 8, 0, 0x10, 294)
+    assert m.count(value) == 1
+    return split_apk(manifest=m.replace(value, struct.pack("<HBBI", 8, 0, 0x10, 295)))
+
+
+@pytest.mark.parametrize("entries, match", [
+    ({"config.arm64_v8a.apk": SPLIT}, "no base apk"),
+    ({"a.apk": BASE, "b.apk": BASE}, "more than one base apk"),
+    ({"base.apk": BASE, "config.arm64_v8a.apk": b"not a zip"}, "not an apk"),
+    ({"base.apk": BASE, "config.arm64_v8a.apk": _other_release(SPLIT)}, "splits of different releases"),
+])
+def test_bundle_refusals(tmp_path, entries, match):
+    with pytest.raises(bundle.BundleError, match=match):
+        bundle.inspect(_write(tmp_path / "app.xapk", entries))
+
+
+def test_encrypted_bundle(tmp_path):
+    (tmp_path / "app.apkm").write_bytes(_encrypted({"base.apk": BASE}))
+    with pytest.raises(bundle.BundleError, match="encrypted"):
+        bundle.inspect(str(tmp_path / "app.apkm"))

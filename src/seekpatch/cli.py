@@ -10,10 +10,11 @@ import sys
 from . import __version__
 from .apk import SEEK_PACKAGE, ApkError, Plan, app_info, check, patch_apk
 from .axml import AxmlError
+from .bundle import BundleError
 from .manifest import ManifestError, valid_package
 from .patches import ALL, BY_NAME, RECOMMENDED, Options
 from .smali import PatchError
-from .toolchain import APKTOOL, SIGNER, Toolchain, ToolchainError, ensure_jar, find_java, home, java_major
+from .toolchain import APKEDITOR, APKTOOL, SIGNER, Toolchain, ToolchainError, ensure_jar, find_java, home, java_major
 
 DEFAULT_LABEL = "Seek (patched)"
 
@@ -25,7 +26,7 @@ def _log(line: str) -> None:
 def _info_or_warn(apk: str):
     try:
         info = app_info(apk)
-    except (AxmlError, OSError) as e:
+    except (AxmlError, BundleError, OSError) as e:
         raise SystemExit(f"error: {e}") from None
     print(f"app    {info}")
     if info.package != SEEK_PACKAGE:
@@ -117,7 +118,7 @@ def cmd_doctor(_args) -> int:
     except ToolchainError as e:
         print(f"FAIL java            {e}")
         ok = False
-    for jar in (APKTOOL, SIGNER):
+    for jar in (APKTOOL, SIGNER, APKEDITOR):
         try:
             print(f"ok   {jar.name:15} {ensure_jar(jar, log=_log)}")
         except (ToolchainError, OSError) as e:
@@ -142,13 +143,13 @@ def main(argv: list[str] | None = None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True, metavar="COMMAND")
     sub.add_parser("list", help="list the patches").set_defaults(fn=cmd_list)
     c = sub.add_parser("check", help="dry run: which patches apply to an apk")
-    c.add_argument("apk")
+    c.add_argument("apk", help="the Seek Thermal .apk, or an .xapk / .apks / .apkm bundle")
     c.set_defaults(fn=cmd_check)
     p = sub.add_parser("patch", help="patch, rebuild and sign an apk",
                        description="Patch, rebuild and sign a Seek Thermal apk.  Default: "
                                    + ", ".join(RECOMMENDED) + ", skipping any that do not apply to the "
                                    "apk's version; patches named with -p must all apply.")
-    p.add_argument("apk", help="the Seek Thermal .apk (a single apk, not an .xapk bundle)")
+    p.add_argument("apk", help="the Seek Thermal .apk, or an .xapk / .apks / .apkm bundle (merged into one apk first)")
     p.add_argument("-p", "--patch", action="append", choices=list(BY_NAME), metavar="NAME",
                    help=f"apply this patch (repeatable); one of {', '.join(BY_NAME)}")
     p.add_argument("--all", action="store_true", help="apply every patch, debug_log included (all must apply)")
@@ -170,7 +171,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     try:
         return args.fn(args)
-    except (PatchError, ApkError, ManifestError, AxmlError) as e:
+    except (PatchError, ApkError, BundleError, ManifestError, AxmlError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
     except ToolchainError as e:

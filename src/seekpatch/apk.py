@@ -1,6 +1,6 @@
-"""decode -> patch -> build -> align -> sign.
+"""(merge) -> decode -> patch -> build -> align -> sign.
 
-The default mode decodes smali only (apktool -r): resources.arsc and the binary manifest are carried
+A split bundle (.xapk / .apks / .apkm) is merged into one apk first (seekpatch/bundle.py).  The default mode decodes smali only (apktool -r): resources.arsc and the binary manifest are carried
 over byte for byte, so a rebuild cannot break resources and the app keeps its package name -- it
 replaces the store app.  --side-by-side decodes resources too, to rename the package.
 """
@@ -14,7 +14,7 @@ import zipfile
 from dataclasses import dataclass, field
 from typing import Callable
 
-from . import axml, manifest, zipalign
+from . import axml, bundle, manifest, zipalign
 from .patches import BY_NAME, Options
 from .smali import AlreadyApplied, PatchError, SmaliTree
 from .toolchain import KEY_ALIAS, KEY_PASSWORD, Toolchain, ToolchainError
@@ -33,7 +33,8 @@ class AppInfo:
 
 
 def app_info(apk: str) -> AppInfo:
-    a = axml.read_apk_manifest(apk)
+    """The app's identity, of an apk or of a split bundle's base apk."""
+    a = bundle.base_identity(apk) if bundle.is_bundle(apk) else axml.read_apk_manifest(apk)
     name = a.get("versionName")
     return AppInfo(str(a.get("package", "?")), str(name) if name else None, a.get("versionCode", "?"))
 
@@ -62,6 +63,21 @@ def missing_native_libraries(apk: str, tree: SmaliTree) -> list[str]:
         shipped = {os.path.basename(n)[3:-3] for n in z.namelist()
                    if n.startswith("lib/") and os.path.basename(n).startswith("lib") and n.endswith(".so")}
     return sorted(f"lib{name}.so" for name in loaded - shipped)
+
+
+def single_apk(tc: Toolchain, path: str, tmp: str, log: Callable[[str], None] = print) -> str:
+    """The apk itself, or the apk merged from a split bundle (written into tmp)."""
+    if not bundle.is_bundle(path):
+        return path
+    merged = os.path.join(tmp, "merged.apk")
+    bundle.merge(tc, path, merged, log)
+    return merged
+
+
+def _missing_hint(path: str) -> str:
+    if bundle.is_bundle(path):
+        return "the bundle has no split with them"
+    return "a base apk of a split install?  Use the whole bundle"
 
 
 def decode(tc: Toolchain, apk: str, out: str, resources: bool) -> None:
@@ -136,13 +152,14 @@ def check(tc: Toolchain, apk: str, log: Callable[[str], None] = print) -> dict[s
     """Dry run of every patch on its own: name -> None (applies) or the reason it does not."""
     results: dict[str, str | None] = {}
     with tempfile.TemporaryDirectory(prefix="seek-patch-check-") as tmp:
+        single = single_apk(tc, apk, tmp, log)
         src = os.path.join(tmp, "src")
-        decode(tc, apk, src, resources=False)
+        decode(tc, single, src, resources=False)
         log(f"       version {decoded_version(src) or '?'}")
         tree = SmaliTree(src)
-        missing = missing_native_libraries(apk, tree)
+        missing = missing_native_libraries(single, tree)
         if missing:
-            results["(apk)"] = f"native code missing: {', '.join(missing)} -- a base apk of a split install?"
+            results["(apk)"] = f"native code missing: {', '.join(missing)} -- {_missing_hint(apk)}"
         for name, patch in BY_NAME.items():
             try:
                 with tree.transaction():
@@ -161,16 +178,21 @@ class _Rollback(Exception):
 
 def patch_apk(tc: Toolchain, apk: str, out: str, plan: Plan, log: Callable[[str], None] = print) -> None:
     with tempfile.TemporaryDirectory(prefix="seek-patch-") as tmp:
+        single = single_apk(tc, apk, tmp, log)
         src = os.path.join(tmp, "src")
-        log(f"decode {os.path.basename(apk)}" + (" (with resources, for --side-by-side)" if plan.side_by_side else ""))
-        decode(tc, apk, src, resources=plan.side_by_side)
+        log(f"decode {'the merged apk' if single != apk else os.path.basename(apk)}"
+            + (" (with resources, for --side-by-side)" if plan.side_by_side else ""))
+        decode(tc, single, src, resources=plan.side_by_side)
         log(f"       version {decoded_version(src) or '?'}")
         tree = SmaliTree(src)
-        missing = missing_native_libraries(apk, tree)
+        missing = missing_native_libraries(single, tree)
         if missing:
+            if bundle.is_bundle(apk):
+                raise ApkError(f"{os.path.basename(apk)} has no split with {', '.join(missing)}: the merged app would "
+                               "crash.  Use a bundle with the native code for your phone (arm64_v8a, armeabi_v7a).")
             raise ApkError(f"{os.path.basename(apk)} does not contain {', '.join(missing)}: it is probably the base apk "
                            "of a split install (the native code lives in a config split).  Use a complete "
-                           "(universal) apk.")
+                           "(universal) apk, or the whole bundle (.xapk / .apks / .apkm).")
         apply_patches(src, plan, log, tree)
         if plan.side_by_side:
             path = os.path.join(src, "AndroidManifest.xml")

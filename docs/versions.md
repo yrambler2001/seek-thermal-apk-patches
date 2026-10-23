@@ -25,6 +25,7 @@ live view, photos, video recording, the microphone prompt and the Flat field but
 | 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ |
 | 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ |
 | 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ |
+| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
@@ -34,12 +35,13 @@ live view, photos, video recording, the microphone prompt and the Flat field but
 3. The image library these versions ship handles feature 900 differently (2.1.6 / 2.1.7) or is not
    there at all (2.1.5 and older have no `libseekip.so`).  `no_smoothing` and `flat_field` are
    verified on the libraries of 2.2.0 and later and refuse these.
-4. Before 2.3.3 the app asks for the microphone together with storage and never blocks a photo or
+4. Before 2.3.1 the app asks for the microphone together with storage and never blocks a photo or
    video on it, so there is nothing for the patch to change.
 
 `png_photos`, `photo_1x` and `video_quality` start at 2.1.1 / 2.1.2, where the photo and recording
 code they hook first appears in this shape; `resume_fix` matches the same pause code in every
-release.  2.3.3 was checked and built from the per-ABI APKs (`arm64-v8a`, `armeabi-v7a`).
+release.  2.3.1 was checked and built from its `.xapk` split bundle, 2.3.3 from its `.xapk`
+and from its per-ABI APKs (`arm64-v8a`, `armeabi-v7a`).
 
 Regenerate against your own folder of APKs:
 

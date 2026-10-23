@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Split bundles as input: `.xapk`, `.apks`, `.apkm`, or any zip of a base apk and its splits (such
+  as the files `adb pull` gives for a Play Store install).  They are merged into one apk with
+  APKEditor 1.4.9 (fetched on first use, verified by sha256), then patched as before.  This covers
+  2.3.1, which APKPure only offers as an `.xapk`.
+- `mic_prompt`: 2.3.1 – 2.3.4.  2.3.1, now testable, has 2.3.3's microphone check.
+
 ## 0.2.0 — 2026-10-23
 
 Photos, videos, the microphone and a flat-field button.  All new patches are in the default set.

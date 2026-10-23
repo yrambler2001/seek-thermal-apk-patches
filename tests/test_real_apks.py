@@ -1,4 +1,5 @@
-"""Opt-in: run against real Seek Thermal apks you have locally (not part of the repo).
+"""Opt-in: run against real Seek Thermal apks and split bundles (.xapk / .apks / .apkm) you have
+locally (not part of the repo).
 
     SEEK_APK_DIR=~/apks pytest tests/test_real_apks.py              # which patches apply, per version
     SEEK_APK_DIR=~/apks SEEK_BUILD=1 pytest tests/test_real_apks.py # also build + sign every version
@@ -16,12 +17,13 @@ from seekpatch import apk, zipalign
 from seekpatch.toolchain import Toolchain, ToolchainError
 
 APK_DIR = os.environ.get("SEEK_APK_DIR")
-APKS = sorted(glob.glob(os.path.join(os.path.expanduser(APK_DIR), "*.apk"))) if APK_DIR else []
+APKS = sorted(p for ext in ("apk", "xapk", "apks", "apkm")
+              for p in glob.glob(os.path.join(os.path.expanduser(APK_DIR), "*." + ext))) if APK_DIR else []
 
 # first version each patch supports (all run through 2.3.4)
 FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0), "no_smoothing": (2, 2, 0),
          "png_photos": (2, 1, 2), "photo_1x": (2, 1, 1), "video_quality": (2, 1, 2), "resume_fix": (1, 9, 1),
-         "mic_prompt": (2, 3, 3), "flat_field": (2, 2, 0)}
+         "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0)}
 
 pytestmark = pytest.mark.skipif(not APKS, reason="set SEEK_APK_DIR to a folder of Seek Thermal apks")
 

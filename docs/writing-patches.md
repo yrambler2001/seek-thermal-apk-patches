@@ -3,8 +3,13 @@
 ## The pipeline
 
 ```
-apk ──apktool d -r──► smali tree ──patches──► apktool b ──zipalign──► uber-apk-signer ──► apk
+(bundle ──APKEditor m──►) apk ──apktool d -r──► smali tree ──patches──► apktool b ──zipalign──► uber-apk-signer ──► apk
 ```
+
+- A split bundle (`.xapk`, `.apks`, `.apkm`: any zip of apks without a manifest of its own) is merged
+  first (`seekpatch/bundle.py`).  The base and the splits are told apart by their manifests, not
+  their file names; they must be one package at one versionCode.  APKEditor merges the resources and
+  native code of every split and drops the split-only manifest attributes.
 
 - `apktool d -r` decodes the code only.  Resources and the binary manifest are carried over byte for
   byte, so a rebuild cannot break them.  `--side-by-side` decodes resources too (`apktool d`), to

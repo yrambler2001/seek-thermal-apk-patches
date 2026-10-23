@@ -1,13 +1,14 @@
 """The patched fixtures assemble (apktool b) and go through align + sign, and the whole pipeline --
-check, patch, --side-by-side -- runs on an apk built from them.  Needs Java and the pinned jars in
-the cache (`seek-patch doctor`); skipped otherwise, unless SEEK_PATCH_REQUIRE_TOOLS is set (CI)."""
+check, patch, --side-by-side, a split bundle -- runs on an apk built from them.  Needs Java and the
+pinned jars in the cache (`seek-patch doctor`); skipped otherwise, unless SEEK_PATCH_REQUIRE_TOOLS is
+set (CI)."""
 from __future__ import annotations
 
 import os
 import zipfile
 
 import pytest
-from conftest import SHAPES
+from conftest import SHAPES, split_apk
 from test_patches import APPLICABLE
 
 from seekpatch import apk, zipalign
@@ -17,14 +18,26 @@ from seekpatch.toolchain import Toolchain, ToolchainError
 QUIET = lambda _: None  # noqa: E731
 
 
+def _skip_without(e: ToolchainError):
+    if os.environ.get("SEEK_PATCH_REQUIRE_TOOLS"):
+        raise e
+    pytest.skip(f"no toolchain: {e}")
+
+
 @pytest.fixture(scope="session")
 def toolchain():
     try:
         return Toolchain.load(download=bool(os.environ.get("SEEK_PATCH_DOWNLOAD")), log=QUIET)
     except ToolchainError as e:
-        if os.environ.get("SEEK_PATCH_REQUIRE_TOOLS"):
-            raise
-        pytest.skip(f"no toolchain: {e}")
+        _skip_without(e)
+
+
+@pytest.fixture(scope="session")
+def merger(toolchain):
+    try:
+        return toolchain.merger(log=QUIET)
+    except ToolchainError as e:
+        _skip_without(e)
 
 
 @pytest.mark.parametrize("shape", SHAPES)
@@ -98,3 +111,38 @@ def test_side_by_side(fixture_apk, toolchain, tmp_path):
     info = apk.app_info(out)
     assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture.patched", "2.3.4", 294)
     assert zipalign.check(out) == []
+
+
+@pytest.fixture
+def fixture_bundle(fixture_apk, tmp_path):
+    """fixture_bundle(with_lib=True) -> an .xapk of the fixture's base apk and its arm64 split."""
+
+    def make(with_lib: bool = True) -> str:
+        path = str(tmp_path / "app.xapk")
+        with zipfile.ZipFile(path, "w") as z:
+            z.write(fixture_apk("lambda", with_lib=False), "org.example.seekfixture.apk")
+            z.writestr("config.arm64_v8a.apk", split_apk(with_lib))
+            z.writestr("manifest.json", "{}")
+        return path
+
+    return make
+
+
+def test_patch_a_split_bundle(fixture_bundle, toolchain, merger, tmp_path):
+    path = fixture_bundle()
+    results = apk.check(toolchain, path, log=QUIET)
+    assert "(apk)" not in results and results["full_fps"] is None
+    out, lines = str(tmp_path / "out.apk"), []
+    apk.patch_apk(toolchain, path, out, apk.Plan(["full_fps"]), log=lines.append)
+    assert "merge  app.xapk: base + 1 split (arm64_v8a), with APKEditor" in lines
+    with zipfile.ZipFile(out) as z:
+        assert z.getinfo("lib/arm64-v8a/libseekip.so").compress_type == zipfile.ZIP_STORED
+    assert zipalign.check(out) == []
+    info = apk.app_info(out)
+    assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture", "2.3.4", 294)
+
+
+def test_patch_refuses_a_bundle_without_native_code(fixture_bundle, toolchain, merger, tmp_path):
+    with pytest.raises(apk.ApkError, match="no split with libseekip.so"):
+        apk.patch_apk(toolchain, fixture_bundle(with_lib=False), str(tmp_path / "out.apk"), apk.Plan(["full_fps"]),
+                      log=QUIET)

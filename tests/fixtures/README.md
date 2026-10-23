@@ -16,5 +16,7 @@ render threads of `lambda/` and `accessor/` also hand frames to the video encode
 a window surface (`video_quality`, `resume_fix`), which `virtual/` lacks, so those patches refuse it.
 
 `project/` is an `apktool d -r` style project (apktool.yml, binary AndroidManifest.xml and
-resources.arsc) the trees are copied into, so `apktool b` can assemble the patched smali.  The
+resources.arsc) the trees are copied into, so `apktool b` can assemble the patched smali.
+`split/AndroidManifest.xml` is the binary manifest of a config split of the same app
+(`split="config.arm64_v8a"`); the bundle tests zip it with a native library into a split apk.  The
 binary files are generated from `project-src/` by `project-src/build.sh`.
