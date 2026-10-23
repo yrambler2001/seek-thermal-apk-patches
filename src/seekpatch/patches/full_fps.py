@@ -24,9 +24,9 @@ from __future__ import annotations
 
 import re
 
-from ..smali import REG, PatchError, SmaliTree, method_at, methods
+from ..smali import REG, PatchError, SmaliTree, methods
 from .base import Options, ensure_unpatched, mark
-from .seek import render_thread, static_accessors, texture_upload
+from .seek import render_thread, static_accessors, texture_upload, upload_call
 
 NAME = "full_fps"
 SUMMARY = "draw every thermal frame instead of every phone-camera frame: live view 15 -> ~30 fps"
@@ -72,19 +72,7 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
     draw_private = "private" in heads[draw].split()
 
     # The thermal-frame handler: the one call of the upload, direct / virtual or through its accessor.
-    targets = [(r"invoke-(?:direct|virtual)", upload)] + [(r"invoke-static", a) for a, t in accessor.items() if t == upload]
-    sites = []
-    for p in users:
-        text = tree.get(p)
-        for op, name in targets:
-            for s in re.finditer(r"^([ \t]*)" + op + r" \{(" + REG + "), " + REG + ", " + REG + ", " + REG + r"\}, "
-                                 + c + "->" + re.escape(name) + r"\n", text, re.M):
-                owner = method_at(text, s.start())
-                if not (p == rpath and owner is not None and owner.is_static_synthetic):  # not the accessor itself
-                    sites.append((p, s))
-    if len(sites) != 1:
-        raise PatchError(f"{NAME}: expected one call of the upload {upload}, found {len(sites)}")
-    site_path, site = sites[0]
+    site_path, site = upload_call(tree, rpath, cls, NAME)
     inst = site.group(2)  # the render thread instance, still in its register after the call
     if not draw_private:
         draw_call = f"invoke-virtual {{{inst}}}, {cls}->{draw}"

@@ -4,6 +4,8 @@
 
 
 # instance fields
+.field protected b:Lfix/Encoder;
+
 .field camera:Landroid/graphics/SurfaceTexture;
 
 .field thermalTexture:I

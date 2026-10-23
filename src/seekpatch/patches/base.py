@@ -10,6 +10,10 @@ from ..smali import AlreadyApplied, SmaliTree
 class Options:
     sharpness: float = 2.0
     """sharp_scaling: texels blend over 1/sharpness of their width (1 = stock bilinear, 2 = iOS)."""
+    video_codec: str = "hevc"
+    """video_quality: "hevc" or "avc" (H.264), the codec tried first."""
+    video_qp: int = 18
+    """video_quality: constant quantizer (lower = better and bigger)."""
 
 
 def mark(name: str) -> str:

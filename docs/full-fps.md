@@ -45,7 +45,8 @@ rate there can wander with lighting.
 2. Remove that call from the phone-camera handler.
 
 The camera handler still latches the camera texture (Thermal+ blends with the newest camera frame)
-and still feeds the video encoder, so recordings keep the camera's clock (15 fps).
+and still feeds the video encoder, so recordings keep the camera's clock (15 fps) — unless
+[`video_quality`](video-quality.md) is in, which hands the encoder every thermal frame instead.
 
 The draw is the render thread's no-argument method the camera handler calls last; the upload is the
 `(ByteBuffer, int, int)` method around `glTexImage2D`.  Three call shapes exist across releases and
@@ -64,5 +65,5 @@ released if drawing throws.
 
 - The display can still drop a few frames when an LTPO panel switches itself to a 30 Hz mode
   (SurfaceFlinger reports them as dropped); "Force peak refresh rate" in Developer options avoids it.
-- Thermal+ (blending with the phone camera) and video recording keep working by design but have not
-  been tested on a phone yet.
+- Thermal+ (blending with the phone camera) keeps working by design but has not been tested on a
+  phone yet.  Video recording was tested together with `video_quality`.

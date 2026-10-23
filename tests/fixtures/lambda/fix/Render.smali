@@ -4,6 +4,8 @@
 
 
 # instance fields
+.field protected b:Lfix/Encoder;
+
 .field camera:Landroid/graphics/SurfaceTexture;
 
 .field thermalTexture:I
@@ -72,12 +74,24 @@
 
 # the camera-frame lambda (SurfaceTexture.onFrameAvailable)
 .method private synthetic u()V
-    .locals 1
+    .locals 2
 
     iget-object v0, p0, Lfix/Render;->camera:Landroid/graphics/SurfaceTexture;
 
     invoke-virtual {v0}, Landroid/graphics/SurfaceTexture;->updateTexImage()V
 
+    iget-object v0, p0, Lfix/Render;->b:Lfix/Encoder;
+
+    if-eqz v0, :no_encoder
+
+    :try_start_0
+    iget-object v1, p0, Lfix/Render;->camera:Landroid/graphics/SurfaceTexture;
+
+    invoke-virtual {v0, v1}, Lfix/Encoder;->e(Landroid/graphics/SurfaceTexture;)V
+    :try_end_0
+    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :no_encoder
+
+    :no_encoder
     invoke-direct {p0}, Lfix/Render;->D()V
 
     return-void

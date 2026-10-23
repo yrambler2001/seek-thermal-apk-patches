@@ -51,3 +51,20 @@ adb shell top -H -b -d 5 -n 2 -p $(adb shell pidof com.tyriansystems.SeekThermal
 Pixel 8 Pro, Android 16; Seek Compact, firmware 1.3.0.0; Seek Thermal 2.3.4; Iron palette; the
 camera looking at itself in a mirror.  The iOS reference is a photo from Seek Thermal for iOS 2.2.8.0
 (image library 2.10.5.0) with a Compact on the same firmware.
+
+## Video encoders and the QP
+
+```sh
+python3 tools/codecs.py list                 # every encoder: hardware?, rate control, QP bounds, profiles, sizes
+python3 tools/codecs.py ladder REF.mp4       # bitrate / PSNR / SSIM / noise kept for a QP ladder
+```
+
+Both compile two small Java programs (`tools/codecs/`) and run them on the phone with
+`app_process`, so nothing is installed.  For `ladder`, patch with `--video-qp 10` and record 10+ s
+of the scene you care about: that file is the reference.  Its frames are decoded on the computer,
+pushed to the phone, encoded there by every hardware HEVC / H.264 encoder at each QP (QP bounds and
+keyframes set as `video_quality` sets them), pulled back and compared with the reference.  Needs a
+JDK, the Android SDK (`ANDROID_HOME`), ffmpeg and numpy.  The table in
+[video-quality.md](video-quality.md) is its output for a Pixel 8 Pro.
+
+`adb logcat -s seek-patch` shows the encoder and sound format a patched app chose.

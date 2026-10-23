@@ -16,6 +16,7 @@ from seekpatch.patches import (
     photo_1x,
     png_photos,
     sharp_scaling,
+    video_quality,
 )
 from seekpatch.smali import AlreadyApplied, PatchError, SmaliTree, methods
 
@@ -191,11 +192,71 @@ def test_photo_1x_needs_the_exif_writer(make_project):
         photo_1x.apply(SmaliTree(str(root)), Options())
 
 
+# video_quality ----------------------------------------------------------------------------------
+
+UPLOAD_SITE = {"lambda": ("Lfix/Render;", "p0"), "accessor": ("Lfix/Render$e;", "v1")}
+
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_video_quality(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = video_quality.apply(tree, Options())
+    assert report[0].startswith("HEVC QP 18")
+    recorder = text(tree, "Lfix/Recorder;")
+    assert re.search(r"invoke-static \{p1\}, Lseekpatch/Video;->encoder\(Landroid/media/MediaFormat;\)"
+                     r"Landroid/media/MediaCodec;\n\n\s+move-result-object p2", recorder)
+    assert "MediaCodec;->configure(" not in recorder and "createEncoderByType" not in recorder
+    sound = text(tree, "Lfix/Sound;")
+    assert "invoke-static {v0, v1, v2}, Lseekpatch/Audio;->minBufferSize(III)I" in sound
+    assert re.search(r"Audio;->rate\(\)I\n\s+move-result v4\n\s+invoke-static \{\}, Lseekpatch/Audio;->channelMask\(\)I\n"
+                     r"\s+move-result v5\n\s+invoke-direct/range \{v2 \.\. v7\}, Landroid/media/AudioRecord;-><init>", sound)
+    assert "invoke-static {v1, v0, v3, v3, v2}, Lseekpatch/Audio;->configure(" in sound
+    render = text(tree, "Lfix/Render;")
+    frame = next(m for m in methods(render) if m.name == "seekpatchVideoFrame")
+    assert "public" in frame.header.split() and "glFinish" in frame.body
+    assert "iget-object v0, p0, Lfix/Render;->b:Lfix/Encoder;" in frame.body
+    assert "invoke-virtual {v0, v1}, Lfix/Encoder;->e(Landroid/graphics/SurfaceTexture;)V" in frame.body
+    site_cls, inst = UPLOAD_SITE[shape]
+    assert f"invoke-virtual {{{inst}}}, Lfix/Render;->seekpatchVideoFrame()V" in text(tree, site_cls)
+    camera = next(m for m in methods(text(tree, CAMERA[shape])) if "updateTexImage" in m.body)
+    assert "Lfix/Encoder;->e(" not in camera.body and "nop" in camera.body
+    config = text(tree, "Lseekpatch/VideoConfig;")
+    assert 'mime:Ljava/lang/String; = "video/hevc"' in config and "qp:I = 0x12" in config
+    assert "longSide:I = 0x500" in config
+    assert tree.path_of("Lseekpatch/Video;") and tree.path_of("Lseekpatch/Video$Candidate;") and tree.path_of("Lseekpatch/Audio;")
+
+
+def test_video_quality_options(make_project):
+    tree = tree_of(make_project, "lambda")
+    video_quality.apply(tree, Options(video_codec="avc", video_qp=24))
+    config = text(tree, "Lseekpatch/VideoConfig;")
+    assert '"video/avc"' in config and "qp:I = 0x18" in config
+
+
+@pytest.mark.parametrize("bad", [{"video_codec": "vp9"}, {"video_qp": 5}, {"video_qp": 60}])
+def test_video_quality_rejects_bad_options(make_project, bad):
+    with pytest.raises(PatchError, match="video"):
+        video_quality.apply(tree_of(make_project, "lambda"), Options(**bad))
+
+
+def test_video_quality_needs_the_encoder_handoff(make_project):
+    with pytest.raises(PatchError, match="feeds the video encoder"):
+        video_quality.apply(tree_of(make_project, "virtual"), Options())
+
+
+def test_video_quality_refuses_a_reused_format_register(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Recorder.smali"
+    p.write_text(p.read_text().replace('const-string p2, "bitrate"', 'const-string p1, "bitrate"'))
+    with pytest.raises(PatchError, match="format register"):
+        video_quality.apply(SmaliTree(str(root)), Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {
-    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "debug_log"],
-    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "debug_log"],
+    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "debug_log"],
+    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "debug_log"],
     "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "debug_log"],
 }
 

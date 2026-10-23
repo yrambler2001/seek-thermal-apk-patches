@@ -12,7 +12,7 @@ def test_list(capsys):
     out = capsys.readouterr().out
     for p in ALL:
         assert p.NAME in out and p.VERSIONS in out
-    assert RECOMMENDED == ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x"]
+    assert RECOMMENDED == ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality"]
 
 
 def test_version(capsys):
@@ -31,6 +31,14 @@ def test_patch_rejects_bad_sharpness(tmp_path):
     f.write_bytes(b"")
     with pytest.raises(SystemExit, match="sharpness"):
         main(["patch", str(f), "--sharpness", "1"])
+
+
+@pytest.mark.parametrize("args, match", [(["--video-qp", "5"], "video-qp"), (["--video-qp", "50"], "video-qp")])
+def test_patch_rejects_bad_video_options(tmp_path, args, match):
+    f = tmp_path / "x.apk"
+    f.write_bytes(b"")
+    with pytest.raises(SystemExit, match=match):
+        main(["patch", str(f), *args])
 
 
 def test_patch_unknown_name():

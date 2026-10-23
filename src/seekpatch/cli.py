@@ -66,6 +66,8 @@ def cmd_patch(args) -> int:
     names = [p.NAME for p in ALL if p.NAME in names]  # canonical order, no duplicates
     if not 1.0 < args.sharpness <= 16.0:
         raise SystemExit("error: --sharpness must be > 1 and <= 16 (2 = iOS look)")
+    if not 10 <= args.video_qp <= 40:
+        raise SystemExit("error: --video-qp must be 10 - 40 (lower = better)")
     if (args.package or args.label) and not args.side_by_side:
         raise SystemExit("error: --package / --label only apply with --side-by-side")
     if args.package and not valid_package(args.package):
@@ -75,7 +77,8 @@ def cmd_patch(args) -> int:
     out = args.out or f"{stem}-patched{'-side-by-side' if args.side_by_side else ''}.apk"
     if os.path.exists(out) and not args.force:
         raise SystemExit(f"error: {out} exists (use -f to replace it)")
-    plan = Plan(names, Options(sharpness=args.sharpness), args.side_by_side, args.package,
+    opts = Options(sharpness=args.sharpness, video_codec=args.video_codec, video_qp=args.video_qp)
+    plan = Plan(names, opts, args.side_by_side, args.package,
                 (args.label or DEFAULT_LABEL) if args.side_by_side else None,
                 skip_unavailable=not (args.all or args.patch))  # the default set adapts to the version
     tc = Toolchain.load(log=_log)
@@ -149,8 +152,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("-p", "--patch", action="append", choices=list(BY_NAME), metavar="NAME",
                    help=f"apply this patch (repeatable); one of {', '.join(BY_NAME)}")
     p.add_argument("--all", action="store_true", help="apply every patch, debug_log included (all must apply)")
-    p.add_argument("--sharpness", type=float, default=2.0, metavar="N",
+    p.add_argument("--sharpness", type=float, default=Options.sharpness, metavar="N",
                    help="sharp_scaling: blend over 1/N of a pixel (2 = iOS look, higher = crisper)")
+    p.add_argument("--video-codec", choices=["hevc", "avc"], default="hevc",
+                   help="video_quality: codec tried first (hevc = smaller files; avc = H.264, plays everywhere)")
+    p.add_argument("--video-qp", type=int, default=Options.video_qp, metavar="N",
+                   help=f"video_quality: constant quantizer, lower = better and bigger (default {Options.video_qp})")
     p.add_argument("--side-by-side", action="store_true",
                    help="new package name + label, installs next to the store app (rebuilds resources)")
     p.add_argument("--package", help="package name for --side-by-side (default: <original>.patched)")
