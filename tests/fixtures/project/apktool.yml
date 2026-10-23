@@ -1,0 +1,6 @@
+version: 3.0.3
+apkFileName: fixture.apk
+sdkInfo:
+  minSdkVersion: 19
+doNotCompress:
+- arsc

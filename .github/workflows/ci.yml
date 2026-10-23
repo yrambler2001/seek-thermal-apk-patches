@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Cache pinned tools
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/seek-patch/tools
+          key: seek-patch-tools-${{ hashFiles('src/seekpatch/toolchain.py') }}
+      - run: pip install -e '.[dev]'
+      - run: ruff check .
+      - run: seek-patch doctor
+      - run: pytest -v
+        env:
+          SEEK_PATCH_REQUIRE_TOOLS: "1"   # the build/sign tests must run here, not skip

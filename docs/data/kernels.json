@@ -1,0 +1,60 @@
+{
+  "description": "Measured upscaling kernels: weight given to the right-hand pixel (B) at 8 positions between two neighbouring sensor pixels A and B. Texel grid fitted, weights solved by least squares (tools/measure_kernel.py). Seek Compact (fw 1.3.0.0); Android on a Pixel 8 Pro (Android 16).",
+  "t": [
+    0.0625,
+    0.1875,
+    0.3125,
+    0.4375,
+    0.5625,
+    0.6875,
+    0.8125,
+    0.9375
+  ],
+  "series": [
+    {
+      "id": "android",
+      "label": "Android 2.3.4 (stock)",
+      "source": "live view screenshot",
+      "w": [
+        0.03,
+        0.18,
+        0.32,
+        0.45,
+        0.57,
+        0.71,
+        0.85,
+        1.0
+      ]
+    },
+    {
+      "id": "ios",
+      "label": "iOS 2.2.8.0",
+      "source": "saved photo",
+      "w": [
+        0.01,
+        0.07,
+        0.18,
+        0.38,
+        0.6,
+        0.79,
+        0.92,
+        1.0
+      ]
+    },
+    {
+      "id": "patched",
+      "label": "Android + sharp_scaling",
+      "source": "live view screenshot",
+      "w": [
+        0.0,
+        0.01,
+        0.14,
+        0.38,
+        0.64,
+        0.88,
+        0.99,
+        1.0
+      ]
+    }
+  ]
+}

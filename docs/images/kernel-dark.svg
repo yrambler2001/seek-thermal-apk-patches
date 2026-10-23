@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 430" width="720" height="430" role="img" aria-labelledby="title desc">
+<title id="title">Upscaling kernel: weight of the next pixel vs position</title>
+<desc id="desc">Measured upscaling kernels: weight given to the right-hand pixel (B) at 8 positions between two neighbouring sensor pixels A and B. Texel grid fitted, weights solved by least squares (tools/measure_kernel.py). Seek Compact (fw 1.3.0.0); Android on a Pixel 8 Pro (Android 16).</desc>
+<rect width="720" height="430" rx="12" fill="#1a1a19"/>
+<line x1="64" y1="366.0" x2="696" y2="366.0" stroke="#383835" stroke-width="1"/>
+<text x="54" y="370.0" text-anchor="end" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0</text>
+<text x="64.0" y="386" text-anchor="middle" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0</text>
+<line x1="64" y1="294.0" x2="696" y2="294.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="54" y="298.0" text-anchor="end" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0.25</text>
+<text x="222.0" y="386" text-anchor="middle" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0.25</text>
+<line x1="64" y1="222.0" x2="696" y2="222.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="54" y="226.0" text-anchor="end" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0.5</text>
+<text x="380.0" y="386" text-anchor="middle" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0.5</text>
+<line x1="64" y1="150.0" x2="696" y2="150.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="54" y="154.0" text-anchor="end" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0.75</text>
+<text x="538.0" y="386" text-anchor="middle" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">0.75</text>
+<line x1="64" y1="78.0" x2="696" y2="78.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="54" y="82.0" text-anchor="end" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">1</text>
+<text x="696.0" y="386" text-anchor="middle" font-size="12" fill="#898781" font-family="system-ui, -apple-system, Segoe UI, sans-serif">1</text>
+<text x="380" y="414" text-anchor="middle" font-size="13" fill="#c3c2b7" font-family="system-ui, -apple-system, Segoe UI, sans-serif">position between two neighbouring pixels A → B</text>
+<text x="18" y="222" text-anchor="middle" font-size="13" fill="#c3c2b7" font-family="system-ui, -apple-system, Segoe UI, sans-serif" transform="rotate(-90 18 222)">weight of pixel B</text>
+<polyline points="103.5,357.4 182.5,314.2 261.5,273.8 340.5,236.4 419.5,201.8 498.5,161.5 577.5,121.2 656.5,78.0" fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="103.5,363.1 182.5,345.8 261.5,314.2 340.5,256.6 419.5,193.2 498.5,138.5 577.5,101.0 656.5,78.0" fill="none" stroke="#d95926" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="103.5,366.0 182.5,363.1 261.5,325.7 340.5,256.6 419.5,181.7 498.5,112.6 577.5,80.9 656.5,78.0" fill="none" stroke="#199e70" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="103.5" cy="357.4" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="182.5" cy="314.2" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="261.5" cy="273.8" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="340.5" cy="236.4" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="419.5" cy="201.8" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="498.5" cy="161.5" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="577.5" cy="121.2" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<circle cx="656.5" cy="78.0" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<rect x="99.5" y="359.1" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<rect x="178.4" y="341.8" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<rect x="257.4" y="310.1" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<rect x="336.4" y="252.5" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<rect x="415.4" y="189.2" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<rect x="494.4" y="134.4" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<rect x="573.5" y="97.0" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<rect x="652.5" y="74.0" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<path d="M103.5 359.5 L110.0 366.0 L103.5 372.5 L97.0 366.0 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<path d="M182.5 356.6 L189.0 363.1 L182.5 369.6 L176.0 363.1 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<path d="M261.5 319.2 L268.0 325.7 L261.5 332.2 L255.0 325.7 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<path d="M340.5 250.0 L347.0 256.6 L340.5 263.1 L334.0 256.6 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<path d="M419.5 175.2 L426.0 181.7 L419.5 188.2 L413.0 181.7 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<path d="M498.5 106.0 L505.0 112.6 L498.5 119.1 L492.0 112.6 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<path d="M577.5 74.4 L584.0 80.9 L577.5 87.4 L571.0 80.9 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<path d="M656.5 71.5 L663.0 78.0 L656.5 84.5 L650.0 78.0 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<line x1="64" y1="34" x2="90" y2="34" stroke="#3987e5" stroke-width="2" stroke-linecap="round"/>
+<circle cx="77.0" cy="34.0" r="4.5" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+<text x="98" y="38" font-size="13" fill="#f0efec" font-family="system-ui, -apple-system, Segoe UI, sans-serif">Android 2.3.4 (stock)</text>
+<line x1="277" y1="34" x2="303" y2="34" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<rect x="285.9" y="29.9" width="8.1" height="8.1" rx="1.5" fill="#d95926" stroke="#1a1a19" stroke-width="2"/>
+<text x="311" y="38" font-size="13" fill="#f0efec" font-family="system-ui, -apple-system, Segoe UI, sans-serif">iOS 2.2.8.0</text>
+<line x1="418" y1="34" x2="444" y2="34" stroke="#199e70" stroke-width="2" stroke-linecap="round"/>
+<path d="M431.0 27.5 L437.5 34.0 L431.0 40.5 L424.5 34.0 Z" fill="#199e70" stroke="#1a1a19" stroke-width="2"/>
+<text x="452" y="38" font-size="13" fill="#f0efec" font-family="system-ui, -apple-system, Segoe UI, sans-serif">Android + sharp_scaling</text>
+</svg>

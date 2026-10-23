@@ -1,0 +1,69 @@
+# Writing a patch
+
+## The pipeline
+
+```
+apk ──apktool d -r──► smali tree ──patches──► apktool b ──zipalign──► uber-apk-signer ──► apk
+```
+
+- `apktool d -r` decodes the code only.  Resources and the binary manifest are carried over byte for
+  byte, so a rebuild cannot break them.  `--side-by-side` decodes resources too (`apktool d`), to
+  rename the package in the text manifest (`seekpatch/manifest.py`).
+- Before patching, every library the code loads (`System.loadLibrary`) must be inside the apk — a
+  base apk from a split install, whose native code lives in a config split, is refused.
+- `seekpatch/zipalign.py` aligns in Python: stored entries to 4 bytes, `.so` files to 16 KiB pages (the
+  app maps them straight out of the apk: `extractNativeLibs="false"`).  Stale `META-INF` signature and
+  build-metadata files are dropped.
+- uber-apk-signer signs (v1 + v2 + v3) with the per-user key in the seek-patch home directory, created
+  with `keytool` on first use.
+
+## A patch module
+
+`src/seekpatch/patches/<name>.py`, registered in `patches/__init__.py`:
+
+```python
+NAME = "my_patch"
+SUMMARY = "one line for `seek-patch list`"
+VERSIONS = "2.2.0 - 2.3.4"     # the range you tested
+RECOMMENDED = False            # part of the default set?
+
+def apply(tree: SmaliTree, opts: Options) -> list[str]:
+    ensure_unpatched(tree, NAME)
+    ...                         # find, check, edit
+    return ["what was changed, one line each"]
+```
+
+`SmaliTree` (`seekpatch/smali.py`) holds every smali file in memory: `containing(*needles)`,
+`path_of(descriptor)`, `get` / `set`, `replace_method_body`, `add_class`, and the app's
+`version_code` / `version`.  `methods(text)` iterates methods with their header and body.  Nothing
+is written until `save()`; the CLI wraps each patch in `tree.transaction()`, so a patch that raises
+leaves the tree exactly as it found it.  That is what lets the default set skip a patch that does not
+apply to a given version, while patches named with `-p` must all apply.
+
+## Rules
+
+1. **Find code by behaviour, never by name.**  Seek's build is obfuscated and every release renames
+   classes, methods and fields.  Anchor on what survives: string constants (`"ThermalPlusRenderThread"`,
+   `"featureEnhancedProcessing"`), framework calls (`glTexImage2D`, `updateTexImage`), JNI method names
+   (`seekIPsetFeature`), signatures, call sequences.  `patches/seek.py` has the shared lookups.
+2. **Expect exactly one match.**  If a search finds zero or two, raise `PatchError` with what you
+   looked for and what you found.  Never pick the first of several.
+3. **Prove the code is what you think before changing it.**  `debug_log` only fills methods that are
+   empty stubs; `no_smoothing` refuses versions whose native library it has not verified;
+   `sharp_scaling` checks the shader has exactly one sample and one `main`.
+4. **Mark what you add.**  Every inserted line carries `mark(NAME)` (`# seek-patch <name>`), which is
+   how `ensure_unpatched` refuses a second application.
+5. **Keep registers safe.**  Only use registers you know are free at the insertion point, or that the
+   surrounding code no longer reads.  Non-range `invoke` needs registers ≤ v15.  Prefer adding a
+   static helper class (`tree.add_class`) over growing a method's `.locals`.
+
+## Testing
+
+- Add the shape you match to the synthetic trees in `tests/fixtures/` (hand-written smali — no Seek
+  code) and a test in `tests/test_patches.py`: it applies, it composes with the other patches, it
+  refuses when its target is missing.
+- `tests/test_build.py` assembles every patched fixture with apktool and signs it, so a smali syntax
+  error fails here rather than on a phone.
+- Run it against real apks: `SEEK_APK_DIR=~/apks SEEK_BUILD=1 pytest tests/test_real_apks.py`, and
+  update `docs/versions.md`.
+- Run it on a phone.  `tools/fps.sh` and `tools/measure_kernel.py` turn "looks better" into numbers.

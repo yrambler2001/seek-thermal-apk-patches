@@ -1,0 +1,16 @@
+# apks are never committed: bring your own
+*.apk
+*.xapk
+*.apks
+*.jks
+*.keystore
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
