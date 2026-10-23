@@ -12,6 +12,7 @@ from seekpatch.patches import (
     Options,
     debug_log,
     full_fps,
+    mic_prompt,
     no_smoothing,
     photo_1x,
     png_photos,
@@ -270,14 +271,43 @@ def test_resume_fix_needs_the_window(make_project):
         resume_fix.apply(tree_of(make_project, "virtual"), Options())
 
 
+# mic_prompt -------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_mic_prompt(make_project, shape):
+    tree = tree_of(make_project, shape)
+    mic_prompt.apply(tree, Options())
+    main = text(tree, "Lfix/Main;")
+    y = next(m for m in methods(main) if m.name == "Y0")
+    assert re.search(r"iget-boolean v6, p0, Lfix/Main;->s9:Z\n\s+invoke-static \{p0, p2, v6\}, Lseekpatch/Mic;->gate\("
+                     r"Landroid/app/Activity;IZ\)I\n\n\s+move-result v6", y.body)
+    assert "invoke-static {p0, v5, v3}, Lseekpatch/Mic;->request(Landroid/app/Activity;[Ljava/lang/String;I)V" in y.body
+    assert y.body.count("Lfix/Outline;->a(") == 1  # the second, real check (the audio flag) stays
+    on_result = next(m for m in methods(main) if m.name == "onRequestPermissionsResult")
+    assert "invoke-super {p0, p1, p2, p3}, Landroid/app/Activity;->onRequestPermissionsResult" in on_result.body
+    assert re.search(r"const/4 v1, 0x3\n\s+invoke-direct \{p0, v1\}, Lfix/Main;->S0\(I\)V", on_result.body)
+    assert "invoke-virtual {p0, v0, v1}, Lfix/Main;->Y0(Ljava/lang/String;I)V" in on_result.body
+    site_cls = {"lambda": "Lfix/Render;", "accessor": "Lfix/Render$e;", "virtual": "Lfix/Render$f;"}[shape]
+    assert "invoke-static {}, Lseekpatch/Mic;->frame()V" in text(tree, site_cls)
+    assert all(tree.path_of(f"Lseekpatch/Mic{s};") for s in ("", "$1", "$2", "$3"))
+
+
+def test_mic_prompt_needs_the_check(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Outline.smali"
+    p.write_text(p.read_text().replace("requestPermissions", "shouldShowRequestPermissionRationale"))
+    with pytest.raises(PatchError, match="check-request-return"):
+        mic_prompt.apply(SmaliTree(str(root)), Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {
     "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-               "debug_log"],
+               "mic_prompt", "debug_log"],
     "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-                 "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "debug_log"],
+                 "mic_prompt", "debug_log"],
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "debug_log"],
 }
 
 

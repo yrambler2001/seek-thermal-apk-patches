@@ -11,6 +11,7 @@ from types import ModuleType
 from . import (
                debug_log,
                full_fps,
+               mic_prompt,
                no_smoothing,
                photo_1x,
                png_photos,
@@ -21,7 +22,7 @@ from . import (
 from .base import Options
 
 ALL: list[ModuleType] = [full_fps, sharp_scaling, no_smoothing, png_photos, photo_1x, video_quality, resume_fix,
-                         debug_log]
+                         mic_prompt, debug_log]
 BY_NAME = {p.NAME: p for p in ALL}
 RECOMMENDED = [p.NAME for p in ALL if p.RECOMMENDED]
 
