@@ -171,6 +171,33 @@ to rename the package.
 
 ## FAQ
 
+**What are temporal and spatial smoothing?**  The two noise filters in the camera's image library
+(libseekip).  They run before the colours are applied, so they shape the temperature readings as
+well as the picture.
+
+- *Temporal* smoothing (`alpf`) averages each pixel over time.  It compares the pixel with its
+  previous output.  A difference *d* below a threshold *T*, set from the camera's factory
+  sensitivity, shows only a fraction *d/T* of itself: noise barely gets through, while a change of
+  *T* or more shows at once.  The result becomes the history for the next frame, so a small real
+  change creeps in over several frames.  The picture is calm, but faint moving warm things leave
+  trails and small temperature changes show late.
+- *Spatial* smoothing (`aslpf`) averages each pixel with its neighbours, one frame at a time.  Every
+  pixel becomes the mean of its 3 × 3 neighbourhood unless strong slopes around it mark an edge.
+  Noise in flat areas drops by up to 3×, but detail too faint to count as an edge is blurred: fine
+  texture, thin wires.  The edge test compares only the top-right side of a pixel with the
+  bottom-left side, so an edge running exactly from bottom-left to top-right is not seen, and it
+  is blurred too.
+
+| | temporal | spatial | detail kept |
+|---|---|---|---|
+| stock, "Image smoothing" on | on | off | 14.1 % |
+| stock, "Image smoothing" off | on | **on** | 10.6 % |
+| `no_smoothing`, switch off | off | off | 15.3 % |
+
+That is why stock *off* looks softer than *on*: it adds the spatial blur and keeps the temporal
+one.  *Detail kept* is the per-pixel structure left in the sensor frame, measured as in
+[docs/smoothing-switch.md](docs/smoothing-switch.md).
+
 **Are temperatures affected?**  `full_fps`, `sharp_scaling` and the photo and video patches only
 change when and how the image is drawn and saved.  `no_smoothing` turns off the library's temporal
 and spatial filters, and the temperature readout is computed from the filtered frame — so with the
