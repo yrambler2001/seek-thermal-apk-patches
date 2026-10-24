@@ -9,9 +9,9 @@ import zipfile
 
 import pytest
 from conftest import SHAPES, split_apk
-from test_patches import APPLICABLE
+from test_patches import ABIS, APPLICABLE
 
-from seekpatch import apk, zipalign
+from seekpatch import apk, native, zipalign
 from seekpatch.smali import PatchError
 from seekpatch.toolchain import Toolchain, ToolchainError
 
@@ -42,7 +42,7 @@ def merger(toolchain):
 
 @pytest.mark.parametrize("shape", SHAPES)
 def test_patched_fixture_assembles_and_signs(make_project, toolchain, tmp_path, shape):
-    root = make_project(shape)
+    root = make_project(shape, ABIS)
     assert apk.apply_patches(str(root), apk.Plan(APPLICABLE[shape]), log=QUIET) == APPLICABLE[shape]
     unsigned, signed = str(tmp_path / "unsigned.apk"), str(tmp_path / "signed.apk")
     apk.build(toolchain, str(root), unsigned)
@@ -52,6 +52,11 @@ def test_patched_fixture_assembles_and_signs(make_project, toolchain, tmp_path, 
         assert "classes.dex" in names and "AndroidManifest.xml" in names
         assert any(n.startswith("META-INF/") and n.endswith(".SF") for n in names)  # v1 signature
         assert b"Lseekpatch/SharpScale;" in z.read("classes.dex")
+        if "smart_smoothing" in APPLICABLE[shape]:  # mapped out of the apk: stored, page aligned
+            for abi in ABIS:
+                info = z.getinfo(f"lib/{abi}/libseekpatch_smooth.so")
+                assert info.compress_type == zipfile.ZIP_STORED and z.read(info) == native.library(abi)
+            assert b"Lseekpatch/Smooth;" in z.read("classes.dex")
     assert zipalign.check(signed) == []
     info = apk.app_info(signed)
     assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture", "2.3.4", 294)
@@ -62,10 +67,7 @@ def fixture_apk(make_project, toolchain, tmp_path):
     """fixture_apk(shape, with_lib=True) -> an unpatched apk built from a fixture tree."""
 
     def make(shape: str, with_lib: bool = True) -> str:
-        root = make_project(shape)
-        if with_lib:  # the fixture's NativeLib loads "seekip"
-            (root / "lib" / "arm64-v8a").mkdir(parents=True)
-            (root / "lib" / "arm64-v8a" / "libseekip.so").write_bytes(b"\x7fELF" + bytes(60))
+        root = make_project(shape, ("arm64-v8a",) if with_lib else ())
         out = str(tmp_path / f"{shape}.apk")
         apk.build(toolchain, str(root), out)
         return out

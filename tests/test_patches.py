@@ -19,13 +19,16 @@ from seekpatch.patches import (
     png_photos,
     resume_fix,
     sharp_scaling,
+    smart_smoothing,
     video_quality,
 )
 from seekpatch.smali import AlreadyApplied, PatchError, SmaliTree, methods
 
+ABIS = ("arm64-v8a", "armeabi-v7a")
 
-def tree_of(make_project, shape: str) -> SmaliTree:
-    return SmaliTree(str(make_project(shape)))
+
+def tree_of(make_project, shape: str, abis: tuple[str, ...] = ABIS) -> SmaliTree:
+    return SmaliTree(str(make_project(shape, abis)))
 
 
 def text(tree: SmaliTree, cls: str) -> str:
@@ -350,13 +353,77 @@ def test_flat_field_needs_a_callable_getfeature(make_project):
         flat_field.apply(SmaliTree(str(root)), Options())
 
 
+# smart_smoothing --------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_smart_smoothing(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = smart_smoothing.apply(tree, Options())
+    assert re.search(r"Lfix/Pipeline;->set\(JLfix/Features;I\)V\n\n\s+# seek-patch smart_smoothing: .*\n\s+"
+                     r"invoke-static \{\}, Lseekpatch/Smooth;->frame\(\)V\n", text(tree, "Lfix/Pipeline;"))
+    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch smart_smoothing: .*\n\s+"
+                     r"invoke-static \{p0\}, Lseekpatch/Smooth;->attach\(Landroid/app/Activity;\)V\n",
+                     text(tree, "Lfix/Main;"))
+    assert all(tree.path_of(f"Lseekpatch/Smooth{s};") for s in ("", "$1", "$2", "$3"))
+    assert sorted(tree.natives) == ["lib/arm64-v8a/libseekpatch_smooth.so", "lib/armeabi-v7a/libseekpatch_smooth.so"]
+    assert report[-1] == "lib/{arm64-v8a,armeabi-v7a}/libseekpatch_smooth.so"
+
+
+def test_smart_smoothing_writes_its_libraries_stored(make_project):
+    root = make_project("lambda", ("arm64-v8a", "x86_64"))
+    tree = SmaliTree(str(root))
+    report = smart_smoothing.apply(tree, Options())
+    assert report[-1] == "lib/{arm64-v8a}/libseekpatch_smooth.so (none for x86_64)"
+    written = tree.save()
+    assert "lib/arm64-v8a/libseekpatch_smooth.so" in written
+    assert (root / "lib" / "arm64-v8a" / "libseekpatch_smooth.so").read_bytes()[:4] == b"\x7fELF"
+    assert not (root / "lib" / "x86_64" / "libseekpatch_smooth.so").exists()
+    assert "doNotCompress:\n- so\n- arsc\n" in (root / "apktool.yml").read_text()
+    with pytest.raises(AlreadyApplied):
+        smart_smoothing.apply(SmaliTree(str(root)), Options())
+
+
+def test_smart_smoothing_composes_with_flat_field_and_no_smoothing(make_project):
+    tree = tree_of(make_project, "lambda")
+    no_smoothing.apply(tree, Options())
+    flat_field.apply(tree, Options())
+    smart_smoothing.apply(tree, Options())
+    pipeline, main = text(tree, "Lfix/Pipeline;"), text(tree, "Lfix/Main;")
+    assert "Lseekpatch/Flat;->frame(J)V" in pipeline and "Lseekpatch/Smooth;->frame()V" in pipeline
+    assert "Lseekpatch/Flat;->attach(" in main and "Lseekpatch/Smooth;->attach(" in main
+
+
+def test_smart_smoothing_rolls_back_its_libraries(make_project):
+    root = make_project("lambda", ABIS)
+    (root / "smali" / "fix" / "Main.smali").unlink()  # no camera activity: fails after finding the feature call
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match="setContentView"):
+        with tree.transaction():
+            smart_smoothing.apply(tree, Options())
+    assert tree.natives == {} and tree.save() == []
+
+
+def test_smart_smoothing_needs_an_arm_libseekip(make_project):
+    with pytest.raises(PatchError, match="no libseekip.so for arm64-v8a / armeabi-v7a.*x86"):
+        smart_smoothing.apply(tree_of(make_project, "lambda", ("x86",)), Options())
+    with pytest.raises(PatchError, match="none"):
+        smart_smoothing.apply(tree_of(make_project, "accessor", ()), Options())
+
+
+def test_smart_smoothing_refuses_older_apps(make_project):
+    tree = tree_of(make_project, "lambda")
+    tree._identity = {"versionCode": 272, "versionName": "2.2.2"}
+    with pytest.raises(PatchError, match="2.2.2"):
+        smart_smoothing.apply(tree, Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {
     "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-               "mic_prompt", "flat_field", "debug_log"],
+               "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
     "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-                 "mic_prompt", "flat_field", "debug_log"],
+                 "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
     "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "debug_log"],
 }
 

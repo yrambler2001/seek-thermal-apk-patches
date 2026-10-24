@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import glob
 import os
+import zipfile
 
 import pytest
 
@@ -23,7 +24,7 @@ APKS = sorted(p for ext in ("apk", "xapk", "apks", "apkm")
 # first version each patch supports (all run through 2.3.4)
 FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0), "no_smoothing": (2, 2, 0),
          "png_photos": (2, 1, 2), "photo_1x": (2, 1, 1), "video_quality": (2, 1, 2), "resume_fix": (1, 9, 1),
-         "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0)}
+         "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0), "smart_smoothing": (2, 2, 3)}
 
 pytestmark = pytest.mark.skipif(not APKS, reason="set SEEK_APK_DIR to a folder of Seek Thermal apks")
 
@@ -57,3 +58,11 @@ def test_patch_matrix(toolchain, path, tmp_path):
         names = [n for n, ok in expected.items() if ok]
         apk.patch_apk(toolchain, path, out, apk.Plan(names), log=lambda _: None)
         assert zipalign.check(out) == []
+        with zipfile.ZipFile(out) as z:
+            libs = [i for i in z.infolist() if i.filename.endswith("/libseekpatch_smooth.so")]
+            seekip = {n.split("/")[1] for n in z.namelist() if n.endswith("/libseekip.so")}
+        if expected["smart_smoothing"]:  # one per arm ABI the app ships, stored
+            assert sorted(i.filename.split("/")[1] for i in libs) == sorted(seekip & {"arm64-v8a", "armeabi-v7a"})
+            assert all(i.compress_type == zipfile.ZIP_STORED for i in libs)
+        else:
+            assert libs == []

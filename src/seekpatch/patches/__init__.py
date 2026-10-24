@@ -18,12 +18,13 @@ from . import (
                png_photos,
                resume_fix,
                sharp_scaling,
+               smart_smoothing,
                video_quality,
 )
 from .base import Options
 
 ALL: list[ModuleType] = [full_fps, sharp_scaling, no_smoothing, png_photos, photo_1x, video_quality, resume_fix,
-                         mic_prompt, flat_field, debug_log]
+                         mic_prompt, flat_field, smart_smoothing, debug_log]
 BY_NAME = {p.NAME: p for p in ALL}
 RECOMMENDED = [p.NAME for p in ALL if p.RECOMMENDED]
 
