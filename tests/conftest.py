@@ -29,13 +29,17 @@ def split_apk(with_lib: bool = True, manifest: bytes | None = None) -> bytes:
 
 @pytest.fixture
 def make_project(tmp_path):
-    """make_project(shape) -> an apktool -r style project with the shape's smali tree."""
+    """make_project(shape, abis=()) -> an apktool -r style project with the shape's smali tree, and a
+    stand-in libseekip.so (an ELF header) in lib/<abi>/ for each of abis."""
 
-    def make(shape: str) -> Path:
+    def make(shape: str, abis: tuple[str, ...] = ()) -> Path:
         root = tmp_path / shape
         shutil.copytree(FIXTURES / "project", root)
         shutil.copytree(FIXTURES / "common", root / "smali")
         shutil.copytree(FIXTURES / shape, root / "smali", dirs_exist_ok=True)
+        for abi in abis:  # the fixture's NativeLib loads "seekip"
+            (root / "lib" / abi).mkdir(parents=True)
+            (root / "lib" / abi / "libseekip.so").write_bytes(b"\x7fELF" + bytes(60))
         return root
 
     return make

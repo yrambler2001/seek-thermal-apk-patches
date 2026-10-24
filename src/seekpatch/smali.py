@@ -151,6 +151,8 @@ class SmaliTree:
         self._dirty: set[str] = set()
         self._created: set[str] = set()
         self._identity: dict[str, object] | None = None
+        self.natives: dict[str, bytes] = {}
+        """Native libraries to add: path relative to the root (lib/<abi>/<name>.so) -> contents."""
 
     # -- lookup -------------------------------------------------------------------------------
     @property
@@ -185,6 +187,18 @@ class SmaliTree:
                 return p
         return None
 
+    @property
+    def abis(self) -> list[str]:
+        """The ABIs the apk has native code for (lib/<abi>/ of the decoded tree)."""
+        lib = os.path.join(self.root, "lib")
+        if not os.path.isdir(lib):
+            return []
+        return sorted(d for d in os.listdir(lib) if os.path.isdir(os.path.join(lib, d)))
+
+    def has_native(self, abi: str, name: str) -> bool:
+        rel = f"lib/{abi}/{name}"
+        return rel in self.natives or os.path.isfile(os.path.join(self.root, *rel.split("/")))
+
     def rel(self, path: str) -> str:
         """Path relative to the tree root, with forward slashes on every OS."""
         return os.path.relpath(path, self.root).replace(os.sep, "/")
@@ -215,15 +229,24 @@ class SmaliTree:
         self._created.add(p)
         return p
 
+    def add_native_library(self, abi: str, name: str, data: bytes) -> str:
+        """A native library for lib/<abi>/, written by save() and stored uncompressed in the apk (the app
+        maps its libraries straight out of it).  Returns its path relative to the root."""
+        if self.has_native(abi, name):
+            raise AlreadyApplied(f"lib/{abi}/{name} already exists")
+        rel = f"lib/{abi}/{name}"
+        self.natives[rel] = data
+        return rel
+
     @contextlib.contextmanager
     def transaction(self):
         """Roll every edit back if the block raises: a failing patch leaves the tree untouched."""
-        snapshot = dict(self.files)
+        snapshot, natives = dict(self.files), dict(self.natives)
         dirty, created = set(self._dirty), set(self._created)
         try:
             yield self
         except BaseException:
-            self.files, self._dirty, self._created = snapshot, dirty, created
+            self.files, self.natives, self._dirty, self._created = snapshot, natives, dirty, created
             raise
 
     def save(self) -> list[str]:
@@ -234,4 +257,30 @@ class SmaliTree:
                 f.write(self.files[p])
         written = sorted(self.rel(p) for p in self._dirty)
         self._dirty.clear()
+        for rel, data in sorted(self.natives.items()):
+            p = os.path.join(self.root, *rel.split("/"))
+            if not os.path.exists(p):
+                os.makedirs(os.path.dirname(p), exist_ok=True)
+                with open(p, "wb") as f:
+                    f.write(data)
+                written.append(rel)
+        if self.natives:
+            self._store_uncompressed("so")
         return written
+
+    def _store_uncompressed(self, extension: str) -> None:
+        """apktool b stores files whose extension apktool.yml lists under doNotCompress."""
+        path = os.path.join(self.root, "apktool.yml")
+        if not os.path.exists(path):
+            return
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        m = re.search(r"^doNotCompress:[ \t]*\n((?:-[^\n]*\n)*)", text, re.M)
+        if m and re.search(r"^- " + re.escape(extension) + r"[ \t]*$", m.group(1), re.M):
+            return
+        if m:
+            text = text[:m.start(1)] + f"- {extension}\n" + text[m.start(1):]
+        else:
+            text = text.rstrip("\n") + f"\ndoNotCompress:\n- {extension}\n"
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)

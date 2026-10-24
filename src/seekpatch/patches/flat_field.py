@@ -24,9 +24,9 @@ from __future__ import annotations
 import re
 
 from ..helpers import add_helpers
-from ..smali import REG, PatchError, SmaliTree, class_descriptor, methods
+from ..smali import PatchError, SmaliTree, class_descriptor
 from .base import Options, ensure_unpatched, mark
-from .seek import FEATURE_SIG, feature_900_call, seekip_feature
+from .seek import FEATURE_SIG, camera_activity, feature_900_call, seekip_feature
 
 NAME = "flat_field"
 SUMMARY = 'a "Flat field" button: point at a uniform surface, tap, and the camera\'s own gradient is removed'
@@ -35,8 +35,6 @@ MIN_VERSION_CODE = 260  # 2.2.0
 RECOMMENDED = True
 
 MARK = mark(NAME)
-ON_CREATE = "onCreate(Landroid/os/Bundle;)V"
-SET_CONTENT_VIEW = "setContentView(I)V"
 
 SEEKIP_SMALI = """.class public final Lseekpatch/SeekIP;
 .super Ljava/lang/Object;
@@ -68,24 +66,6 @@ SEEKIP_SMALI = """.class public final Lseekpatch/SeekIP;
 """
 
 
-def _camera_activity(tree: SmaliTree) -> tuple[str, int]:
-    """The live view's activity: its onCreate sets the layout and looks up the SurfaceView.
-    Returns (path, offset just past the setContentView call)."""
-    hits = []
-    for p in tree.containing(SET_CONTENT_VIEW, "Landroid/view/SurfaceView;"):
-        text = tree.get(p)
-        for m in methods(text):
-            if m.descriptor == ON_CREATE and SET_CONTENT_VIEW in m.body and "Landroid/view/SurfaceView;" in m.body:
-                calls = list(re.finditer(r"^[ \t]*invoke-virtual \{p0, " + REG + r"\}, L[\w/$]+;->"
-                                         + re.escape(SET_CONTENT_VIEW) + r"\n", text[m.start:m.end], re.M))
-                hits += [(p, m.start, c) for c in calls]
-    if len(hits) != 1:
-        raise PatchError(f"{NAME}: expected one setContentView in an onCreate that finds the SurfaceView, "
-                         f"found {len(hits)}")
-    path, offset, call = hits[0]
-    return path, offset + call.end()
-
-
 def apply(tree: SmaliTree, opts: Options) -> list[str]:
     ensure_unpatched(tree, NAME)
     code = tree.version_code
@@ -97,7 +77,7 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
     call = feature_900_call(tree, NAME)
     setfeature = seekip_feature(tree, NAME, "seekIPsetFeature")
     getfeature = seekip_feature(tree, NAME, "seekIPgetFeature")
-    activity_path, after_layout = _camera_activity(tree)
+    activity_path, after_layout = camera_activity(tree, NAME)
     activity = class_descriptor(tree.get(activity_path))
 
     text = tree.get(call.path)

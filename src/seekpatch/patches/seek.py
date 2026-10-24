@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from ..smali import REG, Method, PatchError, SmaliTree, class_descriptor, method_at, methods
 
 GL_TEX_IMAGE = "Landroid/opengl/GLES20;->glTexImage2D(IIIIIIIILjava/nio/Buffer;)V"
+ON_CREATE = "onCreate(Landroid/os/Bundle;)V"
+SET_CONTENT_VIEW = "setContentView(I)V"
 UPLOAD_SIG = "(Ljava/nio/ByteBuffer;II)V"
 FEATURE_SIG = "(JILjava/nio/ByteBuffer;I)I"
 
@@ -139,3 +141,21 @@ def feature_900_call(tree: SmaliTree, patch: str) -> FeatureCall:
     if class_descriptor(tree.get(path)) != cls:
         raise PatchError(f"{patch}: the switch field lives in {cls}, not in the class that sends feature 900")
     return FeatureCall(path, h.end(), indent, cls, flag, enum, field)
+
+
+def camera_activity(tree: SmaliTree, patch: str) -> tuple[str, int]:
+    """The live view's activity: its onCreate sets the layout and looks up the SurfaceView.
+    Returns (path, offset just past the setContentView call): views added there join the layout."""
+    hits = []
+    for p in tree.containing(SET_CONTENT_VIEW, "Landroid/view/SurfaceView;"):
+        text = tree.get(p)
+        for m in methods(text):
+            if m.descriptor == ON_CREATE and SET_CONTENT_VIEW in m.body and "Landroid/view/SurfaceView;" in m.body:
+                calls = list(re.finditer(r"^[ \t]*invoke-virtual \{p0, " + REG + r"\}, L[\w/$]+;->"
+                                         + re.escape(SET_CONTENT_VIEW) + r"\n", text[m.start:m.end], re.M))
+                hits += [(p, m.start, c) for c in calls]
+    if len(hits) != 1:
+        raise PatchError(f"{patch}: expected one setContentView in an onCreate that finds the SurfaceView, "
+                         f"found {len(hits)}")
+    path, offset, call = hits[0]
+    return path, offset + call.end()
