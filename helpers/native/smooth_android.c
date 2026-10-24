@@ -254,3 +254,11 @@ JNIEXPORT void JNICALL Java_seekpatch_Smooth_enable(JNIEnv *env, jclass cls, jbo
 	(void)cls;
 	smooth_set_enabled(on);
 }
+
+/* seekpatch.Smooth.setOptions(int lines, int edge): stripe correction and left-edge levelling, 0 = off */
+JNIEXPORT void JNICALL Java_seekpatch_Smooth_setOptions(JNIEnv *env, jclass cls, jint lines, jint edge)
+{
+	(void)env;
+	(void)cls;
+	smooth_set_options(lines, edge);
+}

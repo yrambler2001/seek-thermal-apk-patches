@@ -13,6 +13,9 @@ int smooth_filter_process(void *state, void *frames);
 int smooth_filter_process_shutter(void *state);
 /* Any thread: turn the filter on or off (off = the library's own processing, untouched). */
 void smooth_set_enabled(int on);
+/* Any thread: the filter's stripe correction (tnr lines, 0 = off) and left-edge levelling (tnr edge
+ * columns, 0 = off); the defaults are 3 and 6.  A change restarts the filter on the next frame. */
+void smooth_set_options(int lines, int edge);
 
 /* Counters since the last call (the host test reads them; Android logs them every 256 frames). */
 struct smooth_stats {

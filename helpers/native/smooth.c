@@ -23,7 +23,9 @@
  *   - while on: alpf (bit 0x4, the library's own temporal smoothing) is cleared for the first
  *     filter, and its output goes through tnr_process in place;
  *   - shutter: the estimate keeps half its weight (tnr_shutter); frames that are not images, and a
- *     pause of over a second (the camera was unplugged, the app paused), restart it.
+ *     pause of over a second (the camera was unplugged, the app paused), restart it;
+ *   - stripe correction (tnr lines) and left-edge levelling (tnr edge) can be switched at run time
+ *     (smooth_set_options); a change restarts the filter with the new parameters.
  * Anything unexpected (an unknown image size, a missing pointer) leaves the frame to the library.
  */
 #if defined(__ANDROID__) && !defined(_GNU_SOURCE)
@@ -57,16 +59,20 @@ struct frame_set {
 
 static const struct { int w, h; } SIZES[] = {{206, 156}, {320, 240}};  /* Compact / Nano, Compact Pro */
 
+#define LINES 3  /* "NR new+LE": robust column-stripe correction, both halves of a line must agree */
+#define EDGE 6   /* the screen-left strip: the last 6 buffer columns */
+
 static smooth_filter_fn orig_filter;
 static smooth_shutter_fn orig_shutter;
 static int g_enabled;  /* written by any thread, read by the camera thread (atomic) */
+static int g_options = LINES | EDGE << 8;  /* lines | edge << 8; written by any thread (atomic) */
 
 static struct {  /* camera thread only */
 	int on;
 	void *f1, *f2, *last_state;
 	struct frame *last_out;
 	struct tnr *t;
-	int w, h;
+	int w, h, options;
 	double last_ms;
 	struct smooth_stats s;
 	double wall, cpu, cpu_max;
@@ -85,6 +91,13 @@ void smooth_set_enabled(int on)
 	__atomic_store_n(&g_enabled, on ? 1 : 0, __ATOMIC_RELEASE);
 }
 
+void smooth_set_options(int lines, int edge)
+{
+	lines = lines < 0 ? 0 : lines > 3 ? 3 : lines;
+	edge = edge < 0 ? 0 : edge > TNR_EDGE_MAX ? TNR_EDGE_MAX : edge;
+	__atomic_store_n(&g_options, lines | edge << 8, __ATOMIC_RELEASE);
+}
+
 void smooth_take_stats(struct smooth_stats *out)
 {
 	*out = g.s;
@@ -95,12 +108,13 @@ void smooth_take_stats(struct smooth_stats *out)
 		g.cores[i] = 0;
 }
 
-/* "NR new+LE" of the research build: robust column-stripe correction and the screen-left strip */
-static void params(struct tnr_params *p)
+/* "NR new+LE" of the research build: robust column-stripe correction and the screen-left strip,
+ * unless switched off (options: lines | edge << 8) */
+static void params(struct tnr_params *p, int options)
 {
 	tnr_default_params(p);
-	p->lines = 3;
-	p->edge = 6;
+	p->lines = options & 0xff;
+	p->edge = options >> 8;
 	p->shutter = TNR_SHUTTER_HALVE;
 }
 
@@ -153,21 +167,26 @@ static int image_size(const struct frame *f, int *w, int *h)
 static void process(uint16_t *px, int w, int h)
 {
 	double now = smooth_now_ms(0);
-	if (g.t && (g.w != w || g.h != h)) {
-		tnr_destroy(g.t);
+	int options = __atomic_load_n(&g_options, __ATOMIC_ACQUIRE);
+	if (g.t && (g.w != w || g.h != h || g.options != options)) {
+		tnr_destroy(g.t);  /* a new size, or new options: start again with them */
 		g.t = NULL;
 	}
 	if (!g.t) {
 		struct tnr_params p;
-		params(&p);
+		params(&p, options);
 		g.t = tnr_create(w, h, &p);
 		if (!g.t) {
 			if (!g.logged++)
 				smooth_log("smart_smoothing: out of memory for %dx%d", w, h);
 			return;
 		}
+		if (options != g.options)
+			smooth_log("smart_smoothing: stripe correction %s (lines %d), left-edge levelling %s (edge %d)",
+			           p.lines ? "on" : "off", p.lines, p.edge ? "on" : "off", p.edge);
 		g.w = w;
 		g.h = h;
+		g.options = options;
 	} else if (now - g.last_ms > GAP_MS) {
 		tnr_reset(g.t);  /* the frames stopped: unplugged, paused */
 		g.s.gaps++;

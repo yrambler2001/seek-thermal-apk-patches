@@ -4,7 +4,7 @@
 .source "Smooth.java"
 
 # interfaces
-.implements Landroid/view/View$OnLongClickListener;
+.implements Landroid/view/View$OnClickListener;
 
 
 # annotations
@@ -18,11 +18,22 @@
 .end annotation
 
 
-# direct methods
-.method constructor <init>()V
-    .locals 0
+# instance fields
+.field final synthetic val$b:Landroid/widget/TextView;
 
-    .line 69
+
+# direct methods
+.method constructor <init>(Landroid/widget/TextView;)V
+    .locals 0
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "()V"
+        }
+    .end annotation
+
+    .line 89
+    iput-object p1, p0, Lseekpatch/Smooth$2;->val$b:Landroid/widget/TextView;
+
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -30,24 +41,13 @@
 
 
 # virtual methods
-.method public onLongClick(Landroid/view/View;)Z
-    .locals 2
+.method public onClick(Landroid/view/View;)V
+    .locals 0
 
-    .line 72
-    invoke-virtual {p1}, Landroid/view/View;->getContext()Landroid/content/Context;
+    .line 92
+    iget-object p1, p0, Lseekpatch/Smooth$2;->val$b:Landroid/widget/TextView;
 
-    move-result-object p1
+    invoke-static {p1}, Lseekpatch/Smooth;->access$300(Landroid/widget/TextView;)V
 
-    const-string v0, "Motion-compensated noise filter instead of the app\'s temporal smoothing"
-
-    const/4 v1, 0x1
-
-    invoke-static {p1, v0, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
-
-    move-result-object p1
-
-    .line 73
-    invoke-virtual {p1}, Landroid/widget/Toast;->show()V
-
-    return v1
+    return-void
 .end method

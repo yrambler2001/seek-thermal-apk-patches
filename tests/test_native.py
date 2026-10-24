@@ -99,6 +99,26 @@ def test_hook_leaves_frames_that_are_not_images(drivers, frames, tmp_path):
     assert c["other"] == 1 and c["frames"] == 22
 
 
+@pytest.mark.parametrize("options", [("lines=0",), ("edge=0",), ("lines=0", "edge=0")])
+def test_stripe_and_edge_options(drivers, frames, tmp_path, options):
+    hook, direct, _ = drivers
+    a, b, default = tmp_path / "hook.u16", tmp_path / "direct.u16", tmp_path / "default.u16"
+    _run(hook, frames, 206, 156, 24, a, *options)
+    _run(direct, frames, 206, 156, 24, b, *options)
+    _run(hook, frames, 206, 156, 24, default)
+    assert a.read_bytes() == b.read_bytes()
+    assert a.read_bytes() != default.read_bytes()  # the option changed the filter
+
+
+def test_options_change_between_frames(drivers, frames, tmp_path):
+    hook, direct, _ = drivers
+    a, b = tmp_path / "hook.u16", tmp_path / "direct.u16"
+    c = _counters(_run(hook, frames, 206, 156, 24, a, "plain=10", "shutter=14"))
+    _run(direct, frames, 206, 156, 24, b, "plain=10", "shutter=14")
+    assert a.read_bytes() == b.read_bytes()  # restarted at frame 10 without stripes / edge
+    assert c["frames"] == 23 and c["shutters"] == 1
+
+
 def test_off_is_the_library_alone(drivers, frames, tmp_path):
     out = tmp_path / "off.u16"
     c = _counters(_run(drivers[0], frames, 206, 156, 24, out, "off=1", "shutter=5"))

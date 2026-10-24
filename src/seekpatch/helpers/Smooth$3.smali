@@ -4,12 +4,12 @@
 .source "Smooth.java"
 
 # interfaces
-.implements Ljava/lang/Runnable;
+.implements Landroid/view/View$OnLongClickListener;
 
 
 # annotations
 .annotation system Ldalvik/annotation/EnclosingMethod;
-    value = Lseekpatch/Smooth;->unavailable(Ljava/lang/String;)V
+    value = Lseekpatch/Smooth;->attach(Landroid/app/Activity;)V
 .end annotation
 
 .annotation system Ldalvik/annotation/InnerClass;
@@ -22,7 +22,7 @@
 .method constructor <init>()V
     .locals 0
 
-    .line 134
+    .line 95
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -30,37 +30,24 @@
 
 
 # virtual methods
-.method public run()V
-    .locals 3
+.method public onLongClick(Landroid/view/View;)Z
+    .locals 2
 
-    .line 137
-    invoke-static {}, Lseekpatch/Smooth;->access$100()Ljava/lang/ref/WeakReference;
+    .line 98
+    invoke-virtual {p1}, Landroid/view/View;->getContext()Landroid/content/Context;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0}, Ljava/lang/ref/WeakReference;->get()Ljava/lang/Object;
+    const-string v0, "Motion-compensated noise filter instead of the app\'s temporal smoothing"
 
-    move-result-object v0
+    const/4 v1, 0x1
 
-    check-cast v0, Landroid/widget/TextView;
+    invoke-static {p1, v0, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
 
-    if-eqz v0, :cond_0
+    move-result-object p1
 
-    .line 139
-    invoke-virtual {v0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
+    .line 99
+    invoke-virtual {p1}, Landroid/widget/Toast;->show()V
 
-    move-result-object v0
-
-    const-string v1, "Smart smoothing is not available here"
-
-    const/4 v2, 0x1
-
-    invoke-static {v0, v1, v2}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
-
-    move-result-object v0
-
-    invoke-virtual {v0}, Landroid/widget/Toast;->show()V
-
-    :cond_0
-    return-void
+    return v1
 .end method

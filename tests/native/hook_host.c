@@ -5,6 +5,9 @@
  *     shutter=K   a shutter event before frame K (the library's filter_process_shutter, both filters)
  *     other=K     frame K is not an image (the library clears stages 0x187, the second filter skips it)
  *     off=1       smart smoothing stays off
+ *     lines=N     stripe correction (tnr lines, default 3; 0 = off), set before the first frame
+ *     edge=N      left-edge levelling (tnr edge, default 6; 0 = off)
+ *     plain=K     from frame K both are switched off (smooth_set_options(0, 0) between two frames)
  *
  * The stand-in library mirrors what seekip_process does with its two filters, in the layout the hook
  * expects: filter 1 reads work0 and writes work3, filter 2 reads work3.  Both "filters" copy.
@@ -70,10 +73,10 @@ double smooth_now_ms(int thread_cpu)
 int main(int argc, char **argv)
 {
 	if (argc < 6) {
-		fprintf(stderr, "usage: %s IN.u16 W H N OUT.u16 [shutter=K] [other=K] [off=1]\n", argv[0]);
+		fprintf(stderr, "usage: %s IN.u16 W H N OUT.u16 [shutter=K] [other=K] [off=1] [lines=N] [edge=N] [plain=K]\n", argv[0]);
 		return 2;
 	}
-	int w = atoi(argv[2]), h = atoi(argv[3]), n = atoi(argv[4]), shutter = -1, other = -1, off = 0;
+	int w = atoi(argv[2]), h = atoi(argv[3]), n = atoi(argv[4]), shutter = -1, other = -1, off = 0, lines = 3, edge = 6, plain = -1;
 	for (int i = 6; i < argc; i++) {
 		char key[16];
 		int v;
@@ -82,6 +85,9 @@ int main(int argc, char **argv)
 		if (!strcmp(key, "shutter")) shutter = v;
 		else if (!strcmp(key, "other")) other = v;
 		else if (!strcmp(key, "off")) off = v;
+		else if (!strcmp(key, "lines")) lines = v;
+		else if (!strcmp(key, "edge")) edge = v;
+		else if (!strcmp(key, "plain")) plain = v;
 		else return 2;
 	}
 	size_t px = (size_t)w * h;
@@ -95,12 +101,17 @@ int main(int argc, char **argv)
 	(void)stand_in_shutter;
 	struct tnr_params p;
 	tnr_default_params(&p);
-	p.lines = 3;
-	p.edge = 6;
+	p.lines = lines;
+	p.edge = edge;
 	p.shutter = TNR_SHUTTER_HALVE;
 	struct tnr *t = tnr_create(w, h, &p);
 	memcpy(out, frames, px * 2);
 	for (int i = 1; i < n; i++) {
+		if (i == plain) {  /* new options: the hook starts the filter again with them */
+			tnr_destroy(t);
+			p.lines = p.edge = 0;
+			t = tnr_create(w, h, &p);
+		}
 		if (i == shutter)
 			tnr_shutter(t);
 		if (i == other) {  /* not an image: left alone, and the next image starts afresh */
@@ -117,7 +128,10 @@ int main(int argc, char **argv)
 	struct frame aux = {NULL, 0, 0}, none = {NULL, 0, 0};
 	smooth_set_originals(stand_in_filter, stand_in_shutter);
 	smooth_set_enabled(!off);
+	smooth_set_options(lines, edge);
 	for (int i = 0; i < n; i++) {
+		if (i == plain)
+			smooth_set_options(0, 0);
 		if (i == shutter) {
 			smooth_filter_process_shutter(&filter1);
 			smooth_filter_process_shutter(&filter2);

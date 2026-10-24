@@ -4,12 +4,12 @@
 .source "Smooth.java"
 
 # interfaces
-.implements Landroid/view/View$OnClickListener;
+.implements Landroid/content/SharedPreferences$OnSharedPreferenceChangeListener;
 
 
 # annotations
-.annotation system Ldalvik/annotation/EnclosingMethod;
-    value = Lseekpatch/Smooth;->attach(Landroid/app/Activity;)V
+.annotation system Ldalvik/annotation/EnclosingClass;
+    value = Lseekpatch/Smooth;
 .end annotation
 
 .annotation system Ldalvik/annotation/InnerClass;
@@ -18,22 +18,11 @@
 .end annotation
 
 
-# instance fields
-.field final synthetic val$b:Landroid/widget/TextView;
-
-
 # direct methods
-.method constructor <init>(Landroid/widget/TextView;)V
+.method constructor <init>()V
     .locals 0
-    .annotation system Ldalvik/annotation/Signature;
-        value = {
-            "()V"
-        }
-    .end annotation
 
-    .line 63
-    iput-object p1, p0, Lseekpatch/Smooth$1;->val$b:Landroid/widget/TextView;
-
+    .line 52
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -41,13 +30,28 @@
 
 
 # virtual methods
-.method public onClick(Landroid/view/View;)V
+.method public onSharedPreferenceChanged(Landroid/content/SharedPreferences;Ljava/lang/String;)V
     .locals 0
 
-    .line 66
-    iget-object p1, p0, Lseekpatch/Smooth$1;->val$b:Landroid/widget/TextView;
+    .line 55
+    invoke-static {p1}, Lseekpatch/Smooth;->access$000(Landroid/content/SharedPreferences;)V
 
-    invoke-static {p1}, Lseekpatch/Smooth;->access$000(Landroid/widget/TextView;)V
+    .line 56
+    invoke-static {}, Lseekpatch/Smooth;->access$100()Ljava/lang/ref/WeakReference;
 
+    move-result-object p1
+
+    invoke-virtual {p1}, Ljava/lang/ref/WeakReference;->get()Ljava/lang/Object;
+
+    move-result-object p1
+
+    check-cast p1, Landroid/widget/TextView;
+
+    if-eqz p1, :cond_0
+
+    .line 58
+    invoke-static {p1}, Lseekpatch/Smooth;->access$200(Landroid/widget/TextView;)V
+
+    :cond_0
     return-void
 .end method
