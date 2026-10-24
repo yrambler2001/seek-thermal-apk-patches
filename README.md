@@ -6,7 +6,6 @@ the iOS app, an "Image smoothing" switch that does what it says, lossless photos
 own pixels beside them, videos as good as the photos, and a button that flattens the gradient of a
 warm camera.
 
-[![CI](https://github.com/yrambler2001/seek-thermal-apk-patches/actions/workflows/ci.yml/badge.svg)](https://github.com/yrambler2001/seek-thermal-apk-patches/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)
 

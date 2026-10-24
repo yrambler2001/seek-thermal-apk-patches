@@ -52,7 +52,7 @@ frame to frame the way the image does.  The calibration and the conversion are u
 ## Versions
 
 Feature ids 100 / 102 / 900 and the masks above are verified in the two libseekip versions that
-have been reconstructed: **2.10.5.0** (app 2.2.2) and **2.11.3.2** (apps 2.2.3, 2.3.0 and 2.3.4).
+have been analysed: **2.10.5.0** (app 2.2.2) and **2.11.3.2** (apps 2.2.3, 2.3.0 and 2.3.4).
 Apps 2.2.0 and 2.2.1 ship a library with the same preset constants.  2.1.x ships an older library
 whose feature 900 is different, so the patch refuses apps older than 2.2.0 (versionCode 260).
 

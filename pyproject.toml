@@ -25,6 +25,11 @@ classifiers = [
 dev = ["pytest>=7", "ruff==0.17.2"]
 measure = ["numpy>=1.22", "pillow>=9"]
 
+[project.urls]
+Homepage = "https://github.com/yrambler2001/seek-thermal-apk-patches"
+Issues = "https://github.com/yrambler2001/seek-thermal-apk-patches/issues"
+Changelog = "https://github.com/yrambler2001/seek-thermal-apk-patches/blob/main/CHANGELOG.md"
+
 [project.scripts]
 seek-patch = "seekpatch.cli:main"
 
