@@ -3,6 +3,10 @@
 **Stock:** switching *Settings → Image & Video → Image smoothing* **off** gives the *smoother* picture.
 **Patched:** off really is unsmoothed; on is unchanged.
 
+> Not in the default set any more: [`smoothing_settings`](smoothing-settings.md) replaces the switch
+> with one switch per filter.  `no_smoothing` is the alternative that keeps the single switch; pick
+> it with `-p no_smoothing` (the two cannot be combined, and `--all` leaves this one out).
+
 | smoothing off (stock) | smoothing on (stock) | smoothing off + `no_smoothing` |
 |:---:|:---:|:---:|
 | ![live view, smoothing off, stock](images/smoothing-off.jpg) | ![live view, smoothing on, stock](images/smoothing-on.jpg) | ![live view, smoothing off, patched](images/smoothing-off-patched.jpg) |
@@ -28,7 +32,9 @@ Before every frame the app sends library feature **900** with the switch's value
   previous frame.  It runs in *both* positions.
 - **aslpf** (bit `0x100`) is a spatial 3×3 low-pass.  Only *off* runs it.
 
-So "off" swaps the fixed-pattern correction for a blur.  Seek's iOS app has the same mapping.
+So "off" swaps the fixed-pattern correction for a blur.  Seek's iOS app has the same mapping.  The
+rest of case 900 (per-model defaults) is the same in both positions; see
+[smoothing-settings.md](smoothing-settings.md).
 
 ## The patch
 

@@ -2,7 +2,7 @@
 
 Unofficial patches for the **Seek Thermal** Android app (`com.tyriansystems.SeekThermal`, 1.9.1 – 2.3.4).
 Bring your own APK; get a live view that runs at the camera's real frame rate and is upscaled like
-the iOS app, an "Image smoothing" switch that does what it says, lossless photos with the sensor's
+the iOS app, a switch for each of the image filters, lossless photos with the sensor's
 own pixels beside them, videos as good as the photos, and a button that flattens the gradient of a
 warm camera.
 
@@ -24,13 +24,13 @@ its own colour span.</sub>
 |---|---|---|---|
 | **Frame rate** | **15 fps** on screen: the live view redraws only when the phone's *own rear camera* delivers a frame, and the app runs that camera at 15 fps | **~28 fps**, every thermal frame (the Compact sends ~30) | `full_fps` |
 | **Upscaling** | plain bilinear: each sensor pixel is smeared across its whole width | iOS-style: each pixel stays sharp, blending only across the middle half | `sharp_scaling` |
-| **"Image smoothing" switch** | *off* is the smoother picture: it adds a 3×3 blur, and the temporal smoothing stays on either way | *off* turns temporal and spatial smoothing off | `no_smoothing` |
+| **Smoothing switches** | one "Image smoothing" switch, and *off* is the smoother picture: it adds a 3×3 blur, and the temporal smoothing stays on either way | in *Settings → Image & Video*, a switch per filter: temporal smoothing, 3×3 spatial smoothing, pattern correction, and Smart smoothing with its two options; the defaults are the stock picture | `smoothing_settings` (or, opt-in, `no_smoothing`: the old switch's *off* turns both smoothings off) |
 | **Photos** | JPEG, quality 100 but 4:2:0 colour; the PNG setting is hidden | lossless PNG (the app's own *Save Uncompressed*, turned on) | `png_photos` |
 | **Sensor pixels** | only the 1280×960 upscaled photo | also the frame at the sensor's resolution, PNG, no overlays, in `Pictures/Seek Thermal 1x/` | `photo_1x` |
 | **Video** | H.264 480×640 at a fixed 1.5 Mbit/s, **15 fps** (the phone camera's clock), mono 44.1 kHz 64 kbit/s sound | HEVC **960×1280** at constant quality (~50 dB PSNR), **every thermal frame**, stereo 48 kHz 256 kbit/s | `video_quality` |
 | **Microphone** | Android 11+: photos, videos and the gallery all ask for the microphone and drop the tap; after two denials none of them starts again | only starting a video asks, and the video then starts by itself; when Android won't ask again, a dialog offers the settings page or recording without sound | `mic_prompt` |
 | **Warm camera** | once the camera has warmed unevenly, every picture has a gradient (bright edges, dark middle), even of a uniform wall | a **Flat field** button: point at a uniform surface, tap, and the gradient is gone (14 °F across a wall → under 1 °F) | `flat_field` |
-| **Noise** | the temporal smoothing blends only pixels that did not change: little effect on a hand-held camera, trails when it does act | a **Smart smoothing** button (off by default): a filter that follows the camera's motion and averages up to 8 frames per pixel, plus stripe and left-edge correction; about half the grain on hand-held scenes, no ghosting on faces | `smart_smoothing` |
+| **Noise** | the temporal smoothing blends only pixels that did not change: little effect on a hand-held camera, trails when it does act | a **Smart smoothing** button (off by default; also a switch in Settings): a filter that follows the camera's motion and averages up to 8 frames per pixel, plus stripe and left-edge correction; about half the grain on hand-held scenes, no ghosting on faces | `smart_smoothing` |
 | **Returning from a dialog** | the app crashes (`glError 0x506`) after Android's permission dialog | the live view comes back | `resume_fix` |
 | **Diagnostics** | the SDK's USB / frame-timing log is compiled out | `adb logcat -s Seekware` | `debug_log` (opt-in) |
 
@@ -149,9 +149,9 @@ seek-patch doctor                       Java, the pinned apktool + uber-apk-sign
 
 | `patch` option | |
 |---|---|
-| *(none)* | the default set — every patch but `debug_log` — skipping those that do not apply to this version |
+| *(none)* | the default set — every patch but `debug_log` and `no_smoothing` — skipping those that do not apply to this version |
 | `-p NAME` | pick patches yourself (repeatable), e.g. `-p full_fps -p debug_log`; each must apply |
-| `--all` | every patch, `debug_log` included; each must apply |
+| `--all` | every patch, `debug_log` included, but not `no_smoothing` (the alternative to `smoothing_settings`); each must apply |
 | `--sharpness N` | `sharp_scaling`'s blend width, 1/N of a pixel: `2` = iOS (default), `3`–`4` crisper, larger approaches visible pixels |
 | `--video-codec hevc\|avc` | `video_quality`'s codec: HEVC (default; H.264 is the automatic fallback) or H.264 first, for players without HEVC |
 | `--video-qp N` | `video_quality`'s constant quantizer, 10 – 40: lower is better and bigger; `18` (default) ≈ 68 MB/min on a still scene |
@@ -200,7 +200,8 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 |---|---|---|
 | `full_fps` | 1.9.1 – 2.3.4 | |
 | `sharp_scaling` | 2.0 – 2.3.4 | 1.9.x saves photos differently |
-| `no_smoothing` | 2.2.0 – 2.3.4 | the feature ids are verified in the image library these versions ship; it refuses older ones |
+| `smoothing_settings` | 2.2.0 – 2.3.4 | the feature ids are verified in the image library these versions ship; it refuses older ones.  The Smart smoothing switches come with `smart_smoothing` |
+| `no_smoothing` | 2.2.0 – 2.3.4 | opt-in, the alternative to `smoothing_settings`; same library check |
 | `png_photos` | 2.1.2 – 2.3.4 | Android 11+ (older Android cannot write EXIF into a PNG; it keeps the setting) |
 | `photo_1x` | 2.1.1 – 2.3.4 | |
 | `video_quality` | 2.1.2 – 2.3.4 | |
@@ -223,7 +224,8 @@ also drops the manifest attributes that make Android require the splits.
 
 - [`full_fps`](docs/full-fps.md) — moves the redraw from the phone-camera callback to the thermal upload.
 - [`sharp_scaling`](docs/sharp-scaling.md) — a "sharp bilinear" remap in the thermal fragment shader; photos get the same kernel on the CPU.
-- [`no_smoothing`](docs/smoothing-switch.md) — after the app sends the smoothing preset, clears the temporal and spatial filter stages when the switch is off.
+- [`smoothing_settings`](docs/smoothing-settings.md) — adds the switches to the app's own settings screen; after the app sends the smoothing preset, makes the *on* preset the base and sets the temporal, spatial and pattern-correction stages from the switches.
+- [`no_smoothing`](docs/smoothing-switch.md) (opt-in) — after the app sends the smoothing preset, clears the temporal and spatial filter stages when the switch is off.
 - [`png_photos`](docs/png-photos.md) — turns on the app's hidden *Save Uncompressed* setting.
 - [`photo_1x`](docs/photo-1x.md) — keeps the photo method's sensor-sized frame and writes it once the photo is saved.
 - [`video_quality`](docs/video-quality.md) — picks and configures the encoder, hands it every thermal frame, records 48 kHz stereo.  How the QP was chosen is in there.
@@ -266,13 +268,17 @@ well as the picture.
 | `no_smoothing`, switch off | off | off | 15.3 % |
 
 That is why stock *off* looks softer than *on*: it adds the spatial blur and keeps the temporal
-one.  *Detail kept* is the per-pixel structure left in the sensor frame, measured as in
+one.  With `smoothing_settings` each has its own switch (*Default temporal smoothing*, *Default
+spatial smoothing (3×3)*), beside *Default pattern correction*, which removes the sensor's fixed
+pattern.  *Detail kept* is the per-pixel structure left in the sensor frame, measured as in
 [docs/smoothing-switch.md](docs/smoothing-switch.md).
 
 **Are temperatures affected?**  `full_fps`, `sharp_scaling` and the photo and video patches only
-change when and how the image is drawn and saved.  `no_smoothing` turns off the library's temporal
-and spatial filters, and the temperature readout is computed from the filtered frame — so with the
-switch off, spot readings fluctuate frame to frame like the image does, instead of being averaged.
+change when and how the image is drawn and saved.  The temperature readout is computed from the
+filtered frame, so the filter switches of `smoothing_settings` (and `no_smoothing`'s *off*) change
+it: with temporal smoothing off, spot readings fluctuate frame to frame like the image does, instead
+of being averaged; spatial smoothing averages each reading with its neighbours.  At their defaults
+the readings are the stock app's.
 `flat_field` changes readings only when you tap it: the correction it learns applies to the
 temperatures as well as the picture.  The camera's own gradient leaves the readings, and the centre
 of the image keeps its value.  `smart_smoothing`, when on, filters the frame the temperatures are
@@ -291,10 +297,11 @@ at three times the Compact sensor's resolution, so no sensor pixel loses its col
 **Will the app update itself?**  No: the Play Store will not update an app signed with another key.
 Patch the new version when there is one.
 
-**Smart smoothing or the "Image smoothing" switch?**  They are independent.  The switch picks the
-library's preset (with `no_smoothing`, *off* is no temporal or spatial filter); *Smart smoothing on*
-replaces only the temporal filter with seek-patch's.  The spatial 3×3 blur still follows the switch:
-for the most detail, keep the switch on (or off with `no_smoothing`) and Smart smoothing on.
+**Smart smoothing or Seek's smoothing?**  *Smart smoothing on* replaces only the temporal filter with
+seek-patch's; *Default temporal smoothing* is greyed out meanwhile.  Spatial smoothing and pattern
+correction keep their own switches: for the most detail, leave spatial smoothing off (the default)
+and turn Smart smoothing on.  With `no_smoothing` instead of `smoothing_settings`, the 3×3 blur
+follows the old switch.
 
 **Thermal+?**  Not tested on a phone yet.  By design it keeps working: the phone-camera callback still
 latches the camera image Thermal+ blends in, and the video encoder draws the same scene as the

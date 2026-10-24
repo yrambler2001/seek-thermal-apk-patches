@@ -31,6 +31,7 @@ NAME = "my_patch"
 SUMMARY = "one line for `seek-patch list`"
 VERSIONS = "2.2.0 - 2.3.4"     # the range you tested
 RECOMMENDED = False            # part of the default set?
+CONFLICTS = ("other_patch",)   # optional: patches it cannot be combined with
 
 def apply(tree: SmaliTree, opts: Options) -> list[str]:
     ensure_unpatched(tree, NAME)
@@ -72,6 +73,18 @@ helpers/java/seekpatch/*.java ──javac (Java 8 bytecode)──► d8 --releas
   are inlined by javac and safe on any version.
 - Helpers must not fail the app: catch, log under the tag `seek-patch`, and fall back to what the
   app did.
+
+## Settings in the app
+
+A patch can add switches and lists to the app's *Settings → Image & Video* screen.
+`patches/settings.py` adds two hooks once, for whichever patch comes first: after the screen's
+`addPreferencesFromResource` (`seekpatch.Settings.screen`) and in the camera screen's `onCreate`
+(`seekpatch.Settings.attach`).  The patch then adds a section class with `load(SharedPreferences)`
+and `screen(PreferenceFragment, SharedPreferences)`, listed in `Settings.SECTIONS`; Settings finds
+it by name at run time, so an absent patch costs nothing.  Values go to seek-patch's own
+preferences file, not the app's; `Settings.addSwitch` / `addList` create the app's own preference
+classes, not persisted by the framework.  Runtime code reads values that `load` cached, never the
+file.  See `smoothing_settings.py` and `Filters.java`.
 
 ## Native code
 

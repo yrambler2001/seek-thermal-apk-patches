@@ -12,6 +12,13 @@ The button reads *Smart smoothing off* or *Smart smoothing on*.  It is **off** b
 app remembers your choice across restarts.  Off is the stock app: the filter's library is not even
 loaded until you first turn it on.  A long press explains what it does.
 
+With [`smoothing_settings`](smoothing-settings.md) (in the default set too), *Settings → Image &
+Video* has a **Smart smoothing** switch and, under it, **Stripe correction** and **Left-edge
+levelling** (both on by default; they stand for `lines` and `edge` below).  The switch and the
+button are one setting, kept in seek-patch's preferences file: `seekpatch.Smooth` follows the file
+with a listener, so turning one moves the other.  While Smart smoothing is on, *Default temporal
+smoothing* is greyed out there, as Smart smoothing replaces it.
+
 ## What it does to the picture
 
 These numbers come from 11 bursts recorded on a Seek Compact (206 × 156) and replayed offline
@@ -68,7 +75,9 @@ It uses only libc and libm, with NEON on arm64.  For each frame it:
 4. **Re-estimates the noise** from flat, settled pixels.
 5. **Lines and edge:** removes per-frame column and row offsets.  It uses only flat pixels where
    both halves of each line agree (`lines = 3`).  It also levels the last 6 buffer columns, which
-   are the screen's left edge (`edge = 6`).
+   are the screen's left edge (`edge = 6`).  Either can be switched off at run time
+   (`Smooth.setOptions`, 0 = off, from the *Stripe correction* and *Left-edge levelling* settings);
+   the filter then restarts with the new parameters.
 6. **Restarts** when under half the pixels fit, or when the shift exceeds 20 px.
 
 ### The hook
@@ -133,7 +142,8 @@ app and runs at whatever clock the governor picks (not measured further).  It fi
 Compact's 33 ms frame.
 
 `adb logcat -s seek-patch` prints a line every 256 frames: CPU per frame, the noise estimate,
-shutter and other restarts, and the cores it ran on.
+shutter and other restarts, and the cores it ran on; and a line whenever the stripe and edge options
+change.
 
 ## Limits
 
