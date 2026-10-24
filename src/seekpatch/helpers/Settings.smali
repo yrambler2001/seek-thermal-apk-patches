@@ -121,20 +121,18 @@
     invoke-virtual {v0, p6}, Landroid/preference/ListPreference;->setValue(Ljava/lang/String;)V
 
     .line 173
-    invoke-virtual {v0}, Landroid/preference/ListPreference;->getEntry()Ljava/lang/CharSequence;
-
-    move-result-object p3
+    const-string p3, "%s"
 
     invoke-virtual {v0, p3}, Landroid/preference/ListPreference;->setSummary(Ljava/lang/CharSequence;)V
 
     .line 174
     new-instance p3, Lseekpatch/Settings$3;
 
-    invoke-direct {p3, p1, p2, v0, p7}, Lseekpatch/Settings$3;-><init>(Landroid/content/SharedPreferences;Ljava/lang/String;Landroid/preference/ListPreference;Ljava/lang/Runnable;)V
+    invoke-direct {p3, p1, p2, p7}, Lseekpatch/Settings$3;-><init>(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/Runnable;)V
 
     invoke-virtual {v0, p3}, Landroid/preference/ListPreference;->setOnPreferenceChangeListener(Landroid/preference/Preference$OnPreferenceChangeListener;)V
 
-    .line 187
+    .line 184
     invoke-virtual {p0, v0}, Landroid/preference/PreferenceGroup;->addPreference(Landroid/preference/Preference;)Z
 
     return-object v0
@@ -228,7 +226,7 @@
 
     if-eqz p0, :cond_0
 
-    .line 228
+    .line 225
     :try_start_0
     invoke-virtual {p1, p0}, Ljava/lang/Class;->isAssignableFrom(Ljava/lang/Class;)Z
 
@@ -238,7 +236,7 @@
 
     const/4 p1, 0x2
 
-    .line 229
+    .line 226
     new-array p1, p1, [Ljava/lang/Class;
 
     const-class v0, Landroid/content/Context;
@@ -292,7 +290,7 @@
 
     const/4 v2, 0x2
 
-    .line 214
+    .line 211
     :try_start_0
     new-array v2, v2, [Ljava/lang/Object;
 
@@ -315,7 +313,7 @@
     :catchall_0
     move-exception v2
 
-    .line 216
+    .line 213
     new-instance v3, Ljava/lang/StringBuilder;
 
     const-string v4, "settings: "
@@ -340,7 +338,7 @@
 
     invoke-static {v3, p1, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 220
+    .line 217
     :cond_0
     :try_start_1
     new-array p1, v1, [Ljava/lang/Class;
@@ -370,7 +368,7 @@
     :catch_0
     move-exception p0
 
-    .line 222
+    .line 219
     new-instance p1, Ljava/lang/IllegalStateException;
 
     invoke-direct {p1, p0}, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/Throwable;)V
@@ -381,10 +379,10 @@
 .method public static enable(Landroid/preference/Preference;Z)V
     .locals 4
 
-    .line 193
+    .line 190
     invoke-virtual {p0, p1}, Landroid/preference/Preference;->setEnabled(Z)V
 
-    .line 194
+    .line 191
     invoke-virtual {p0}, Landroid/preference/Preference;->getTitle()Ljava/lang/CharSequence;
 
     move-result-object v0
@@ -393,7 +391,7 @@
 
     return-void
 
-    .line 198
+    .line 195
     :cond_0
     new-instance v1, Landroid/text/SpannableString;
 
@@ -405,7 +403,7 @@
 
     if-nez p1, :cond_1
 
-    .line 200
+    .line 197
     new-instance p1, Landroid/text/style/ForegroundColorSpan;
 
     const v0, 0x61ffffff
@@ -422,7 +420,7 @@
 
     invoke-virtual {v1, p1, v3, v0, v2}, Landroid/text/SpannableString;->setSpan(Ljava/lang/Object;III)V
 
-    .line 202
+    .line 199
     :cond_1
     invoke-virtual {p0, v1}, Landroid/preference/Preference;->setTitle(Ljava/lang/CharSequence;)V
 
@@ -441,12 +439,12 @@
         }
     .end annotation
 
-    .line 239
+    .line 236
     invoke-virtual {p0}, Ljava/lang/Class;->getName()Ljava/lang/String;
 
     move-result-object v0
 
-    .line 240
+    .line 237
     const-string v1, "SwitchPreference"
 
     invoke-virtual {v0, v1}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
@@ -463,7 +461,7 @@
 
     if-nez v1, :cond_0
 
-    .line 242
+    .line 239
     :try_start_0
     new-instance v1, Ljava/lang/StringBuilder;
 
@@ -491,12 +489,12 @@
 
     move-result-object v0
 
-    .line 243
+    .line 240
     invoke-virtual {p0}, Ljava/lang/Class;->getClassLoader()Ljava/lang/ClassLoader;
 
     move-result-object p0
 
-    .line 242
+    .line 239
     invoke-static {v0, v3, p0}, Ljava/lang/Class;->forName(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;
 
     move-result-object p0
@@ -505,7 +503,7 @@
 
     return-object p0
 
-    .line 248
+    .line 245
     :catch_0
     :cond_0
     const-class p0, Landroid/preference/ListPreference;
@@ -769,7 +767,7 @@
 .method private static prepare(Landroid/preference/Preference;Ljava/lang/String;Ljava/lang/String;)V
     .locals 2
 
-    .line 206
+    .line 203
     new-instance v0, Ljava/lang/StringBuilder;
 
     const-string v1, "seekpatch_"
@@ -786,10 +784,10 @@
 
     const/4 p1, 0x0
 
-    .line 207
+    .line 204
     invoke-virtual {p0, p1}, Landroid/preference/Preference;->setPersistent(Z)V
 
-    .line 208
+    .line 205
     invoke-virtual {p0, p2}, Landroid/preference/Preference;->setTitle(Ljava/lang/CharSequence;)V
 
     return-void

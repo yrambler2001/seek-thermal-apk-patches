@@ -10,12 +10,19 @@ followed by bilinear.  (Measured: see docs/sharp-scaling.md.)
     live view + video   on the GPU.  The thermal fragment shader remaps the sample position inside
                         each texel ("sharp bilinear"), so the hardware bilinear filter blends over
                         1/sharpness texel.  The shader needs the texture size: the upload method
-                        records it and a uniform `thermalSize` is set before each draw.  Texture
+                        records it and a uniform `thermalSize` is set before each draw, with the
+                        sharpness (`thermalSharp`).  Texture
                         coordinates move to highp -- mediump is fp16 on Mali and would quantize the
                         remap to ~0.1 texel; GPUs without fragment highp (optional in GLES 2.0:
                         Mali-400/450, early Tegra) keep the stock bilinear sample.
     saved photo         the photo method draws a round(sharpness)x (at most 8x) nearest-upscaled
                         copy of the frame bitmap with the same filtered Paint (CPU, once per capture).
+
+    settings            where the release has the settings screen (settings.py), Settings -> Image &
+                        Video gets "iOS-style upscaling" and "Upscaling sharpness" (seekpatch.Upscale).
+                        --sharpness is where they start; they set the shader's uniform thermalSharp
+                        (sharpness 1 or less returns the coordinate unchanged: the exact stock
+                        bilinear sample) and the photo's nearest factor (1: the stock draw).
 
 Image processing and temperatures are untouched.
 """
@@ -26,6 +33,7 @@ import re
 from ..smali import REG, PatchError, SmaliTree, const_strings, methods
 from .base import Options, ensure_unpatched, mark
 from .seek import GL_TEX_IMAGE, render_thread, texture_upload
+from .settings import optional_settings
 
 NAME = "sharp_scaling"
 SUMMARY = "iOS-like upscaling: blend over half a pixel instead of a whole one (GPU shader)"
@@ -49,15 +57,16 @@ GLSL_DEFS = """#ifdef GL_FRAGMENT_PRECISION_HIGH
 #endif
 """
 GLSL_FUNC = """uniform SHARP_P vec2 thermalSize;
+uniform SHARP_P float thermalSharp;
 SHARP_P vec2 sharpCoord(SHARP_P vec2 c)
 {
 #ifdef SHARP_OFF
  return c;
 #else
- if (thermalSize.x < 1.0) return c;
+ if (thermalSize.x < 1.0 || thermalSharp <= 1.0) return c;
  SHARP_P vec2 t = c * thermalSize - 0.5;
  SHARP_P vec2 i = floor(t);
- SHARP_P vec2 f = clamp((t - i - 0.5) * SHARPNESS + 0.5, 0.0, 1.0);
+ SHARP_P vec2 f = clamp((t - i - 0.5) * thermalSharp + 0.5, 0.0, 1.0);
  return (i + f + 0.5) / thermalSize;
 #endif
 }
@@ -67,13 +76,20 @@ HELPER_SMALI = """.class public final Lseekpatch/SharpScale;
 .super Ljava/lang/Object;
 .source "seek-patch sharp_scaling"
 
-{mark}: thermal texture size for the sharp-bilinear shader; {k}x nearest photo upscale
+{mark}: thermal texture size and sharpness for the sharp-bilinear shader; nearest photo upscale
 
 
 # static fields
 .field private static h:I
 
 .field private static w:I
+
+# the shader's blend width, 1/sharpness of a texel (<= 1: the stock bilinear sample); --sharpness,
+# changed at run time by seekpatch.Upscale (the settings)
+.field public static sharpness:F = {sharpness}
+
+# the photo's nearest upscale before the filtered draw (1: the stock draw)
+.field public static photoFactor:I = {k}
 
 
 # direct methods
@@ -96,8 +112,9 @@ HELPER_SMALI = """.class public final Lseekpatch/SharpScale;
     return-void
 .end method
 
-# right before glDrawArrays (program in use): thermalSize = texture size, if the program has it.
-# Looked up on every call, no cache: the video encoder may draw from another thread.
+# right before glDrawArrays (program in use): thermalSize = texture size and thermalSharp =
+# sharpness, if the program has them.  Looked up on every call, no cache: the video encoder may draw
+# from another thread.
 .method public static uniform()V
     .locals 4
 
@@ -120,15 +137,32 @@ HELPER_SMALI = """.class public final Lseekpatch/SharpScale;
     int-to-float v2, v2
     invoke-static {{v0, v1, v2}}, Landroid/opengl/GLES20;->glUniform2f(IFF)V
 
+    const/4 v0, 0x1
+    new-array v0, v0, [I
+    const v1, 0x8b8d
+    const/4 v2, 0x0
+    invoke-static {{v1, v0, v2}}, Landroid/opengl/GLES20;->glGetIntegerv(I[II)V
+    aget v1, v0, v2
+    const-string v0, "thermalSharp"
+    invoke-static {{v1, v0}}, Landroid/opengl/GLES20;->glGetUniformLocation(ILjava/lang/String;)I
+    move-result v0
+    if-ltz v0, :done
+
+    sget v1, Lseekpatch/SharpScale;->sharpness:F
+    invoke-static {{v0, v1}}, Landroid/opengl/GLES20;->glUniform1f(IF)V
+
     :done
     return-void
 .end method
 
-# Canvas.drawBitmap(bitmap, src, dst, paint) with the bitmap {k}x nearest-upscaled first
+# Canvas.drawBitmap(bitmap, src, dst, paint) with the bitmap photoFactor x nearest-upscaled first
 .method public static draw(Landroid/graphics/Canvas;Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/Rect;Landroid/graphics/Paint;)V
     .locals 6
 
-    const/16 v5, {k}
+    sget v5, Lseekpatch/SharpScale;->photoFactor:I
+    const/4 v0, 0x1
+    if-le v5, v0, :draw
+
     invoke-virtual {{p1}}, Landroid/graphics/Bitmap;->getWidth()I
     move-result v0
     mul-int v0, v0, v5
@@ -186,7 +220,7 @@ def _patch_shaders(tree: SmaliTree, opts: Options) -> tuple[str, int, int]:
         first_precision = g.index("precision ")
         g = g[:first_precision] + _esc(GLSL_DEFS) + g[first_precision:]
         g = g.replace("varying vec2 vTextureCoord;\\n", "varying SHARP_P vec2 vTextureCoord;\\n", 1)
-        g = g.replace("void main()", _esc(GLSL_FUNC.replace("SHARPNESS", f"{opts.sharpness:.4f}")) + "void main()", 1)
+        g = g.replace("void main()", _esc(GLSL_FUNC) + "void main()", 1)
         g = g.replace(SAMPLE, "texture2D(thermalTexture, sharpCoord(vTextureCoord))", 1)
         edits.append((s.start(1), s.end(1), g))
     v = vert[0].group(1)
@@ -257,8 +291,9 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
     shader_path, n_frag, n_draw = _patch_shaders(tree, opts)
     upload_path, upload_name = _record_texture_size(tree)
     photo_path, photo_name, n_photo = _photo(tree, k)
-    tree.add_class(HELPER, HELPER_SMALI.format(mark=MARK, k=k, draw=DRAW_BITMAP))
-    return [f"sharpness {opts.sharpness:g}: {tree.rel(shader_path)}: {n_frag} fragment shader(s) remapped, "
-            f"vertex shader highp, thermalSize before {n_draw} glDrawArrays",
-            f"{tree.rel(upload_path)} {upload_name}() records the texture size; "
-            f"photo {tree.rel(photo_path)} {photo_name}(): {n_photo} drawBitmap call(s) {k}x nearest first"]
+    tree.add_class(HELPER, HELPER_SMALI.format(mark=MARK, k=k, sharpness=f"{opts.sharpness!r}f", draw=DRAW_BITMAP))
+    report = [f"sharpness {opts.sharpness:g}: {tree.rel(shader_path)}: {n_frag} fragment shader(s) remapped, "
+              f"vertex shader highp, thermalSize / thermalSharp before {n_draw} glDrawArrays",
+              f"{tree.rel(upload_path)} {upload_name}() records the texture size; "
+              f"photo {tree.rel(photo_path)} {photo_name}(): {n_photo} drawBitmap call(s) {k}x nearest first"]
+    return report + optional_settings(tree, NAME, "Upscale", "iOS-style upscaling, Upscaling sharpness")

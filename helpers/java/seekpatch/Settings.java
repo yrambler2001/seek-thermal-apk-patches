@@ -161,23 +161,20 @@ public final class Settings {
     }
 
     /** A list of the app's own class (a dialog of single choices), appended; it stores the chosen value
-     * into p under key, as text.  The summary shows the chosen entry. */
+     * into p under key, as text.  The summary shows the chosen entry (entries may hold a "%"). */
     public static ListPreference addList(PreferenceGroup g, final SharedPreferences p, final String key, String title,
                                          String[] entries, String[] values, String value, final Runnable then) {
-        final ListPreference l = (ListPreference) create(g.getContext(), listType, ListPreference.class);
+        ListPreference l = (ListPreference) create(g.getContext(), listType, ListPreference.class);
         prepare(l, key, title);
         l.setDialogTitle(title);
         l.setEntries(entries);
         l.setEntryValues(values);
         l.setValue(value);
-        l.setSummary(l.getEntry());
+        l.setSummary("%s");  // ListPreference formats its summary with the chosen entry
         l.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object chosen) {
-                String v = String.valueOf(chosen);
-                p.edit().putString(key, v).apply();
-                int i = l.findIndexOfValue(v);
-                l.setSummary(i >= 0 ? l.getEntries()[i] : v);
+                p.edit().putString(key, String.valueOf(chosen)).apply();
                 if (then != null) {
                     then.run();
                 }

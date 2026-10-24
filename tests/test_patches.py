@@ -77,7 +77,8 @@ def test_sharp_scaling(make_project, shape):
     program = text(tree, "Lfix/Program;")
     assert program.count("texture2D(thermalTexture, sharpCoord(vTextureCoord))") == 2
     assert program.count("varying SHARP_P vec2 vTextureCoord;") == 2
-    assert "(t - i - 0.5) * 2.0000 + 0.5" in program
+    assert "(t - i - 0.5) * thermalSharp + 0.5" in program
+    assert "if (thermalSize.x < 1.0 || thermalSharp <= 1.0) return c;" in program  # Android: the stock sample
     assert "#ifdef GL_FRAGMENT_PRECISION_HIGH" in program and "#define SHARP_OFF" in program
     assert "precision highp float;\\nuniform mat4 uTexMatrix;" in program  # the vertex shader
     assert re.search(r"invoke-static \{\}, Lseekpatch/SharpScale;->uniform\(\)V\n\n\s+invoke-static \{v0, v1, v2\}, "
@@ -89,15 +90,31 @@ def test_sharp_scaling(make_project, shape):
     assert photo.count("Lseekpatch/SharpScale;->draw(") == 2
     assert "Canvas;->drawBitmap(" not in photo
     helper = text(tree, "Lseekpatch/SharpScale;")
-    assert "const/16 v5, 2" in helper and "glUniform2f" in helper
+    assert ".field public static sharpness:F = 2.0f" in helper and ".field public static photoFactor:I = 2" in helper
+    assert "glUniform2f" in helper and 'const-string v0, "thermalSharp"' in helper and "glUniform1f" in helper
+    # the settings: Upscale, behind the shared hooks
+    assert tree.path_of("Lseekpatch/Upscale;") and tree.path_of("Lseekpatch/Settings;")
+    assert text(tree, "Lfix/ImageSettings;").count(SCREEN) == 1
 
 
 def test_sharp_scaling_sharpness_is_configurable(make_project):
     tree = tree_of(make_project, "lambda")
     report = sharp_scaling.apply(tree, Options(sharpness=3.5))
-    assert "* 3.5000 + 0.5" in text(tree, "Lfix/Program;")
-    assert "const/16 v5, 4" in text(tree, "Lseekpatch/SharpScale;")  # photo path rounds to an integer factor
+    helper = text(tree, "Lseekpatch/SharpScale;")  # where the settings start
+    assert ".field public static sharpness:F = 3.5f" in helper
+    assert ".field public static photoFactor:I = 4" in helper  # photo path rounds to an integer factor
     assert report[0].startswith("sharpness 3.5")
+    assert report[-1] == "settings: iOS-style upscaling, Upscaling sharpness (seekpatch.Upscale)"
+
+
+def test_sharp_scaling_without_a_settings_screen(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "ImageSettings.smali").unlink()
+    tree = SmaliTree(str(root))
+    report = sharp_scaling.apply(tree, Options())
+    assert report[-1].startswith("no settings: expected one PreferenceFragment")
+    assert not tree.path_of("Lseekpatch/Upscale;") and not tree.path_of("Lseekpatch/Settings;")
+    assert "thermalSharp" in text(tree, "Lseekpatch/SharpScale;")  # the field keeps --sharpness
 
 
 @pytest.mark.parametrize("bad", [1.0, 0.5, 100.0])
@@ -210,6 +227,8 @@ def test_video_quality(make_project, shape):
     tree = tree_of(make_project, shape)
     report = video_quality.apply(tree, Options())
     assert report[0].startswith("HEVC QP 18")
+    assert report[-1] == "settings: Video quality (seekpatch.VideoSettings)"
+    assert tree.path_of("Lseekpatch/VideoSettings;") and ".field public static qp:I = 0x12" in text(tree, "Lseekpatch/VideoConfig;")
     recorder = text(tree, "Lfix/Recorder;")
     assert re.search(r"invoke-static \{p1\}, Lseekpatch/Video;->encoder\(Landroid/media/MediaFormat;\)"
                      r"Landroid/media/MediaCodec;\n\n\s+move-result-object p2", recorder)
@@ -232,6 +251,19 @@ def test_video_quality(make_project, shape):
     assert 'mime:Ljava/lang/String; = "video/hevc"' in config and "qp:I = 0x12" in config
     assert "longSide:I = 0x500" in config
     assert tree.path_of("Lseekpatch/Video;") and tree.path_of("Lseekpatch/Video$Candidate;") and tree.path_of("Lseekpatch/Audio;")
+
+
+def test_settings_hooks_are_shared(make_project):
+    tree = tree_of(make_project, "lambda")
+    for p in (sharp_scaling, smoothing_settings, video_quality):
+        report = p.apply(tree, Options())
+        assert not any(line.startswith("no settings") for line in report)
+    assert text(tree, "Lfix/ImageSettings;").count(SCREEN) == 1 and text(tree, "Lfix/Main;").count(ATTACH) == 1
+    assert "# seek-patch sharp_scaling: seek-patch's settings" in text(tree, "Lfix/ImageSettings;")  # the first
+    assert all(tree.path_of(f"Lseekpatch/{c};") for c in ("Upscale", "VideoSettings", "Filters", "Settings"))
+    # Settings looks the sections up by name: the names it lists are the classes the patches add
+    settings = text(tree, "Lseekpatch/Settings;")
+    assert all(f'"seekpatch.{c}"' in settings for c in ("Filters", "Upscale", "VideoSettings"))
 
 
 def test_video_quality_options(make_project):

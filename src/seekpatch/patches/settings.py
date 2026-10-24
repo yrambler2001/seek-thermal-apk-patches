@@ -74,3 +74,16 @@ def install(tree: SmaliTree, patch: str) -> list[str]:
     activity = class_descriptor(tree.get(activity_path))
     return [f"settings: {fragment.split('/')[-1][:-1]}.onCreate -> Settings.screen, "
             f"{activity.split('/')[-1][:-1]}.onCreate -> Settings.attach"]
+
+
+def optional_settings(tree: SmaliTree, patch: str, section: str, what: str) -> list[str]:
+    """For a patch whose settings are an extra: the hooks (unless there) and its section class, or
+    nothing -- with the reason in the report -- where this release has no screen to put them on."""
+    try:
+        with tree.transaction():
+            lines = install(tree, patch)
+            add_helpers(tree, section)
+    except PatchError as e:
+        why = str(e)
+        return [f"no settings: {why[len(patch) + 2:] if why.startswith(patch + ': ') else why}"]
+    return lines + [f"settings: {what} (seekpatch.{section})"]

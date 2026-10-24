@@ -17,6 +17,10 @@ mono 44.1 kHz AAC at 64 kbit/s.  The patch changes four places:
                             else 48 kHz mono, else the app's own (seekpatch.Audio)
     the sound encoder       AAC-LC at 256 kbit/s stereo / 160 kbit/s mono
 
+Where the release has the settings screen (settings.py), Settings -> Image & Video gets a "Video
+quality" list (seekpatch.VideoSettings): the QP, starting from --video-qp, read again by
+seekpatch.Video at the start of each recording.
+
 The picture is drawn by the same GL code as the live view (the encoder thread calls the render
 thread's draw), so sharp_scaling and the overlays apply to it exactly as on screen.  Sources of the
 helpers: helpers/java/seekpatch/{Video,Audio}.java.
@@ -29,6 +33,7 @@ from ..helpers import add_helpers
 from ..smali import GAP, REG, PatchError, SmaliTree, methods, smali_escape
 from .base import Options, ensure_unpatched, mark
 from .seek import render_thread, upload_call
+from .settings import optional_settings
 
 NAME = "video_quality"
 SUMMARY = "video at the photo's size, HEVC constant quality, every thermal frame (no 15 fps cap), 48 kHz stereo"
@@ -249,4 +254,4 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
         mime=smali_escape(CODECS[opts.video_codec]), qp=hex(opts.video_qp)))
     add_helpers(tree, "Video", "Audio")
     return [f"{opts.video_codec.upper()} QP {opts.video_qp}, long side {LONG_SIDE}: encoder {encoder}, sound {audio}",
-            clock]
+            clock, *optional_settings(tree, NAME, "VideoSettings", "Video quality")]
