@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-24
+
+The first public release: a Smart smoothing button, split bundles as input, and a step-by-step
+quick start for Windows, macOS and Linux.
 
 - Split bundles as input: `.xapk`, `.apks`, `.apkm`, or any zip of a base apk and its splits (such
   as the files `adb pull` gives for a Play Store install).  They are merged into one apk with
