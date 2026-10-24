@@ -12,7 +12,7 @@ from .apk import SEEK_PACKAGE, ApkError, Plan, app_info, check, patch_apk
 from .axml import AxmlError
 from .bundle import BundleError
 from .manifest import ManifestError, valid_package
-from .patches import ALL, BY_NAME, RECOMMENDED, Options
+from .patches import ALL, BY_NAME, RECOMMENDED, Options, conflicts, every_patch
 from .smali import PatchError
 from .toolchain import APKEDITOR, APKTOOL, SIGNER, Toolchain, ToolchainError, ensure_jar, find_java, home, java_major
 
@@ -37,7 +37,7 @@ def _info_or_warn(apk: str):
 def cmd_list(_args) -> int:
     for p in ALL:
         star = "*" if p.RECOMMENDED else " "
-        print(f"{star} {p.NAME:14} {p.VERSIONS:14} {p.SUMMARY}")
+        print(f"{star} {p.NAME:18} {p.VERSIONS:14} {p.SUMMARY}")
     print("\n* = applied by default (seek-patch patch APK); add others with -p NAME, or --all")
     return 0
 
@@ -47,7 +47,7 @@ def cmd_check(args) -> int:
     tc = Toolchain.load(log=_log)
     results = check(tc, args.apk, _log)
     for name, why in results.items():
-        print(f"  {'ok  ' if why is None else 'no  '} {name:14} {'' if why is None else why}")
+        print(f"  {'ok  ' if why is None else 'no  '} {name:18} {'' if why is None else why}")
     if "(apk)" in results:
         return 1
     ok = [n for n in BY_NAME if results.get(n) is None]
@@ -63,8 +63,10 @@ def cmd_check(args) -> int:
 def cmd_patch(args) -> int:
     if not os.path.isfile(args.apk):
         raise SystemExit(f"error: {args.apk}: no such file")
-    names = [p.NAME for p in ALL] if args.all else (args.patch or RECOMMENDED)
+    names = every_patch() if args.all else (args.patch or RECOMMENDED)
     names = [p.NAME for p in ALL if p.NAME in names]  # canonical order, no duplicates
+    for a, b in conflicts(names):
+        raise SystemExit(f"error: {a} and {b} are alternatives: pick one")
     if not 1.0 < args.sharpness <= 16.0:
         raise SystemExit("error: --sharpness must be > 1 and <= 16 (2 = iOS look)")
     if not 10 <= args.video_qp <= 40:
@@ -152,7 +154,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("apk", help="the Seek Thermal .apk, or an .xapk / .apks / .apkm bundle (merged into one apk first)")
     p.add_argument("-p", "--patch", action="append", choices=list(BY_NAME), metavar="NAME",
                    help=f"apply this patch (repeatable); one of {', '.join(BY_NAME)}")
-    p.add_argument("--all", action="store_true", help="apply every patch, debug_log included (all must apply)")
+    p.add_argument("--all", action="store_true",
+                   help="apply every patch, debug_log included, but not no_smoothing (the alternative to "
+                        "smoothing_settings); all must apply")
     p.add_argument("--sharpness", type=float, default=Options.sharpness, metavar="N",
                    help="sharp_scaling: blend over 1/N of a pixel (2 = iOS look, higher = crisper)")
     p.add_argument("--video-codec", choices=["hevc", "avc"], default="hevc",

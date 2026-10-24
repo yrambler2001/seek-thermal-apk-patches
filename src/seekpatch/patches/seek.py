@@ -14,6 +14,7 @@ import re
 from dataclasses import dataclass
 
 from ..smali import REG, Method, PatchError, SmaliTree, class_descriptor, method_at, methods
+from .base import mark
 
 GL_TEX_IMAGE = "Landroid/opengl/GLES20;->glTexImage2D(IIIIIIIILjava/nio/Buffer;)V"
 ON_CREATE = "onCreate(Landroid/os/Bundle;)V"
@@ -91,6 +92,49 @@ def seekip_feature(tree: SmaliTree, patch: str, native: str) -> str:
     if len(found) != 1:
         raise PatchError(f"{patch}: expected one callable {native}, found {found}")
     return found[0]
+
+
+SEEKIP = "Lseekpatch/SeekIP;"
+SEEKIP_SMALI = """.class public final Lseekpatch/SeekIP;
+.super Ljava/lang/Object;
+.source "seek-patch {patch}"
+
+{mark}: the app's own image-library feature calls, for seek-patch's helpers
+
+
+# direct methods
+.method public static getFeature{sig}
+    .locals 1
+
+    invoke-static/range {{p0 .. p4}}, {getfeature}
+
+    move-result v0
+
+    return v0
+.end method
+
+.method public static setFeature{sig}
+    .locals 1
+
+    invoke-static/range {{p0 .. p4}}, {setfeature}
+
+    move-result v0
+
+    return v0
+.end method
+"""
+
+
+def seekip_class(tree: SmaliTree, patch: str) -> tuple[str, str]:
+    """seekpatch.SeekIP -- getFeature / setFeature, forwarding to the app's own feature calls -- for the
+    Java helpers (helpers/stubs/seekpatch/SeekIP.java), added unless another patch did.  Returns the
+    app's (setFeature, getFeature)."""
+    setfeature = seekip_feature(tree, patch, "seekIPsetFeature")
+    getfeature = seekip_feature(tree, patch, "seekIPgetFeature")
+    if not tree.path_of(SEEKIP):
+        tree.add_class(SEEKIP, SEEKIP_SMALI.format(patch=patch, mark=mark(patch), sig=FEATURE_SIG,
+                                                   getfeature=getfeature, setfeature=setfeature))
+    return setfeature, getfeature
 
 
 @dataclass(frozen=True)

@@ -57,6 +57,8 @@ def test_patched_fixture_assembles_and_signs(make_project, toolchain, tmp_path, 
                 info = z.getinfo(f"lib/{abi}/libseekpatch_smooth.so")
                 assert info.compress_type == zipfile.ZIP_STORED and z.read(info) == native.library(abi)
             assert b"Lseekpatch/Smooth;" in z.read("classes.dex")
+        if "smoothing_settings" in APPLICABLE[shape]:
+            assert b"Lseekpatch/Filters;" in z.read("classes.dex") and b"Lseekpatch/Settings;" in z.read("classes.dex")
     assert zipalign.check(signed) == []
     info = apk.app_info(signed)
     assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture", "2.3.4", 294)

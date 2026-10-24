@@ -4,7 +4,7 @@ import pytest
 
 from seekpatch import __version__
 from seekpatch.cli import main
-from seekpatch.patches import ALL, RECOMMENDED
+from seekpatch.patches import ALL, RECOMMENDED, conflicts, every_patch
 
 
 def test_list(capsys):
@@ -12,8 +12,21 @@ def test_list(capsys):
     out = capsys.readouterr().out
     for p in ALL:
         assert p.NAME in out and p.VERSIONS in out
-    assert RECOMMENDED == ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality",
-                           "resume_fix", "mic_prompt", "flat_field", "smart_smoothing"]
+    assert RECOMMENDED == ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x",
+                           "video_quality", "resume_fix", "mic_prompt", "flat_field", "smart_smoothing"]
+
+
+def test_all_leaves_out_the_alternative():
+    assert every_patch() == RECOMMENDED[:2] + ["smoothing_settings"] + RECOMMENDED[3:] + ["debug_log"]
+    assert conflicts(every_patch()) == []
+    assert conflicts(["no_smoothing", "smoothing_settings", "flat_field"]) == [("no_smoothing", "smoothing_settings")]
+
+
+def test_patch_refuses_alternatives(tmp_path):
+    f = tmp_path / "x.apk"
+    f.write_bytes(b"")
+    with pytest.raises(SystemExit, match="alternatives"):
+        main(["patch", str(f), "-p", "smoothing_settings", "-p", "no_smoothing"])
 
 
 def test_version(capsys):

@@ -15,6 +15,9 @@ This patch follows the 900 call with, when the switch is off:
     feature 100 = 0   clear bit 0x100  aslpf (spatial 3x3 smoothing)
 The "on" position keeps the stock preset; the rest of the "off" preset (gradient, peaklimit) stays.
 
+Not in the default set since smoothing_settings, which replaces the switch with one per filter;
+this patch is the alternative that keeps the single switch.  The two refuse to combine.
+
 Versions: the feature ids and masks above are verified in libseekip 2.10.5.0 (app 2.2.2) and
 2.11.3.2 (2.2.3 - 2.3.4); 2.2.0 / 2.2.1 carry the same preset code.  Older apps (2.1.x) bundle a
 library whose feature 900 works differently, so the patch refuses them.
@@ -29,7 +32,8 @@ NAME = "no_smoothing"
 SUMMARY = 'make the "Image smoothing" switch really turn smoothing off (no temporal / spatial filter)'
 VERSIONS = "2.2.0 - 2.3.4"
 MIN_VERSION_CODE = 260  # 2.2.0
-RECOMMENDED = True
+RECOMMENDED = False  # the alternative to smoothing_settings
+CONFLICTS = ("smoothing_settings",)
 
 MARK = mark(NAME)
 
@@ -74,6 +78,9 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
     ensure_unpatched(tree, NAME)
     if tree.containing("nosmoothing_apply("):  # the same hook from an earlier tools/repack build
         raise AlreadyApplied(f"{NAME}: already applied (by an earlier no_smoothing build)")
+    for other in CONFLICTS:
+        if tree.containing(mark(other)):
+            raise PatchError(f"{NAME}: {other} is applied, and the two are alternatives -- pick one")
     code = tree.version_code
     if code is None:
         raise PatchError(f"{NAME}: cannot tell the app version, and the patch is only verified on 2.2.0 - 2.3.4")

@@ -20,8 +20,10 @@ from seekpatch.patches import (
     resume_fix,
     sharp_scaling,
     smart_smoothing,
+    smoothing_settings,
     video_quality,
 )
+from seekpatch.patches.settings import ATTACH, SCREEN
 from seekpatch.smali import AlreadyApplied, PatchError, SmaliTree, methods
 
 ABIS = ("arm64-v8a", "armeabi-v7a")
@@ -410,6 +412,16 @@ def test_smart_smoothing_needs_an_arm_libseekip(make_project):
         smart_smoothing.apply(tree_of(make_project, "accessor", ()), Options())
 
 
+def test_smart_smoothing_library_exports_every_native_method():
+    from seekpatch import native
+    from seekpatch.helpers import smali
+    natives = re.findall(r"^\.method [^\n]*\bnative ([\w$]+)\(", smali("Smooth"), re.M)
+    assert sorted(natives) == ["enable", "install", "setOptions"]
+    for abi in native.ABIS:
+        lib = native.library(abi)
+        assert all(f"Java_seekpatch_Smooth_{n}".encode() + b"\0" in lib for n in natives), abi
+
+
 def test_smart_smoothing_refuses_older_apps(make_project):
     tree = tree_of(make_project, "lambda")
     tree._identity = {"versionCode": 272, "versionName": "2.2.2"}
@@ -417,13 +429,89 @@ def test_smart_smoothing_refuses_older_apps(make_project):
         smart_smoothing.apply(tree, Options())
 
 
+# smoothing_settings -----------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_smoothing_settings(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = smoothing_settings.apply(tree, Options())
+    pipeline = text(tree, "Lfix/Pipeline;")
+    assert re.search(r"Lfix/Pipeline;->set\(JLfix/Features;I\)V\n\n\s+# seek-patch smoothing_settings: .*\n\s+"
+                     r"invoke-static/range \{p0 \.\. p2\}, Lfix/Pipeline;->seekpatch_filters\(Lfix/Pipeline;J\)V\n", pipeline)
+    helper = next(m for m in methods(pipeline) if m.name == "seekpatch_filters")
+    assert "iget-boolean v0, p0, Lfix/Pipeline;->C:Z" in helper.body  # the value the 900 call sent
+    assert "invoke-static {p1, p2, v0}, Lseekpatch/Filters;->frame(JZ)V" in helper.body
+    # the settings hooks: after the Image & Video screen's preferences, and in the camera screen
+    assert re.search(r"->addPreferencesFromResource\(I\)V\n\n\s+# seek-patch smoothing_settings: .*\n\s+"
+                     r"invoke-static/range \{p0 \.\. p0\}, " + re.escape(SCREEN) + "\n", text(tree, "Lfix/ImageSettings;"))
+    assert SCREEN not in text(tree, "Lfix/MainSettings;")
+    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch smoothing_settings: .*\n\s+"
+                     r"invoke-static/range \{p0 \.\. p0\}, " + re.escape(ATTACH) + "\n", text(tree, "Lfix/Main;"))
+    assert all(tree.path_of(c) for c in ("Lseekpatch/Filters;", "Lseekpatch/Filters$1;", "Lseekpatch/Settings;",
+                                         "Lseekpatch/Settings$1;", "Lseekpatch/SeekIP;"))
+    assert "Lfix/NativeLib;->g(JILjava/nio/ByteBuffer;I)I" in report[0]
+    assert report[1] == "settings: ImageSettings.onCreate -> Settings.screen, Main.onCreate -> Settings.attach"
+
+
+@pytest.mark.parametrize("order", [("smoothing_settings", "flat_field"), ("flat_field", "smoothing_settings")])
+def test_smoothing_settings_shares_seekip_with_flat_field(make_project, order):
+    tree = tree_of(make_project, "lambda")
+    for name in order:
+        BY_NAME[name].apply(tree, Options())
+    pipeline = text(tree, "Lfix/Pipeline;")
+    assert "Lseekpatch/Flat;->frame(J)V" in pipeline and "->seekpatch_filters(" in pipeline
+    seekip = text(tree, "Lseekpatch/SeekIP;")
+    assert f".source \"seek-patch {order[0]}\"" in seekip  # added once, by the first
+    assert "invoke-static/range {p0 .. p4}, Lfix/NativeLib;->g(JILjava/nio/ByteBuffer;I)I" in seekip
+
+
+@pytest.mark.parametrize("first, second", [(no_smoothing, smoothing_settings), (smoothing_settings, no_smoothing)])
+def test_smoothing_settings_and_no_smoothing_are_alternatives(make_project, first, second):
+    tree = tree_of(make_project, "lambda")
+    first.apply(tree, Options())
+    with pytest.raises(PatchError, match="alternatives"):
+        second.apply(tree, Options())
+
+
+def test_smoothing_settings_composes_with_smart_smoothing(make_project):
+    tree = tree_of(make_project, "lambda")
+    smoothing_settings.apply(tree, Options())
+    smart_smoothing.apply(tree, Options())
+    pipeline, main = text(tree, "Lfix/Pipeline;"), text(tree, "Lfix/Main;")
+    assert "Lseekpatch/Smooth;->frame()V" in pipeline and "->seekpatch_filters(" in pipeline
+    assert "Lseekpatch/Smooth;->attach(" in main and main.count(ATTACH) == 1
+
+
+def test_smoothing_settings_refuses_older_apps(make_project):
+    tree = tree_of(make_project, "lambda")
+    tree._identity = {"versionCode": 250, "versionName": "2.1.7"}
+    with pytest.raises(PatchError, match="2.1.7"):
+        smoothing_settings.apply(tree, Options())
+
+
+def test_smoothing_settings_needs_the_settings_screen(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "ImageSettings.smali"
+    p.write_text(p.read_text().replace('"use_smoothing"', '"show_temperature_bar"'))
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match="Image & Video"):
+        with tree.transaction():
+            smoothing_settings.apply(tree, Options())
+    assert tree.save() == []  # the feature hook found before it was rolled back
+
+
+def test_smoothing_settings_needs_the_feature_call(make_project):
+    with pytest.raises(PatchError, match="feature-900 call"):
+        smoothing_settings.apply(tree_of(make_project, "virtual"), Options())
+
+
 # all patches ------------------------------------------------------------------------------------
 
-APPLICABLE = {
-    "lambda": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-               "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
-    "accessor": ["full_fps", "sharp_scaling", "no_smoothing", "png_photos", "photo_1x", "video_quality", "resume_fix",
-                 "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
+APPLICABLE = {  # every patch that applies, but no_smoothing (the alternative to smoothing_settings)
+    "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
+               "resume_fix", "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
+    "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
+                 "resume_fix", "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
     "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "debug_log"],
 }
 

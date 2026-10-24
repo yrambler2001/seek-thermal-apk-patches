@@ -14,6 +14,7 @@ The patch adds:
                                                   up by 40 -- the map moves 1/8 per frame -- then
                                                   clears it
     seekpatch.SeekIP                              the app's seekIPsetFeature / seekIPgetFeature
+                                                  (shared with smoothing_settings, see seek.py)
 
 Versions: the gradient features are verified in libseekip 2.10.5.0 (app 2.2.2) and 2.11.3.2
 (2.2.3 - 2.3.4); the patch keeps to the apps no_smoothing is verified on.  Source of the helper:
@@ -26,7 +27,7 @@ import re
 from ..helpers import add_helpers
 from ..smali import PatchError, SmaliTree, class_descriptor
 from .base import Options, ensure_unpatched, mark
-from .seek import FEATURE_SIG, camera_activity, feature_900_call, seekip_feature
+from .seek import camera_activity, feature_900_call, seekip_class
 
 NAME = "flat_field"
 SUMMARY = 'a "Flat field" button: point at a uniform surface, tap, and the camera\'s own gradient is removed'
@@ -35,36 +36,6 @@ MIN_VERSION_CODE = 260  # 2.2.0
 RECOMMENDED = True
 
 MARK = mark(NAME)
-
-SEEKIP_SMALI = """.class public final Lseekpatch/SeekIP;
-.super Ljava/lang/Object;
-.source "seek-patch flat_field"
-
-{mark}: the app's own image-library feature calls, for seekpatch.Flat
-
-
-# direct methods
-.method public static getFeature{sig}
-    .locals 1
-
-    invoke-static/range {{p0 .. p4}}, {getfeature}
-
-    move-result v0
-
-    return v0
-.end method
-
-.method public static setFeature{sig}
-    .locals 1
-
-    invoke-static/range {{p0 .. p4}}, {setfeature}
-
-    move-result v0
-
-    return v0
-.end method
-"""
-
 
 def apply(tree: SmaliTree, opts: Options) -> list[str]:
     ensure_unpatched(tree, NAME)
@@ -75,8 +46,7 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
         raise PatchError(f"{NAME}: app {tree.identity.get('versionName')} (versionCode {code}) predates the image "
                          f"libraries whose gradient stage the patch is verified on (apps {VERSIONS})")
     call = feature_900_call(tree, NAME)
-    setfeature = seekip_feature(tree, NAME, "seekIPsetFeature")
-    getfeature = seekip_feature(tree, NAME, "seekIPgetFeature")
+    setfeature, getfeature = seekip_class(tree, NAME)
     activity_path, after_layout = camera_activity(tree, NAME)
     activity = class_descriptor(tree.get(activity_path))
 
@@ -91,8 +61,6 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
             f"{indent}invoke-static {{p0}}, Lseekpatch/Flat;->attach(Landroid/app/Activity;)V\n")
     tree.set(activity_path, text[:after_layout] + hook + text[after_layout:])
 
-    tree.add_class("Lseekpatch/SeekIP;", SEEKIP_SMALI.format(mark=MARK, sig=FEATURE_SIG, getfeature=getfeature,
-                                                             setfeature=setfeature))
     add_helpers(tree, "Flat")
     return [f"{tree.rel(call.path)}: Flat.frame after the feature-900 call; features via {setfeature} / {getfeature}",
             f"{tree.rel(activity_path)}: the button after {activity.split('/')[-1][:-1]}.setContentView"]
