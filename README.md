@@ -39,30 +39,90 @@ camera firmware.
 
 ## Quick start
 
-You need Python 3.9+, a Java runtime (JDK 11 or newer) and, to install from the computer, `adb`.
+From the app downloaded from APKPure to the patched app on your phone, with every suggested patch.
+You need a computer with Windows, macOS or Linux.
+
+**1. Download the app.**  On [apkpure.com](https://apkpure.com), search for *Seek Thermal* and
+download version **2.3.4**, the newest the patches are tested on.  Either file works, `.xapk` or
+`.apk`.  Other sources are under *Getting the APK* below.
+
+**2. Install Java, Python and seek-patch** (once).  seek-patch goes into its own Python virtual
+environment, the folder `seek-patch` in your home folder; deleting that folder removes it.
+
+<details open>
+<summary><b>Windows</b> (PowerShell)</summary>
+
+```powershell
+winget install Python.Python.3.13
+winget install EclipseAdoptium.Temurin.21.JDK
+# close PowerShell and open a new window, so it finds Python and Java
+py -m venv "$HOME\seek-patch"
+& "$HOME\seek-patch\Scripts\pip.exe" install https://github.com/yrambler2001/seek-thermal-apk-patches/archive/refs/heads/main.zip
+```
+
+</details>
+
+<details>
+<summary><b>macOS</b> (Terminal)</summary>
 
 ```sh
-pipx install git+https://github.com/yrambler2001/seek-thermal-apk-patches      # or: pip install .  from a checkout
-seek-patch doctor                                         # checks Java, fetches the pinned tools
-seek-patch patch Seek+Thermal_2.3.4.apk                   # -> Seek+Thermal_2.3.4-patched.apk
+brew install python openjdk              # Homebrew: https://brew.sh
+python3 -m venv ~/seek-patch
+~/seek-patch/bin/pip install https://github.com/yrambler2001/seek-thermal-apk-patches/archive/refs/heads/main.zip
+```
+
+</details>
+
+<details>
+<summary><b>Linux</b></summary>
+
+```sh
+sudo apt install python3-venv default-jdk-headless        # Debian, Ubuntu, Mint
+sudo dnf install python3 java-21-openjdk-headless          # Fedora
+sudo pacman -S python jre-openjdk-headless                 # Arch
+python3 -m venv ~/seek-patch
+~/seek-patch/bin/pip install https://github.com/yrambler2001/seek-thermal-apk-patches/archive/refs/heads/main.zip
+```
+
+Run only your distribution's line of the first three.
+
+</details>
+
+To update seek-patch later, run the same `pip install` line with `--force-reinstall` added.
+
+**3. Patch.**  In a new terminal window, put the virtual environment on the path, go to the
+download and patch it.  Use your file's name: type `seek-patch patch ` and drag the file onto the
+window.
+
+```sh
+source ~/seek-patch/bin/activate                      # macOS, Linux
+seek-patch doctor                                     # checks Java, fetches the pinned tools, creates your signing key
+cd ~/Downloads
+seek-patch patch "Seek Thermal_2.3.4_APKPure.xapk"    # -> Seek Thermal_2.3.4_APKPure-patched.apk
+```
+
+```powershell
+$env:Path = "$HOME\seek-patch\Scripts;$env:Path"      # Windows
+seek-patch doctor
+cd ~\Downloads
+seek-patch patch "Seek Thermal_2.3.4_APKPure.xapk"
 ```
 
 The default set adapts to the version: a patch that does not apply to your APK is skipped and named
-in the output.  `seek-patch check APK` shows the details first.
+in the output.  `seek-patch check FILE` shows the details first.
 
-The patched app is signed with **your** key (created on first run), the store app with Seek's, so
-Android will not install one over the other.  Either replace it:
+**4. Install it on the phone.**  The patched app is signed with **your** key, the store app with
+Seek's, so Android will not install one over the other.
 
-```sh
-adb uninstall com.tyriansystems.SeekThermal               # resets the app's settings; saved photos stay
-adb install Seek+Thermal_2.3.4-patched.apk
-```
-
-or keep both, with the patched one as a separate app called "Seek (patched)":
-
-```sh
-seek-patch patch Seek+Thermal_2.3.4.apk --side-by-side --install
-```
+- **Replace the store app:** uninstall Seek Thermal on the phone (this resets the app's settings;
+  saved photos stay), copy the `-patched.apk` to the phone and open it there.  Android asks once to
+  allow installs from the app you opened it with.
+- **Keep both:** patch with `--side-by-side` added.  The result installs as a separate app called
+  "Seek (patched)".
+- **With adb** (USB debugging on): `adb uninstall com.tyriansystems.SeekThermal`, then
+  `adb install "Seek Thermal_2.3.4_APKPure-patched.apk"`; or add `--side-by-side --install` to the
+  patch command.  adb comes with Android's platform tools: `winget install Google.PlatformTools`,
+  `brew install android-platform-tools` or `sudo apt install adb`.
 
 **Getting the APK** – seek-patch takes one complete ("universal") `.apk`, or a split bundle:
 `.xapk` (APKPure), `.apks`, or `.apkm` (APKMirror, unless encrypted).  A bundle is first merged into
