@@ -40,7 +40,8 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
 
 `SmaliTree` (`seekpatch/smali.py`) holds every smali file in memory: `containing(*needles)`,
 `path_of(descriptor)`, `get` / `set`, `replace_method_body`, `add_class`, and the app's
-`version_code` / `version`.  `methods(text)` iterates methods with their header and body.  Nothing
+`version_code` / `version`.  `add_native_library(abi, name, data)` adds a `.so` to `lib/<abi>/` (`abis` lists the
+apk's ABIs); it is stored uncompressed, as the app maps its libraries out of the apk.  `methods(text)` iterates methods with their header and body.  Nothing
 is written until `save()`; the CLI wraps each patch in `tree.transaction()`, so a patch that raises
 leaves the tree exactly as it found it.  That is what lets the default set skip a patch that does not
 apply to a given version, while patches named with `-p` must all apply.
@@ -71,6 +72,16 @@ helpers/java/seekpatch/*.java ──javac (Java 8 bytecode)──► d8 --releas
   are inlined by javac and safe on any version.
 - Helpers must not fail the app: catch, log under the tag `seek-patch`, and fall back to what the
   app did.
+
+## Native code
+
+`smart_smoothing` needs C: [`helpers/native`](../helpers/native) is built by
+`python3 helpers/build_native.py` (NDK r25b, arm64-v8a + armeabi-v7a, API 23, stripped, sha1 build
+id, 16 KiB pages) into `src/seekpatch/native/<abi>/`, committed like the smali; `--check` rebuilds
+and compares byte for byte.  Native code never contains Seek code: it hooks the app's libraries
+from outside (see [smart-smoothing.md](smart-smoothing.md)) and checks what it hooks before
+changing anything.  `tests/test_native.py` builds the hook for the host and drives it with a
+stand-in library.
 
 ## Rules
 

@@ -6,6 +6,17 @@
   as the files `adb pull` gives for a Play Store install).  They are merged into one apk with
   APKEditor 1.4.9 (fetched on first use, verified by sha256), then patched as before.  This covers
   2.3.1, which APKPure only offers as an `.xapk`.
+- `smart_smoothing`: a *Smart smoothing* button at the top left of the camera screen, off by
+  default and remembered across restarts.  On, the image library's first filter runs without its
+  temporal smoothing (`alpf`), and its output goes through seek-patch's motion-compensated noise
+  filter, in place.  The filter follows the camera's motion, averages up to 8 frames per pixel,
+  removes column stripes and levels the strip at the screen's left edge; temperatures, photos and
+  video get the cleaner frame.  It is a small native library of seek-patch's own
+  (`helpers/native`, built reproducibly with `helpers/build_native.py`, committed for arm64-v8a and
+  armeabi-v7a) that swaps libseekip's GOT entries for `filter_process` / `filter_process_shutter`,
+  after checking the library is one of the four builds it was verified on (2.2.3 – 2.3.4).
+- Patches can add native libraries (`SmaliTree.add_native_library`): written to `lib/<abi>/` on
+  save, rolled back with the patch, stored uncompressed and page aligned in the apk.
 - `mic_prompt`: 2.3.1 – 2.3.4.  2.3.1, now testable, has 2.3.3's microphone check.
 
 ## 0.2.0 — 2026-10-23
