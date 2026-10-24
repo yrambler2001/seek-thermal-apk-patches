@@ -47,6 +47,11 @@ the smoothing switches in Settings.
 6. Seek's three filter switches only: the Smart smoothing switches come with `smart_smoothing`,
    which starts at 2.2.3.
 
+The settings in *Settings → Image & Video* come with their patches wherever those apply: upscaling
+(`sharp_scaling`) 2.0 – 2.3.4, video quality (`video_quality`) 2.1.2 – 2.3.4, Seek's filters
+(`smoothing_settings`) 2.2.0 – 2.3.4, Smart smoothing 2.2.3 – 2.3.4.  The build test checks each
+section class in the built app.  Only 2.3.4 has shown them on a phone.
+
 `no_smoothing` is opt-in, the alternative to `smoothing_settings`: the build test applies every
 patch but it, and `check` tests each patch alone.
 

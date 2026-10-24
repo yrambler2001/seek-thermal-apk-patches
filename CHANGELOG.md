@@ -15,6 +15,12 @@
 - `smart_smoothing`: stripe correction and left-edge levelling can be switched at run time (a new
   JNI entry; the native libraries are rebuilt).  The button follows its stored value, so a settings
   switch moves it.
+- Settings for `sharp_scaling` (2.0 – 2.3.4): *iOS-style upscaling* (off: the stock Android
+  bilinear scaling, live view and photos) and *Upscaling sharpness* (1.5 – 8).  The shader's
+  sharpness is now a uniform; at 1 or less it returns the stock sample exactly.
+- A setting for `video_quality` (2.1.2 – 2.3.4): *Video quality*, the QP from 14 to 28 with the size
+  of each, used from the next recording.  `--sharpness` and `--video-qp` are now the settings'
+  defaults.
 - Settings in the app: a shared hook after the Image & Video screen's own preferences and in the
   camera screen's `onCreate` (`patches/settings.py`, `seekpatch.Settings`); the preferences are the
   app's own classes, the values a preferences file of seek-patch's.  `seekpatch.SeekIP` is shared by

@@ -119,7 +119,19 @@ all is [`mic_prompt`](mic-prompt.md)'s business.
 |---|---|
 | `--video-codec hevc` | default; H.264 is the automatic fallback |
 | `--video-codec avc` | H.264 first: plays on anything, ~20 % bigger |
-| `--video-qp N` | 10 – 40, default 18; lower = better and bigger |
+| `--video-qp N` | 10 – 40, default 18; lower = better and bigger.  The setting below starts from it |
+
+## Setting
+
+*Settings → Image & Video → Video quality* (2.1.2 – 2.3.4): the QP, from *QP 14: about 115 MB a
+minute, best* to *QP 28: about 16 MB a minute, smallest*, in steps of 2, with the sizes of the
+ladder above (HEVC on a still scene; ×1.2 when the build prefers H.264).  `--video-qp` is the
+default, and it joins the list when it is not one of the choices.  The next recording uses the new
+value: `seekpatch.VideoSettings` sets `VideoConfig.qp`, which `seekpatch.Video` reads when the
+encoder is created.  Encoders without QP bounds map it to their quality setting, as before.
+
+On the Pixel, the same scene for ~9 s: QP 18 gave 5.4 Mbit/s and QP 28 1.3 Mbit/s (6.5 MB and
+1.7 MB), a factor of 4.2.  The ladder has 9.0 and 2.2 Mbit/s (4.1×) for a scene with more detail.
 
 ## Notes
 

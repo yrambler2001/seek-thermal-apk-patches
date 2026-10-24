@@ -14,13 +14,17 @@ presets of the image library's filters, and *off* is the smoother picture (see
 | **Stripe correction** | on | Smart smoothing's column-stripe correction |
 | **Left-edge levelling** | on | Smart smoothing's levelling of the strip at the screen's left edge |
 
+<img alt="Settings, Image &amp; Video: the switches and lists seek-patch adds, at their defaults" src="images/image-video-settings.png" width="336" align="right">
+
 "Default" marks Seek's own algorithms.  The defaults are the stock app with *Image smoothing* on, so
 nothing changes until a switch is touched.  The last three appear only when
 [`smart_smoothing`](smart-smoothing.md) is in the app too (2.2.3 – 2.3.4).  *Default temporal
 smoothing* is greyed out while Smart smoothing is on, because Smart smoothing replaces it; *Stripe
 correction* and *Left-edge levelling* are greyed out while it is off.  The *Smart smoothing* switch
 and the button at the top left of the camera screen are one setting: either moves the other.
-Changes apply from the next frame.  The old *Image smoothing* switch is hidden.
+Changes apply from the next frame.  The old *Image smoothing* switch is hidden.  The screenshot also
+shows the settings of [`sharp_scaling`](sharp-scaling.md#settings) and
+[`video_quality`](video-quality.md#setting).
 
 ## What the library does with "Image smoothing"
 
