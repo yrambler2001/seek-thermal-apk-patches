@@ -25,6 +25,14 @@
   gradient it learns.  The run's time limit grows with the count (150 ms a frame, at least 5 s).
 - `photo_1x` becomes a setting, *Also save a 1x PNG*, **off by default**: 0.3.0 saved the 1× copy
   with every photo.  Where a release has no settings screen for it, it still saves with every photo.
+  The copy now goes next to the photo, in the app's own folder, as `img_1x_….png` (Seek's gallery
+  skips it), instead of a new `Pictures/Seek Thermal 1x/` folder.
+- `default_palette`, in the default set (2.0 – 2.3.4): the camera starts in *Tyrian* instead of
+  *Spectra* until a palette is picked; a stored choice stays.
+- The settings screens get a black navigation bar: they have no theme, so Android 15+ drew them a
+  light one, with the white text running under it.
+- The side menu gets a divider and "Patched by yrambler2001 v0.4.0" below *Send Feedback*: the
+  version of seek-patch that patched the app, written into it at patch time (`seekpatch.About`).
 - A setting for `video_quality` (2.1.2 – 2.3.4): *Video quality*, the QP from 14 to 28 with the size
   of each, used from the next recording.  `--sharpness` and `--video-qp` are now the settings'
   defaults.

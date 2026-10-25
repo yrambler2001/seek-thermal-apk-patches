@@ -91,7 +91,10 @@ the new ones.  The old switch is the last item of the screen in every release, s
 place.  They are instances of the app's own switch class, the old switch's class, so they look like
 the rest of the screen.  The screen's list runs on under the navigation bar, which the stock screen,
 with five items, never reached; `Settings` pads the list's end by the bar's height, so the last item
-scrolls clear of it.  Titles and summaries are English strings in the code.  No resource is read
+scrolls clear of it.  The settings screens have no theme, so on Android 15+ (the app targets SDK 35
+and is drawn edge to edge) the system gives them a light navigation bar, with the white text running
+under it; `seekpatch.Screens` makes that bar black, with a light handle, whenever a settings screen
+resumes.  Titles and summaries are English strings in the code.  No resource is read
 or added, so this works with `apktool d -r` (the default) as well as with `--side-by-side`.
 
 The values live in a preferences file of seek-patch's own (`seekpatch`), not in the app's settings:
