@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0 — 2026-10-25
+
+The app's hidden settings, always shown, and a quicker frame-rate readout.
+
+- `hidden_settings`, in the default set (1.9.3 – 2.3.4): Settings always shows the five switches the
+  app hides until *About → Image Processing Software* is tapped five times: *Show Frame Rate*,
+  *Save Uncompressed* (with `png_photos`, only before Android 11, where it is not forced on), *Set
+  Simulation Mode*, *Disable Registration* and *Use Staging Server* (the last two do nothing in
+  2.3.4).
+- `fps_readout`, in the default set (2.0 – 2.3.4): *Show Frame Rate*'s number in the live view is
+  recomputed every 0.5 s instead of every 3 s (every 1 s in 2.0.x).
+
 ## 0.6.0 — 2026-10-25
 
 Your own temperature calibration, and a switch for the camera's automatic shutter.
