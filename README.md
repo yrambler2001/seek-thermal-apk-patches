@@ -32,12 +32,16 @@ its own colour span.</sub>
 | **Microphone** | Android 11+: photos, videos and the gallery all ask for the microphone and drop the tap; after two denials none of them starts again | only starting a video asks, and the video then starts by itself; when Android won't ask again, a dialog offers the settings page or recording without sound | `mic_prompt` |
 | **Warm camera** | once the camera has warmed unevenly, every picture has a gradient (bright edges, dark middle), even of a uniform wall | a **Flat field** button: point at a uniform surface, tap, and the gradient is gone (14 °F across a wall → under 1 °F) | `flat_field` |
 | **Color range** | the colors are re-spread over every frame: a hot object entering the view recolors everything else, and the same wall changes color from one picture to the next | a **Lock range** button: tap, and the image stays as it is, each temperature keeping its color (the bar keeps its numbers, *Locked 14–19°C*); tap again for automatic | `lock_range` |
+| **Shutter** | the camera recalibrates by itself every few seconds (the Compact: every 5 s): a click, a 0.44 s freeze, a jump in the picture and the readings | a **Shutter** button: tap and the automatic shutter is off (no clicks; the picture slowly drifts instead), tap again and it is back | `shutter` |
+| **Temperature accuracy** | the factory calibration, with emissivity as the only setting | a **k·x+b** button: enter a gain and an offset (from a reference thermometer, say) and every temperature the app shows and saves is corrected, *shown = k × measured + b* | `calibration` |
 | **Noise** | the temporal smoothing blends only pixels that did not change: little effect on a hand-held camera, trails when it does act | a **Smart smoothing** button (off by default; also a switch in Settings): a filter that follows the camera's motion and averages up to 8 frames per pixel, plus stripe and left-edge correction; about half the grain on hand-held scenes, no ghosting on faces | `smart_smoothing` |
 | **Returning from a dialog** | the app crashes (`glError 0x506`) after Android's permission dialog | the live view comes back | `resume_fix` |
 | **Diagnostics** | the SDK's USB / frame-timing log is compiled out | `adb logcat -s Seekware` | `debug_log` (opt-in) |
 
-Nothing else changes: the same app and the same calibration.  The patches never touch USB or the
-camera firmware.
+Nothing else changes: the same app and the same factory calibration (`calibration` corrects the
+readings only once you set k and b).  The patches never change the camera's firmware or flash;
+the one USB request they add is the firmware's own shutter switch, sent only after the Shutter
+button is tapped, which unplugging the camera undoes.
 
 ## Quick start
 
@@ -212,6 +216,8 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `mic_prompt` | 2.3.1 – 2.3.4 | older releases ask for the microphone with storage and never block on it |
 | `flat_field` | 2.2.0 – 2.3.4 | the gradient features are verified in the image library these versions ship; it refuses older ones |
 | `lock_range` | 2.2.3 – 2.3.4 | arm64-v8a and armeabi-v7a; older image libraries call the contrast curve's builder directly, so there is nothing to hook |
+| `shutter` | 1.9.1 – 2.3.4 | the command is the camera firmware's: read in the Compact's 1.3.0.0; a camera that refuses it gets a message |
+| `calibration` | 2.2.3 – 2.3.4 | arm64-v8a and armeabi-v7a; older image libraries call the thermography stage directly, so there is nothing to hook |
 | `smart_smoothing` | 2.2.3 – 2.3.4 | arm64-v8a and armeabi-v7a; older image libraries call the filter directly, so there is nothing to hook |
 | `debug_log` | 2.0 – 2.3.4 | 1.9.x has no frame-timing log |
 
@@ -238,13 +244,15 @@ also drops the manifest attributes that make Android require the splits.
 - [`mic_prompt`](docs/mic-prompt.md) — routes the app's microphone check and request through a small helper, and starts the video once the camera runs again.
 - [`flat_field`](docs/flat-field.md) — adds the button; a tap has the library's gradient stage learn its correction map from the next 40 frames (the *Flat field frames* setting: 5 – 60), which it otherwise does only for frames that already look flat.
 - [`lock_range`](docs/lock-range.md) — adds the button and a second small native library: while locked it keeps the image library's contrast stage from rebuilding its curve (raw value → palette entry) each frame, and the temperature bar keeps the numbers from the tap.
+- [`shutter`](docs/shutter.md) — adds the button; a tap sends the camera firmware's request that suspends (or resumes) its automatic shutter, on the app's own connection, just before a frame request.
+- [`calibration`](docs/calibration.md) — adds the button and a small native library that hooks the image library's thermography stage, where each frame is turned into degrees, and maps its outputs (the per-pixel temperatures, the spot, the minimum and maximum) through *k × t + b*.
 - [`smart_smoothing`](docs/smart-smoothing.md) — adds the button and a small native library of seek-patch's own: it hooks the image library's first filter, which then runs without its temporal smoothing, and filters its output in place.
 - [`resume_fix`](docs/resume-fix.md) — destroys the live view's EGL surface before the app drops it on pause.
 - [`debug_log`](docs/debug-log.md) — gives the SDK's stripped log methods a body.
 
 Patches that need more than a few instructions add helper classes written in Java
 ([`helpers/java`](helpers/java)) and compiled to smali, which is committed: patching needs no Android
-SDK.  The native libraries of `smart_smoothing` and `lock_range` ([`helpers/native`](helpers/native)) are committed too, built
+SDK.  The native libraries of `smart_smoothing`, `lock_range` and `calibration` ([`helpers/native`](helpers/native)) are committed too, built
 reproducibly with the NDK.  By default only the code is decoded (`apktool -r`): resources and the binary manifest are
 carried over byte for byte, so a rebuild cannot break them.  `--side-by-side` decodes resources too,
 to rename the package.
@@ -290,7 +298,8 @@ the readings are the stock app's.
 temperatures as well as the picture.  The camera's own gradient leaves the readings, and the centre
 of the image keeps its value.  `lock_range` changes only the colors: the readings are computed before them.  `smart_smoothing`, when on, filters the frame the temperatures are
 computed from: spot readings get steadier (the noise averaged over up to 8 aligned frames instead
-of the stock temporal filter), and small changes take 8–12 frames to settle fully.  The calibration is untouched.  For per-pixel temperatures, the app's own *Store All Thermal Data*
+of the stock temporal filter), and small changes take 8–12 frames to settle fully.  The factory calibration is untouched;
+`calibration` applies your own correction on top of it, to every reading, only once you set one.  For per-pixel temperatures, the app's own *Store All Thermal Data*
 setting saves a radiometric TIFF with each photo.
 
 **How big are the videos?**  About 68 MB a minute at the default QP on a still scene, more when the
