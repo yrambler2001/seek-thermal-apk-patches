@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- `lock_range`, in the default set (2.2.3 – 2.3.4): a **Lock range** button below the top bar.  A
+  tap keeps the image as it is: the image library's contrast stage stops rebuilding its curve (raw
+  value → palette entry) every frame, so each temperature keeps its color, and the temperature bar
+  keeps the numbers it showed (*Locked 14–19°C*).  A second tap, or a camera reconnect, unlocks.  A
+  second small native library, `libseekpatch_lock.so`, hooks libseekip's `create_transfer`.
+- The native code that finds and swaps libseekip's PLT slots moved from `smooth_android.c` to
+  `plt.c`, shared by both libraries; `smart_smoothing`'s library is rebuilt, same behaviour.
+
 ## 0.4.0 — 2026-10-25
 
 Settings in the app for Seek's filters, Smart smoothing, upscaling, the flat field, the 1x PNG and
