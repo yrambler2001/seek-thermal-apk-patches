@@ -27,6 +27,8 @@ its own colour span.</sub>
 | **Upscaling** | plain bilinear: each sensor pixel is smeared across its whole width | iOS-style: each pixel stays sharp, blending only across the middle half; in Settings, *Smooth* (stock), *Sharp 1.5* – *8* or *Blocky* | `sharp_scaling` |
 | **Smoothing switches** | one "Image smoothing" switch, and *off* is the smoother picture: it adds a 3×3 blur, and the temporal smoothing stays on either way | in *Settings → Image & Video*, a switch per filter: temporal smoothing, 3×3 spatial smoothing, pattern correction, and Smart smoothing with its two options; the defaults are the stock picture | `smoothing_settings` (or, opt-in, `no_smoothing`: the old switch's *off* turns both smoothings off) |
 | **Photos** | JPEG, quality 100 but 4:2:0 colour; the PNG setting is hidden | lossless PNG (the app's own *Save Uncompressed*, turned on) | `png_photos` |
+| **Hidden settings** | five switches in Settings appear only after tapping *About → Image Processing Software* five times | always there: *Show Frame Rate*, *Save Uncompressed*, *Set Simulation Mode* and two registration switches | `hidden_settings` |
+| **Frame-rate readout** | *Show Frame Rate*'s number in the live view changes every 3 s | every 0.5 s | `fps_readout` |
 | **Sensor pixels** | only the 1280×960 upscaled photo | with *Also save a 1x PNG* on in Settings (off by default), also the frame at the sensor's resolution, PNG, no overlays, next to the photo as `img_1x_….png` | `photo_1x` |
 | **Video** | H.264 480×640 at a fixed 1.5 Mbit/s, **15 fps** (the phone camera's clock), mono 44.1 kHz 64 kbit/s sound | HEVC **960×1280** at constant quality (~50 dB PSNR; a *Video quality* setting), **every thermal frame**, stereo 48 kHz 256 kbit/s | `video_quality` |
 | **Microphone** | Android 11+: photos, videos and the gallery all ask for the microphone and drop the tap; after two denials none of them starts again | only starting a video asks, and the video then starts by itself; when Android won't ask again, a dialog offers the settings page or recording without sound | `mic_prompt` |
@@ -209,6 +211,8 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `smoothing_settings` | 2.2.0 – 2.3.4 | the feature ids are verified in the image library these versions ship; it refuses older ones.  The Smart smoothing switches come with `smart_smoothing` |
 | `no_smoothing` | 2.2.0 – 2.3.4 | opt-in, the alternative to `smoothing_settings`; same library check |
 | `png_photos` | 2.1.2 – 2.3.4 | Android 11+ (older Android cannot write EXIF into a PNG; it keeps the setting) |
+| `hidden_settings` | 1.9.3 – 2.3.4 | all five switches from 2.0; 1.9.5 has four, 1.9.3 – 1.9.4 one |
+| `fps_readout` | 2.0 – 2.3.4 | 1.9.x has no frame-rate readout |
 | `photo_1x` | 2.1.1 – 2.3.4 | |
 | `default_palette` | 2.0 – 2.3.4 | |
 | `video_quality` | 2.1.2 – 2.3.4 | |
@@ -238,6 +242,8 @@ also drops the manifest attributes that make Android require the splits.
 - [`smoothing_settings`](docs/smoothing-settings.md) — adds the switches to the app's own settings screen; after the app sends the smoothing preset, makes the *on* preset the base and sets the temporal, spatial and pattern-correction stages from the switches.
 - [`no_smoothing`](docs/smoothing-switch.md) (opt-in) — after the app sends the smoothing preset, clears the temporal and spatial filter stages when the switch is off.
 - [`png_photos`](docs/png-photos.md) — turns on the app's hidden *Save Uncompressed* setting.
+- [`hidden_settings`](docs/hidden-settings.md) — has the readers of the switches' "allowed" preferences, which the settings screen checks before removing each switch, return true.
+- [`fps_readout`](docs/fps-readout.md) — changes the frame counter's 3000 ms window to 500 ms.
 - [`default_palette`](docs/default-palette.md) — changes the default of the app's `color_palette` preference from Spectra's index to Tyrian's, read from the app's palette list.
 - [`photo_1x`](docs/photo-1x.md) — keeps the photo method's sensor-sized frame and writes it once the photo is saved, when the *Also save a 1x PNG* setting is on.
 - [`video_quality`](docs/video-quality.md) — picks and configures the encoder, hands it every thermal frame, records 48 kHz stereo.  How the QP was chosen is in there; the setting picks it per recording.

@@ -3,33 +3,34 @@
 Every release below was decoded, checked, patched with all applicable patches, rebuilt, aligned and
 signed by `tests/test_real_apks.py`.  2.3.4 was also run on a phone (Pixel 8 Pro, Android 16):
 live view, photos, video recording, the microphone prompt, the Flat field, Lock range, k·x+b and Shutter
-buttons, Smart smoothing and the smoothing switches in Settings.  `shutter` sends its command to the camera, so what it does depends on
+buttons, Smart smoothing, the smoothing switches and the hidden switches in Settings, and the
+frame-rate readout.  `shutter` sends its command to the camera, so what it does depends on
 the camera's firmware, not on the app version (see [shutter.md](shutter.md)).
 
-| app | versionCode | `full_fps` | `default_palette` | `sharp_scaling` | `smoothing_settings` | `no_smoothing` | `png_photos` | `photo_1x` | `video_quality` | `resume_fix` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1.9.1 | 103 | ✓ | – ⁷ | – ¹ | – | – | – | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.2 | 104 | ✓ | – ⁷ | – ¹ | – | – | – | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.3 | 106 | ✓ | – ⁷ | – ¹ | – | – | – | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.4 | 108 | ✓ | – ⁷ | – ¹ | – | – | – | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.5 | 109 | ✓ | – ⁷ | – ¹ | – | – | – | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 2.0 | 156 | ✓ | ✓ | ✓ | – ³ | – ³ | – | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.1 | 158 | ✓ | ✓ | ✓ | – ³ | – ³ | – | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.3 | 160 | ✓ | ✓ | ✓ | – ³ | – ³ | – | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.1 | 162 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.2 | 180 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.4 | 210 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.5 | 217 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.6 | 240 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.1.7 | 250 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| app | versionCode | `full_fps` | `default_palette` | `sharp_scaling` | `smoothing_settings` | `no_smoothing` | `png_photos` | `hidden_settings` | `fps_readout` | `photo_1x` | `video_quality` | `resume_fix` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1.9.1 | 103 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.2 | 104 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.3 | 106 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.4 | 108 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.5 | 109 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 2.0 | 156 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.1 | 158 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.3 | 160 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.1 | 162 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | ✓ | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.2 | 180 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.4 | 210 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.5 | 217 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.6 | 240 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.1.7 | 250 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 1. 1.9.x saves photos with a different code path; the live-view part would work, but the patch is
    all or nothing.
@@ -54,6 +55,9 @@ the camera's firmware, not on the app version (see [shutter.md](shutter.md)).
 9. `calibration` hooks the image library's call of `thermography_process` through the PLT, as
    `lock_range` does its contrast curve: from 2.11.3.2 (app 2.2.3) on, the arm64-v8a and
    armeabi-v7a builds of 2.2.3 – 2.3.4.
+10. The hidden switches are all five from 2.0 on; 1.9.5 has four (no *Show Frame Rate*), 1.9.3 –
+    1.9.4 only *Disable Registration*, 1.9.1 – 1.9.2 none.
+11. 1.9.x has no frame-rate readout.
 
 The settings in *Settings → Image & Video* come with their patches wherever those apply: upscaling
 (`sharp_scaling`) 2.0 – 2.3.4, the 1x PNG (`photo_1x`) 2.1.1 – 2.3.4, video quality
