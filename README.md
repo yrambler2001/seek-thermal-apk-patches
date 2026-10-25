@@ -23,10 +23,10 @@ its own colour span.</sub>
 | | stock app | with seek-patch | patch |
 |---|---|---|---|
 | **Frame rate** | **15 fps** on screen: the live view redraws only when the phone's *own rear camera* delivers a frame, and the app runs that camera at 15 fps | **~28 fps**, every thermal frame (the Compact sends ~30) | `full_fps` |
-| **Upscaling** | plain bilinear: each sensor pixel is smeared across its whole width | iOS-style: each pixel stays sharp, blending only across the middle half; in Settings, iOS or Android and the sharpness | `sharp_scaling` |
+| **Upscaling** | plain bilinear: each sensor pixel is smeared across its whole width | iOS-style: each pixel stays sharp, blending only across the middle half; in Settings, *Smooth* (stock), *Sharp 1.5* – *8* or *Blocky* | `sharp_scaling` |
 | **Smoothing switches** | one "Image smoothing" switch, and *off* is the smoother picture: it adds a 3×3 blur, and the temporal smoothing stays on either way | in *Settings → Image & Video*, a switch per filter: temporal smoothing, 3×3 spatial smoothing, pattern correction, and Smart smoothing with its two options; the defaults are the stock picture | `smoothing_settings` (or, opt-in, `no_smoothing`: the old switch's *off* turns both smoothings off) |
 | **Photos** | JPEG, quality 100 but 4:2:0 colour; the PNG setting is hidden | lossless PNG (the app's own *Save Uncompressed*, turned on) | `png_photos` |
-| **Sensor pixels** | only the 1280×960 upscaled photo | also the frame at the sensor's resolution, PNG, no overlays, in `Pictures/Seek Thermal 1x/` | `photo_1x` |
+| **Sensor pixels** | only the 1280×960 upscaled photo | with *Also save a 1x PNG* on in Settings (off by default), also the frame at the sensor's resolution, PNG, no overlays, in `Pictures/Seek Thermal 1x/` | `photo_1x` |
 | **Video** | H.264 480×640 at a fixed 1.5 Mbit/s, **15 fps** (the phone camera's clock), mono 44.1 kHz 64 kbit/s sound | HEVC **960×1280** at constant quality (~50 dB PSNR; a *Video quality* setting), **every thermal frame**, stereo 48 kHz 256 kbit/s | `video_quality` |
 | **Microphone** | Android 11+: photos, videos and the gallery all ask for the microphone and drop the tap; after two denials none of them starts again | only starting a video asks, and the video then starts by itself; when Android won't ask again, a dialog offers the settings page or recording without sound | `mic_prompt` |
 | **Warm camera** | once the camera has warmed unevenly, every picture has a gradient (bright edges, dark middle), even of a uniform wall | a **Flat field** button: point at a uniform surface, tap, and the gradient is gone (14 °F across a wall → under 1 °F) | `flat_field` |
@@ -152,7 +152,7 @@ seek-patch doctor                       Java, the pinned apktool + uber-apk-sign
 | *(none)* | the default set — every patch but `debug_log` and `no_smoothing` — skipping those that do not apply to this version |
 | `-p NAME` | pick patches yourself (repeatable), e.g. `-p full_fps -p debug_log`; each must apply |
 | `--all` | every patch, `debug_log` included, but not `no_smoothing` (the alternative to `smoothing_settings`); each must apply |
-| `--sharpness N` | `sharp_scaling`'s blend width, 1/N of a pixel: `2` = iOS (default), `3`–`4` crisper, larger approaches visible pixels.  The default of the *Upscaling sharpness* setting |
+| `--sharpness N` | `sharp_scaling`'s blend width, 1/N of a pixel: `2` = iOS (default), `3`–`4` crisper, larger approaches visible pixels.  The default entry of the *Upscaling* setting |
 | `--video-codec hevc\|avc` | `video_quality`'s codec: HEVC (default; H.264 is the automatic fallback) or H.264 first, for players without HEVC |
 | `--video-qp N` | `video_quality`'s constant quantizer, 10 – 40: lower is better and bigger; `18` (default) ≈ 68 MB/min on a still scene.  The default of the *Video quality* setting |
 | `--side-by-side` | new package name (`<original>.patched`) and label, so it installs next to the store app; `--package`, `--label` to choose them |
@@ -228,10 +228,10 @@ also drops the manifest attributes that make Android require the splits.
 - [`smoothing_settings`](docs/smoothing-settings.md) — adds the switches to the app's own settings screen; after the app sends the smoothing preset, makes the *on* preset the base and sets the temporal, spatial and pattern-correction stages from the switches.
 - [`no_smoothing`](docs/smoothing-switch.md) (opt-in) — after the app sends the smoothing preset, clears the temporal and spatial filter stages when the switch is off.
 - [`png_photos`](docs/png-photos.md) — turns on the app's hidden *Save Uncompressed* setting.
-- [`photo_1x`](docs/photo-1x.md) — keeps the photo method's sensor-sized frame and writes it once the photo is saved.
+- [`photo_1x`](docs/photo-1x.md) — keeps the photo method's sensor-sized frame and writes it once the photo is saved, when the *Also save a 1x PNG* setting is on.
 - [`video_quality`](docs/video-quality.md) — picks and configures the encoder, hands it every thermal frame, records 48 kHz stereo.  How the QP was chosen is in there; the setting picks it per recording.
 - [`mic_prompt`](docs/mic-prompt.md) — routes the app's microphone check and request through a small helper, and starts the video once the camera runs again.
-- [`flat_field`](docs/flat-field.md) — adds the button; a tap has the library's gradient stage learn its correction map from the next 40 frames, which it otherwise does only for frames that already look flat.
+- [`flat_field`](docs/flat-field.md) — adds the button; a tap has the library's gradient stage learn its correction map from the next 40 frames (the *Flat field frames* setting: 5 – 60), which it otherwise does only for frames that already look flat.
 - [`smart_smoothing`](docs/smart-smoothing.md) — adds the button and a small native library of seek-patch's own: it hooks the image library's first filter, which then runs without its temporal smoothing, and filters its output in place.
 - [`resume_fix`](docs/resume-fix.md) — destroys the live view's EGL surface before the app drops it on pause.
 - [`debug_log`](docs/debug-log.md) — gives the SDK's stripped log methods a body.
@@ -300,7 +300,7 @@ at three times the Compact sensor's resolution, so no sensor pixel loses its col
 Patch the new version when there is one.
 
 **Smart smoothing or Seek's smoothing?**  *Smart smoothing on* replaces only the temporal filter with
-seek-patch's; *Default temporal smoothing* is greyed out meanwhile.  Spatial smoothing and pattern
+seek-patch's; *Default temporal smoothing* then has no effect.  Spatial smoothing and pattern
 correction keep their own switches: for the most detail, leave spatial smoothing off (the default)
 and turn Smart smoothing on.  With `no_smoothing` instead of `smoothing_settings`, the 3×3 blur
 follows the old switch.

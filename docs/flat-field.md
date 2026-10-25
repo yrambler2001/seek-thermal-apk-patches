@@ -82,14 +82,14 @@ infrared from a warm lens or housing in front of it is not in that frame.
   feature-900 call (the hook `no_smoothing` uses), before the frame is processed.  On a tap:
   1. It logs the current detail and step against their limits (`adb logcat -s seek-patch`).
   2. It sets 30105 = 1 and remembers the update count, 30104.
-  3. Once the count has gone up by 40, it sets 30105 = 0.  That leaves (7/8)⁴⁰ ≈ 0.5 % of the old
-     map, about 1.5 s at the Compact's ~27 fps.
+  3. Once the count has gone up by 40 (the *Flat field frames* setting, below), it sets
+     30105 = 0.  That leaves (7/8)⁴⁰ ≈ 0.5 % of the old map, about 1.5 s at the Compact's ~27 fps.
 
   It does the same on the second filter's copy of the stage (+ 40000), where Mosaic cores run it;
   on other cameras that copy is idle.  The stock test takes over again afterwards, so the map
   stays as learned.  Feature 900 rewrites the filter mask every frame, but not 30105.
 - **Failure cases.**  With no frames within 2 s the toast says *No camera image*.  Five seconds
-  without 40 updates, or a reconnect (a new library handle, whose map starts empty), end the run
+  without 40 updates (for longer runs, 150 ms a frame plus one second), or a reconnect (a new library handle, whose map starts empty), end the run
   and ask for another tap.  The patch never writes to an old handle.
 - `seekpatch.SeekIP`, written by the patch, calls the app's own `seekIPsetFeature` /
   `seekIPgetFeature` wrappers, found by the native each one calls.
@@ -97,9 +97,24 @@ infrared from a warm lens or housing in front of it is not in that frame.
 The stage's output feeds the temperature readings as well as the picture, as it always has.  After
 a tap, readings off-centre lose the camera's gradient too; readings at the centre do not change.
 
+### Setting
+
+*Settings → Image & Video → Flat field frames*: how many frames one tap learns from.  The map moves
+1/8 of the way per frame, so N frames learn 1 − (7/8)ᴺ of the gradient:
+
+| frames | 5 | 10 | 15 | 20 | 30 | 40 (default) | 60 |
+|---|---|---|---|---|---|---|---|
+| learned | 49 % | 74 % | 87 % | 93 % | 98 % | 99.5 % | all |
+
+A short run is quicker and forgives a hand that moves; a second tap goes on from where the first
+stopped.  `seekpatch.FlatSettings` sets `Flat.updates`, read when a tap starts.  On the Pixel 5
+frames took 0.15 s and 60 frames 1.9 s, each from a fresh map on a warm camera; 60 left visibly less
+of the gradient at the edges than 5.
+
 Versions: 2.2.0 – 2.3.4.  The gradient features are verified in libseekip 2.10.5.0 (app 2.2.2) and
-2.11.3.2 (2.2.3 – 2.3.4), and the patch refuses older apps, like `no_smoothing`.  Source:
-[`helpers/java/seekpatch/Flat.java`](../helpers/java/seekpatch/Flat.java).
+2.11.3.2 (2.2.3 – 2.3.4), and the patch refuses older apps, like `no_smoothing`.  Sources:
+[`helpers/java/seekpatch/Flat.java`](../helpers/java/seekpatch/Flat.java),
+[`FlatSettings.java`](../helpers/java/seekpatch/FlatSettings.java).
 
 ## Other stages that look related
 

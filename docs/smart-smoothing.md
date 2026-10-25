@@ -17,7 +17,7 @@ Video* has a **Smart smoothing** switch and, under it, **Stripe correction** and
 levelling** (both on by default; they stand for `lines` and `edge` below).  The switch and the
 button are one setting, kept in seek-patch's preferences file: `seekpatch.Smooth` follows the file
 with a listener, so turning one moves the other.  While Smart smoothing is on, *Default temporal
-smoothing* is greyed out there, as Smart smoothing replaces it.
+smoothing* has no effect, as Smart smoothing replaces it.
 
 ## What it does to the picture
 

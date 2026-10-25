@@ -1,9 +1,10 @@
-# `photo_1x` — the sensor's own pixels, next to every photo
+# `photo_1x` — the sensor's own pixels, next to each photo
 
 **Stock:** a photo is the colorized frame scaled up to 1280×960, with the overlays (palette bar,
 temperatures, spot marker) drawn on top.
-**Patched:** the same photo, plus the frame at the sensor's resolution — 206×156 on a Compact,
-320×240 on a Compact Pro — as a lossless PNG without overlays, turned upright.
+**Patched:** with *Settings → Image & Video → Also save a 1x PNG* on (it is off by default), the
+same photo plus the frame at the sensor's resolution — 206×156 on a Compact, 320×240 on a Compact
+Pro — as a lossless PNG without overlays, turned upright.
 
 | `Pictures/Seek Thermal/img_thermal_1792780046753.png` | `Pictures/Seek Thermal 1x/img_thermal_1792780046753.png` |
 |---|---|
@@ -31,4 +32,9 @@ ignore EXIF orientation.
 Thermal+ photos store the thermal frame.  In 16:9 mode the photo is cropped; the 1× copy keeps the
 whole frame.
 
-Versions: 2.1.1 and newer.  Source: [`helpers/java/seekpatch/Photo1x.java`](../helpers/java/seekpatch/Photo1x.java).
+The switch is `seekpatch.PhotoSettings`; it sets `Photo1x.enabled`, which `capture` checks.  Where a
+release has no settings screen for it, `enabled` stays on and every photo gets its copy, as in
+0.3.0.  On the Pixel (2.3.4): off, a photo got no copy; on, the next one got its 156×206 PNG.
+
+Versions: 2.1.1 and newer.  Sources: [`helpers/java/seekpatch/Photo1x.java`](../helpers/java/seekpatch/Photo1x.java),
+[`PhotoSettings.java`](../helpers/java/seekpatch/PhotoSettings.java).

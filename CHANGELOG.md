@@ -9,21 +9,29 @@
   picture.  Right after the app's per-frame preset the patch makes the *on* preset the base,
   whatever the hidden old switch says, and sets the three stages from the switches; the mask is
   logged when it changes.  The Smart smoothing switch and the top-left button are one setting
-  (2.2.0 – 2.3.4).
+  (2.2.0 – 2.3.4).  No switch is ever greyed out: the app's switch draws a disabled *on* much like
+  *off*, so each summary says what depends on what instead.
 - `no_smoothing` leaves the default set: it is the opt-in alternative to `smoothing_settings`.  The
   two refuse to combine, `-p` with both is an error, and `--all` leaves `no_smoothing` out.
 - `smart_smoothing`: stripe correction and left-edge levelling can be switched at run time (a new
   JNI entry; the native libraries are rebuilt).  The button follows its stored value, so a settings
   switch moves it.
-- Settings for `sharp_scaling` (2.0 – 2.3.4): *iOS-style upscaling* (off: the stock Android
-  bilinear scaling, live view and photos) and *Upscaling sharpness* (1.5 – 8).  The shader's
-  sharpness is now a uniform; at 1 or less it returns the stock sample exactly.
+- A setting for `sharp_scaling` (2.0 – 2.3.4): *Upscaling*, one list from soft to blocky — *Smooth*
+  (the stock Android bilinear scaling, live view and photos), *Sharp 1.5* to *Sharp 8* (2 = iOS, the
+  default) and *Blocky* (square pixels; the photo is drawn unfiltered).  The shader's sharpness is
+  now a uniform; at 1 or less it returns the stock sample exactly.
+- A setting for `flat_field` (2.2.0 – 2.3.4): *Flat field frames*, how many frames a tap learns
+  from — 5, 10, 15, 20, 30, 40 (the default, as before) or 60 — each shown with the share of the
+  gradient it learns.  The run's time limit grows with the count (150 ms a frame, at least 5 s).
+- `photo_1x` becomes a setting, *Also save a 1x PNG*, **off by default**: 0.3.0 saved the 1× copy
+  with every photo.  Where a release has no settings screen for it, it still saves with every photo.
 - A setting for `video_quality` (2.1.2 – 2.3.4): *Video quality*, the QP from 14 to 28 with the size
   of each, used from the next recording.  `--sharpness` and `--video-qp` are now the settings'
   defaults.
 - Settings in the app: a shared hook after the Image & Video screen's own preferences and in the
   camera screen's `onCreate` (`patches/settings.py`, `seekpatch.Settings`); the preferences are the
-  app's own classes, the values a preferences file of seek-patch's.  `seekpatch.SeekIP` is shared by
+  app's own classes, the values a preferences file of seek-patch's.  The screen's list is padded by
+  the navigation bar, which would otherwise cover the last item.  `seekpatch.SeekIP` is shared by
   `flat_field` and `smoothing_settings`.
 
 ## 0.3.0 — 2026-10-24

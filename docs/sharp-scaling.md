@@ -72,24 +72,30 @@ Image processing and temperatures are untouched.
 
 ## Settings
 
-*Settings → Image & Video* gets two items (on every release the patch supports, 2.0 – 2.3.4):
+*Settings → Image & Video* gets one list, **Upscaling** (on every release the patch supports,
+2.0 – 2.3.4), from soft to blocky:
 
-| setting | default | |
+| choice | live view and video | photo |
 |---|---|---|
-| **iOS-style upscaling** | on | on: *iOS: each pixel stays sharp, blended only at its edges*; off: *Android: smooth bilinear, each pixel blended across its width* — the stock scaling, live view and photos |
-| **Upscaling sharpness** | 2, or `--sharpness` | 1.5, 2 (iOS), 3, 4, 6, 8, each shown as the share of a pixel it blends over (2: 50 %); greyed out under Android |
+| **Smooth: Android's bilinear, blends across each pixel** | the stock sample | the stock filtered draw |
+| **Sharp 1.5** … **Sharp 8**: 1.5, 2, 3, 4, 6, 8, each shown with the share of a pixel it blends over | the sharp-bilinear shader at that sharpness | `round(N)`× nearest first (at least 2×), then the filtered draw |
+| **Sharp 2: blends 50 % of each pixel, as iOS (default)** | as above | 2× nearest first |
+| **Blocky: square pixels, no blending** | sharpness 1000: the blend is 1/1000 of a texel, far below one screen pixel | the frame drawn with an unfiltered copy of the app's `Paint` |
 
-`--sharpness N` (default 2) is where the sharpness starts, and it joins the list when it falls
-between the choices; the setting then wins.  Changes show as soon as the live view is back.  The
-values sit in seek-patch's preferences file; `seekpatch.Upscale` writes them to
-`SharpScale.sharpness` (the uniform) and `SharpScale.photoFactor` (the photo).
+`--sharpness N` (default 2) picks the default entry, and joins the list when it falls between the
+choices; the setting then wins.  Changes show as soon as the live view is back.  The value sits in
+seek-patch's preferences file (key `upscaling`: `android`, a sharpness, or `blocky`);
+`seekpatch.Upscale` writes it to `SharpScale.sharpness` (the uniform) and `SharpScale.photoFactor`
+(the photo: 1 is the stock draw, 0 the unfiltered one).
 
 Is sharpness 1 exactly bilinear?  Mathematically yes: `f` becomes the fraction of `t`, and the
 coordinate comes back unchanged.  In floating point it comes back within rounding (~10⁻⁷ of a texel
-in `highp`), not bit for bit.  So *Android* does not rely on it: at sharpness 1 or less the shader
+in `highp`), not bit for bit.  So *Smooth* does not rely on it: at sharpness 1 or less the shader
 returns the coordinate untouched, which is the stock sample exactly, with the same single shader.
 The photo then gets the stock filtered draw (factor 1).
 
 Measured on the Pixel (2.3.4, Compact) with `tools/measure_kernel.py` on live-view screenshots: the
 weight of the next texel at sub-texel position 0.81 was 0.97 at sharpness 2, 1.00 at 8, and 0.83
-with *Android* (bilinear: 0.81).
+with *Smooth* (bilinear: 0.81); after the switch to one list, 0.99, 0.85 and, with *Blocky*, a clean
+step: 0.00 up to position 0.44, 1.00 from 0.56.  Saved photos measured the same way: *Sharp 2*
+0.90 at 0.69, *Blocky* the same clean step.

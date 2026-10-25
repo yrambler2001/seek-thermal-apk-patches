@@ -11,20 +11,21 @@ presets of the image library's filters, and *off* is the smoother picture (see
 | **Default spatial smoothing (3×3)** | off | Seek's filter (`aslpf`): blurs each pixel with its neighbours |
 | **Default pattern correction** | on | Seek's filter (`sbnuc`): learns and removes the sensor's fixed pattern |
 | **Smart smoothing** | off | seek-patch's filter: follows the camera's motion; replaces temporal smoothing |
-| **Stripe correction** | on | Smart smoothing's column-stripe correction |
-| **Left-edge levelling** | on | Smart smoothing's levelling of the strip at the screen's left edge |
+| **Stripe correction** | on | part of Smart smoothing: removes column stripes |
+| **Left-edge levelling** | on | part of Smart smoothing: levels the bright strip at the left edge |
 
 <img alt="Settings, Image &amp; Video: the switches and lists seek-patch adds, at their defaults" src="images/image-video-settings.png" width="336" align="right">
 
 "Default" marks Seek's own algorithms.  The defaults are the stock app with *Image smoothing* on, so
 nothing changes until a switch is touched.  The last three appear only when
-[`smart_smoothing`](smart-smoothing.md) is in the app too (2.2.3 – 2.3.4).  *Default temporal
-smoothing* is greyed out while Smart smoothing is on, because Smart smoothing replaces it; *Stripe
-correction* and *Left-edge levelling* are greyed out while it is off.  The *Smart smoothing* switch
+[`smart_smoothing`](smart-smoothing.md) is in the app too (2.2.3 – 2.3.4).  No switch is greyed
+out, because the app's switch class draws a disabled *on* much like *off*: *Default temporal
+smoothing* has no effect while Smart smoothing is on (Smart smoothing replaces it, and its summary
+says so), and *Stripe correction* and *Left-edge levelling* only act while it is on.  The *Smart smoothing* switch
 and the button at the top left of the camera screen are one setting: either moves the other.
-Changes apply from the next frame.  The old *Image smoothing* switch is hidden.  The screenshot also
-shows the settings of [`sharp_scaling`](sharp-scaling.md#settings) and
-[`video_quality`](video-quality.md#setting).
+Changes apply from the next frame.  The old *Image smoothing* switch is hidden.  Below them come the settings of
+[`flat_field`](flat-field.md#setting), [`sharp_scaling`](sharp-scaling.md#settings),
+[`photo_1x`](photo-1x.md) and [`video_quality`](video-quality.md#setting).
 
 ## What the library does with "Image smoothing"
 
@@ -88,7 +89,9 @@ The Image & Video fragment is found by behaviour: the one `PreferenceFragment` t
 after its `addPreferencesFromResource`, `seekpatch.Settings.screen` hides the old switch and appends
 the new ones.  The old switch is the last item of the screen in every release, so they take its
 place.  They are instances of the app's own switch class, the old switch's class, so they look like
-the rest of the screen.  Titles and summaries are English strings in the code.  No resource is read
+the rest of the screen.  The screen's list runs on under the navigation bar, which the stock screen,
+with five items, never reached; `Settings` pads the list's end by the bar's height, so the last item
+scrolls clear of it.  Titles and summaries are English strings in the code.  No resource is read
 or added, so this works with `apktool d -r` (the default) as well as with `--side-by-side`.
 
 The values live in a preferences file of seek-patch's own (`seekpatch`), not in the app's settings:
@@ -102,9 +105,9 @@ The values live in a preferences file of seek-patch's own (`seekpatch`), not in 
 and follows every change with a listener.  The per-frame code reads cached values; it never reads
 the file.
 
-The same two hooks carry the settings of [`sharp_scaling`](sharp-scaling.md) and
-[`video_quality`](video-quality.md); the first of those patches to be applied adds them
-(`patches/settings.py`).
+The same two hooks carry the settings of [`flat_field`](flat-field.md),
+[`sharp_scaling`](sharp-scaling.md), [`photo_1x`](photo-1x.md) and [`video_quality`](video-quality.md);
+the first of those patches to be applied adds them (`patches/settings.py`).
 
 ### The old switch elsewhere
 
@@ -126,7 +129,8 @@ features this way (libseekip 2.10.5.0 in 2.2.2, 2.11.3.2 in 2.2.3 – 2.3.4; 2.2
 the same preset code), as for `no_smoothing`.  The settings fragment exists in this shape from 2.0
 on.  The Smart smoothing switches need `smart_smoothing`, which starts at 2.2.3.
 
-Run on a Pixel 8 Pro with a Seek Compact, app 2.3.4 side by side: the switches, their defaults and
-greying, the hidden old switch, the button following the switch and back, the values after a
-restart, and the logged mask of each combination.  The live view stayed at 25–26 fps with each one
-(`tools/fps.sh`).
+Run on a Pixel 8 Pro with a Seek Compact, app 2.3.4 side by side: the switches and their defaults,
+the hidden old switch, the button following the switch and back, the values after a restart and
+after an update in place, and the logged mask of each combination.  The live view stayed at
+25–26 fps with each one (`tools/fps.sh`).  The screenshot is of the current build, with no switch
+greyed out.
