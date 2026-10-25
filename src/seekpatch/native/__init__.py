@@ -1,10 +1,12 @@
 """Native libraries built by helpers/build_native.py from helpers/native (committed, so patching needs
-no NDK).  The smart_smoothing patch adds them to lib/<abi>/ with SmaliTree.add_native_library()."""
+no NDK).  The smart_smoothing and lock_range patches add them to lib/<abi>/ with
+SmaliTree.add_native_library()."""
 from __future__ import annotations
 
 from importlib import resources
 
 SMOOTH = "libseekpatch_smooth.so"
+LOCK = "libseekpatch_lock.so"
 ABIS = ("arm64-v8a", "armeabi-v7a")
 """The ABIs the libraries are built for."""
 

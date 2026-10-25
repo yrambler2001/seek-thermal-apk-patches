@@ -15,6 +15,7 @@ from seekpatch.patches import (
     default_palette,
     flat_field,
     full_fps,
+    lock_range,
     mic_prompt,
     no_smoothing,
     photo_1x,
@@ -454,6 +455,84 @@ def test_flat_field_needs_a_callable_getfeature(make_project):
         flat_field.apply(SmaliTree(str(root)), Options())
 
 
+# lock_range -------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_lock_range(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = lock_range.apply(tree, Options())
+    assert re.search(r"Lfix/Pipeline;->set\(JLfix/Features;I\)V\n\n\s+# seek-patch lock_range: .*\n\s+"
+                     r"invoke-static \{\}, Lseekpatch/Lock;->frame\(\)V\n", text(tree, "Lfix/Pipeline;"))
+    stream = text(tree, "Lfix/Stream;")
+    assert re.search(r"\.line 1\n\s+# seek-patch lock_range: .*\n\s+invoke-static/range \{p5 \.\. p6\}, "
+                     r"Lseekpatch/Lock;->scene\(FF\)V\n\n\s+iput p7", stream)
+    bar = text(tree, "Lfix/Stream$b;")
+    assert re.search(r"invoke-static/range \{p3 \.\. p3\}, Lseekpatch/Lock;->bar\(Z\)Z\n\n\s+move-result p3\n\n\s+"
+                     r"if-eqz p3, :cond_0\n", bar)
+    assert re.search(r"->d:F\n\n\s+# seek-patch lock_range: .*\n\s+invoke-static/range \{v1 \.\. v1\}, "
+                     r"Lseekpatch/Lock;->low\(F\)F\n\n\s+move-result v1\n(?:.*\n)*?.*->c:F\n\n\s+# seek-patch lock_range: .*\n\s+"
+                     r"invoke-static/range \{v1 \.\. v1\}, Lseekpatch/Lock;->high\(F\)F\n\n\s+move-result v1\n", bar)
+    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch lock_range: .*\n\s+"
+                     r"invoke-static \{p0\}, Lseekpatch/Lock;->attach\(Landroid/app/Activity;\)V\n", text(tree, "Lfix/Main;"))
+    assert all(tree.path_of(f"Lseekpatch/Lock{s};") for s in ("", "$1", "$2", "$3"))
+    assert not tree.path_of("Lseekpatch/SeekIP;")
+    assert sorted(tree.natives) == ["lib/arm64-v8a/libseekpatch_lock.so", "lib/armeabi-v7a/libseekpatch_lock.so"]
+    assert all(data[:4] == b"\x7fELF" for data in tree.natives.values())
+    assert report[1].startswith("smali/fix/Stream.smali L()") and report[2].startswith("smali/fix/Stream$b.smali j()")
+    assert report[-1] == "lib/{arm64-v8a,armeabi-v7a}/libseekpatch_lock.so"
+
+
+def test_lock_range_composes_with_smart_smoothing(make_project):
+    tree = tree_of(make_project, "lambda")
+    smart_smoothing.apply(tree, Options())
+    lock_range.apply(tree, Options())
+    assert sorted(tree.natives) == ["lib/arm64-v8a/libseekpatch_lock.so", "lib/arm64-v8a/libseekpatch_smooth.so",
+                                    "lib/armeabi-v7a/libseekpatch_lock.so", "lib/armeabi-v7a/libseekpatch_smooth.so"]
+    pipeline = text(tree, "Lfix/Pipeline;")
+    assert "Lseekpatch/Smooth;->frame()V" in pipeline and "Lseekpatch/Lock;->frame()V" in pipeline
+
+
+def test_lock_range_library_exports_its_native_methods():
+    from seekpatch import native
+    for abi in native.ABIS:
+        data = native.library(abi, native.LOCK)
+        for name in (b"Java_seekpatch_Lock_install", b"Java_seekpatch_Lock_hold", b"Java_seekpatch_Lock_released"):
+            assert name in data, (abi, name)
+
+
+def test_lock_range_refuses_older_apps(make_project):
+    tree = tree_of(make_project, "lambda")
+    tree._identity = {"versionCode": 272, "versionName": "2.2.2"}
+    with pytest.raises(PatchError, match="2.2.2"):
+        lock_range.apply(tree, Options())
+
+
+def test_lock_range_needs_an_arm_libseekip(make_project):
+    tree = tree_of(make_project, "lambda", abis=("x86",))
+    with pytest.raises(PatchError, match="no libseekip.so for arm64-v8a / armeabi-v7a"):
+        lock_range.apply(tree, Options())
+
+
+def test_lock_range_needs_one_results_method(make_project):
+    root = make_project("lambda", ABIS)
+    p = root / "smali" / "fix" / "Stream.smali"
+    p.write_text(p.read_text() + "\n.method K(IIIIFFF)V\n    .locals 0\n\n    return-void\n.end method\n")
+    with pytest.raises(PatchError, match=r"results \(IIIIFFF\)V, found 2"):
+        lock_range.apply(SmaliTree(str(root)), Options())
+
+
+def test_lock_range_needs_the_span_reads(make_project):
+    root = make_project("lambda", ABIS)
+    p = root / "smali" / "fix" / "Stream$b.smali"
+    p.write_text(p.read_text().replace("iget v1, p0, Lfix/Stream$b;->c:F", "const/4 v1, 0x0"))
+    tree = SmaliTree(str(root))
+    before = dict(tree.files)
+    with pytest.raises(PatchError, match="found 1 reads"):
+        with tree.transaction():
+            lock_range.apply(tree, Options())
+    assert tree.files == before and tree.natives == {}
+
+
 # smart_smoothing --------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("shape", ["lambda", "accessor"])
@@ -608,9 +687,9 @@ def test_smoothing_settings_needs_the_feature_call(make_project):
 
 APPLICABLE = {  # every patch that applies, but no_smoothing (the alternative to smoothing_settings)
     "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
-               "resume_fix", "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
+               "resume_fix", "mic_prompt", "flat_field", "lock_range", "smart_smoothing", "debug_log"],
     "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
-                 "resume_fix", "mic_prompt", "flat_field", "smart_smoothing", "debug_log"],
+                 "resume_fix", "mic_prompt", "flat_field", "lock_range", "smart_smoothing", "debug_log"],
     "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "debug_log"],
 }
 

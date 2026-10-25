@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Build the native helper (helpers/native) into the libraries the smart_smoothing patch adds to the
-app (src/seekpatch/native/<abi>/libseekpatch_smooth.so).  They are committed, so patching needs no
-NDK; run this after changing helpers/native (--check: are the committed libraries what the sources
-build -- the build is reproducible).
+"""Build the native helpers (helpers/native) into the libraries the patches add to the app
+(src/seekpatch/native/<abi>/): libseekpatch_smooth.so (smart_smoothing) and libseekpatch_lock.so
+(lock_range).  They are committed, so patching needs no NDK; run this after changing helpers/native
+(--check: are the committed libraries what the sources build -- the build is reproducible).
 
 Needs the Android NDK r25b (--ndk, ANDROID_NDK_HOME, or ~/toolchains/android-ndk-r25b):
     clang -O3 -ffast-math -fno-finite-math-only, API 23, stripped, sha1 build id, 16 KiB pages
@@ -25,8 +25,8 @@ SRC = os.path.join(HERE, "native")
 OUT = os.path.join(REPO, "src", "seekpatch", "native")
 NDK_REVISION = "25.1.8937393"  # r25b
 API = 23  # the Seek app's minSdkVersion
-LIBRARY = "libseekpatch_smooth.so"
-SOURCES = ["tnr.c", "smooth.c", "smooth_android.c"]
+LIBRARIES = {"libseekpatch_smooth.so": ["tnr.c", "smooth.c", "smooth_android.c", "plt.c"],
+             "libseekpatch_lock.so": ["lock.c", "plt.c"]}
 TARGETS = {"arm64-v8a": "aarch64-linux-android", "armeabi-v7a": "armv7a-linux-androideabi"}
 CFLAGS = ["-O3", "-ffast-math", "-fno-finite-math-only", "-fPIC", "-fvisibility=hidden", "-ffunction-sections",
           "-fdata-sections", "-DNDEBUG", "-std=c11", "-Wall", "-Wextra", "-Werror=implicit-function-declaration"]
@@ -57,20 +57,22 @@ def build(ndk: str, out: str) -> list[str]:
     written = []
     with tempfile.TemporaryDirectory(prefix="seek-patch-native-") as tmp:
         for abi, triple in TARGETS.items():
-            objs = []
-            for src in SOURCES:
-                obj = os.path.join(tmp, f"{abi}-{src}.o")
-                cmd = [cc, f"--target={triple}{API}", *CFLAGS, f"-ffile-prefix-map={SRC}=.", "-c", src, "-o", obj]
-                r = subprocess.run(cmd, cwd=SRC, capture_output=True, text=True)
-                if r.returncode != 0 or r.stderr.strip():
-                    sys.exit(f"{abi} {src}:\n{r.stdout}{r.stderr}")
-                objs.append(obj)
             os.makedirs(os.path.join(out, abi), exist_ok=True)
-            so = os.path.join(out, abi, LIBRARY)
-            r = subprocess.run([cc, f"--target={triple}{API}", *objs, *LDFLAGS, "-o", so], capture_output=True, text=True)
-            if r.returncode != 0:
-                sys.exit(f"{abi} link:\n{r.stdout}{r.stderr}")
-            written.append(f"{abi}/{LIBRARY}")
+            for library, sources in LIBRARIES.items():
+                objs = []
+                for src in sources:
+                    obj = os.path.join(tmp, f"{abi}-{src}.o")
+                    if not os.path.exists(obj):
+                        cmd = [cc, f"--target={triple}{API}", *CFLAGS, f"-ffile-prefix-map={SRC}=.", "-c", src, "-o", obj]
+                        r = subprocess.run(cmd, cwd=SRC, capture_output=True, text=True)
+                        if r.returncode != 0 or r.stderr.strip():
+                            sys.exit(f"{abi} {src}:\n{r.stdout}{r.stderr}")
+                    objs.append(obj)
+                so = os.path.join(out, abi, library)
+                r = subprocess.run([cc, f"--target={triple}{API}", *objs, *LDFLAGS, "-o", so], capture_output=True, text=True)
+                if r.returncode != 0:
+                    sys.exit(f"{abi} {library} link:\n{r.stdout}{r.stderr}")
+                written.append(f"{abi}/{library}")
     return written
 
 
