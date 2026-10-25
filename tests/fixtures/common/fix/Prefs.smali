@@ -26,6 +26,96 @@
     return p0
 .end method
 
+# whether Settings shows a hidden switch (hidden_settings)
+.method public static D(Landroid/content/Context;)Z
+    .locals 2
+
+    .line 1
+    sget-object p0, Lfix/Prefs;->a:Landroid/content/SharedPreferences;
+
+    const-string v0, "allow_reg_optout_key"
+
+    const/4 v1, 0x0
+
+    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+
+    move-result p0
+
+    return p0
+.end method
+
+# whether Settings shows a hidden switch (hidden_settings)
+.method public static E(Landroid/content/Context;)Z
+    .locals 2
+
+    .line 1
+    sget-object p0, Lfix/Prefs;->a:Landroid/content/SharedPreferences;
+
+    const-string v0, "export_frame_rate_allowed_key"
+
+    const/4 v1, 0x0
+
+    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+
+    move-result p0
+
+    return p0
+.end method
+
+# whether Settings shows a hidden switch (hidden_settings)
+.method public static I(Landroid/content/Context;)Z
+    .locals 2
+
+    .line 1
+    sget-object p0, Lfix/Prefs;->a:Landroid/content/SharedPreferences;
+
+    const-string v0, "lossless_comp_allowed_key"
+
+    const/4 v1, 0x0
+
+    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+
+    move-result p0
+
+    return p0
+.end method
+
+# whether Settings shows a hidden switch (hidden_settings)
+.method public static O(Landroid/content/Context;)Z
+    .locals 2
+
+    .line 1
+    sget-object p0, Lfix/Prefs;->a:Landroid/content/SharedPreferences;
+
+    const-string v0, "sim_mode_allowed_key"
+
+    const/4 v1, 0x0
+
+    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+
+    move-result p0
+
+    return p0
+.end method
+
+# whether Settings shows a hidden switch (hidden_settings)
+.method public static P(Landroid/content/Context;)Z
+    .locals 2
+
+    .line 1
+    sget-object p0, Lfix/Prefs;->a:Landroid/content/SharedPreferences;
+
+    const-string v0, "staging_registration_allowed_key"
+
+    const/4 v1, 0x0
+
+    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+
+    move-result p0
+
+    return p0
+.end method
+
 # the chosen palette, 2 until one is picked (default_palette)
 .method public static b(Landroid/content/Context;)I
     .locals 2

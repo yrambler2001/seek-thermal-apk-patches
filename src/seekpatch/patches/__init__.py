@@ -14,7 +14,9 @@ from . import (
                debug_log,
                default_palette,
                flat_field,
+               fps_readout,
                full_fps,
+               hidden_settings,
                lock_range,
                mic_prompt,
                no_smoothing,
@@ -29,7 +31,8 @@ from . import (
 )
 from .base import Options
 
-ALL: list[ModuleType] = [full_fps, default_palette, sharp_scaling, no_smoothing, smoothing_settings, png_photos, photo_1x,
+ALL: list[ModuleType] = [full_fps, default_palette, sharp_scaling, no_smoothing, smoothing_settings, png_photos,
+                         hidden_settings, fps_readout, photo_1x,
                          video_quality, resume_fix, mic_prompt, flat_field, lock_range, shutter,
                          calibration, smart_smoothing, debug_log]
 BY_NAME = {p.NAME: p for p in ALL}

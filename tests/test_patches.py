@@ -15,7 +15,9 @@ from seekpatch.patches import (
     debug_log,
     default_palette,
     flat_field,
+    fps_readout,
     full_fps,
+    hidden_settings,
     lock_range,
     mic_prompt,
     no_smoothing,
@@ -586,6 +588,103 @@ def test_calibration_needs_an_arm_libseekip(make_project):
         calibration.apply(tree, Options())
 
 
+# hidden_settings --------------------------------------------------------------------------------
+
+HIDDEN = {"D": "allow_reg_optout_key", "E": "export_frame_rate_allowed_key", "I": "lossless_comp_allowed_key",
+          "O": "sim_mode_allowed_key", "P": "staging_registration_allowed_key"}
+
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_hidden_settings(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = hidden_settings.apply(tree, Options())
+    prefs = text(tree, "Lfix/Prefs;")
+    for name in HIDDEN:
+        body = next(m for m in methods(prefs) if m.name == name).body
+        assert re.search(r"move-result p0\n\n\s+# seek-patch hidden_settings: always shown\n\s+const/4 p0, 0x1\n\n\s+"
+                         r"return p0\n", body), name
+    assert "seek-patch" not in next(m for m in methods(prefs) if m.name == "H").body  # the setting itself
+    assert len(report) == 5 and report[0] == ("smali/fix/Prefs.smali I(): lossless_comp_allowed_key is true -- "
+                                              "Save Uncompressed shown")
+    with pytest.raises(AlreadyApplied):
+        hidden_settings.apply(tree, Options())
+
+
+def test_hidden_settings_leaves_save_uncompressed_to_png_photos(make_project):
+    tree = tree_of(make_project, "lambda")
+    png_photos.apply(tree, Options())
+    report = hidden_settings.apply(tree, Options())
+    body = next(m for m in methods(text(tree, "Lfix/Prefs;")) if m.name == "I").body
+    assert re.search(r"move-result p0\n\n\s+# seek-patch hidden_settings: .*Android 11.*\n\s+"
+                     r"sget p0, Landroid/os/Build\$VERSION;->SDK_INT:I\n\n\s+add-int/lit8 p0, p0, -0x1e\n\n\s+"
+                     r"ushr-int/lit8 p0, p0, 0x1f\n\n\s+return p0\n", body)
+    assert report[0].endswith("(before Android 11: png_photos forces it on from 11)")
+
+
+def test_hidden_settings_takes_the_switches_there_are(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Prefs.smali"
+    p.write_text(p.read_text().replace('"export_frame_rate_allowed_key"', '"other_key"'))
+    report = hidden_settings.apply(SmaliTree(str(root)), Options())
+    assert len(report) == 4 and not any("Show Frame Rate" in line for line in report)
+
+
+def test_hidden_settings_needs_one_reader_per_switch(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Prefs.smali"
+    p.write_text(p.read_text().replace('"export_frame_rate_allowed_key"', '"sim_mode_allowed_key"'))
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match="reader of sim_mode_allowed_key, found 2"):
+        with tree.transaction():
+            hidden_settings.apply(tree, Options())
+    assert tree.save() == []
+
+
+def test_hidden_settings_refuses_an_app_without_them(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Prefs.smali"
+    text_ = p.read_text()
+    for key in HIDDEN.values():
+        text_ = text_.replace(f'"{key}"', '"other_key"')
+    p.write_text(text_)
+    with pytest.raises(PatchError, match="none of the hidden switches"):
+        hidden_settings.apply(SmaliTree(str(root)), Options())
+
+
+# fps_readout ------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_fps_readout(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = fps_readout.apply(tree, Options())
+    meter = text(tree, "Lfix/Meter;")
+    assert re.search(r"long-to-double v4, v4\n\n\s+# seek-patch fps_readout: .*\n\s+"
+                     r"const-wide v6, 0x407f400000000000L    # 500\.0\n\n\s+cmpl-double v4, v4, v6\n", meter)
+    assert "0x40a7700000000000L" not in meter and "const-wide v6, 0x408f400000000000L    # 1000.0" in meter
+    assert report == ["smali/fix/Meter.smali frame(): the frame rate is recomputed every 500 ms instead of 3000"]
+    with pytest.raises(AlreadyApplied):
+        fps_readout.apply(tree, Options())
+
+
+def test_fps_readout_one_second_window(make_project):  # 2.0.x: the window is the same 1000.0 as the divisor
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Meter.smali"
+    p.write_text(p.read_text().replace("0x40a7700000000000L    # 3000.0", "0x408f400000000000L    # 1000.0"))
+    tree = SmaliTree(str(root))
+    report = fps_readout.apply(tree, Options())
+    meter = text(tree, "Lfix/Meter;")
+    assert meter.count("0x407f400000000000L") == 1 and meter.count("0x408f400000000000L") == 1
+    assert report[0].endswith("every 500 ms instead of 1000")
+
+
+def test_fps_readout_needs_the_counter(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Meter.smali"
+    p.write_text(p.read_text().replace("cmpl-double v4, v4, v6", "cmpl-double v4, v6, v4"))
+    with pytest.raises(PatchError, match="expected one frame counter"):
+        fps_readout.apply(SmaliTree(str(root)), Options())
+
+
 # shutter ----------------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("shape", SHAPES)
@@ -770,11 +869,14 @@ def test_smoothing_settings_needs_the_feature_call(make_project):
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {  # every patch that applies, but no_smoothing (the alternative to smoothing_settings)
-    "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
-               "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
-    "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
-                 "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "shutter", "debug_log"],
+    "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
+               "photo_1x", "video_quality", "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter",
+               "calibration", "smart_smoothing", "debug_log"],
+    "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
+                 "photo_1x", "video_quality", "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter",
+                 "calibration", "smart_smoothing", "debug_log"],
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "fps_readout", "photo_1x", "mic_prompt",
+                "shutter", "debug_log"],
 }
 
 
