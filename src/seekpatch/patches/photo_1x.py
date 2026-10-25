@@ -1,4 +1,4 @@
-"""photo_1x: save every photo's thermal frame at the sensor's resolution, too.
+"""photo_1x: save each photo's thermal frame at the sensor's resolution, too (a setting, off by default).
 
 The photo method gets the colorized frame as a sensor-sized bitmap (320x240 on a Compact Pro, no
 overlays), draws it scaled up into the 1280x960 photo canvas, adds the overlays, and writes the
@@ -10,7 +10,11 @@ file through a second method that sets the EXIF tags and copies it to its final 
 
 which writes the frame as PNG, turned upright, to "<photo folder> 1x/<photo name>.png" -- a sibling
 folder, because Seek's gallery lists everything under the photo folder.  Thermal+ photos store the
-thermal frame.  Source of the helper: helpers/java/seekpatch/Photo1x.java.
+thermal frame.
+
+Settings -> Image & Video gets "Also save a 1x PNG" (seekpatch.PhotoSettings, settings.py), off by
+default; where the release has no settings screen, the frame is saved with every photo.  Sources:
+helpers/java/seekpatch/{Photo1x,PhotoSettings}.java.
 """
 from __future__ import annotations
 
@@ -19,9 +23,10 @@ import re
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, code_start, methods, param_registers, register_number
 from .base import Options, ensure_unpatched, mark
+from .settings import optional_settings
 
 NAME = "photo_1x"
-SUMMARY = "with every photo, also save the thermal frame at the sensor's resolution (PNG, '... 1x' folder)"
+SUMMARY = "a setting to save each photo's thermal frame at the sensor's resolution too (PNG, '... 1x' folder)"
 VERSIONS = "2.1.1 - 2.3.4"
 RECOMMENDED = True
 
@@ -87,4 +92,5 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
     tree.replace_method_body(path, exif, re.sub(r"^([ \t]*)return-void$", lambda r: done + r.group(0), exif.body,
                                                 count=1, flags=re.M))
     add_helpers(tree, "Photo1x")
-    return [f"{tree.rel(path)}: {photo.name}() hands over its frame, {exif.name}() saves it after the photo"]
+    return [f"{tree.rel(path)}: {photo.name}() hands over its frame, {exif.name}() saves it after the photo",
+            *optional_settings(tree, NAME, "PhotoSettings", "Also save a 1x PNG")]

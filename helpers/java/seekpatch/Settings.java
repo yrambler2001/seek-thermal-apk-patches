@@ -3,16 +3,18 @@ package seekpatch;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
+import android.view.WindowInsets;
+import android.widget.ListView;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -29,7 +31,9 @@ import java.lang.reflect.Method;
  * not applied is simply absent:
  * <pre>
  *     seekpatch.Filters        smoothing_settings: Seek's filters, Smart smoothing
- *     seekpatch.Upscale        sharp_scaling: iOS / Android upscaling, sharpness
+ *     seekpatch.FlatSettings   flat_field: frames per tap of the Flat field button
+ *     seekpatch.Upscale        sharp_scaling: smooth, sharp or blocky upscaling
+ *     seekpatch.PhotoSettings  photo_1x: whether to save the 1x PNG
  *     seekpatch.VideoSettings  video_quality: the video's quantizer
  * </pre>
  * with {@code public static void load(SharedPreferences)} (values to the patch's runtime state, on
@@ -43,8 +47,8 @@ public final class Settings {
     public static final String PREFS = "seekpatch";
     /** The app's "Image smoothing" switch: the class our switches copy (and smoothing_settings hides it). */
     public static final String OLD_SWITCH = "use_smoothing";
-    private static final int DISABLED = 0x61ffffff;  // white at 38 %, as the switch's own disabled look
-    private static final String[] SECTIONS = {"seekpatch.Filters", "seekpatch.Upscale", "seekpatch.VideoSettings"};
+    private static final String[] SECTIONS = {"seekpatch.Filters", "seekpatch.FlatSettings", "seekpatch.Upscale",
+        "seekpatch.PhotoSettings", "seekpatch.VideoSettings"};
 
     private static SharedPreferences prefs;
     private static Method[] loads;
@@ -88,8 +92,33 @@ public final class Settings {
                     }
                 }
             }
+            final PreferenceFragment fragment = f;
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    padEnd(fragment);  // its view exists by now
+                }
+            });
         } catch (Throwable t) {
             Log.w(TAG, "settings: none on this screen", t);
+        }
+    }
+
+    /** The screen's list runs on under the navigation bar, and with our items the last one ends there: pad
+     * the list's end by the bar, so that it scrolls clear. */
+    private static void padEnd(PreferenceFragment f) {
+        try {
+            View root = f.getView();
+            View list = root != null ? root.findViewById(android.R.id.list) : null;
+            WindowInsets insets = list != null ? list.getRootWindowInsets() : null;
+            int bar = insets != null ? insets.getSystemWindowInsetBottom() : 0;
+            if (list instanceof ListView && bar > 0) {
+                ListView l = (ListView) list;
+                l.setClipToPadding(false);
+                l.setPadding(l.getPaddingLeft(), l.getPaddingTop(), l.getPaddingRight(), l.getPaddingBottom() + bar);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "settings: list not padded", t);
         }
     }
 
@@ -183,20 +212,6 @@ public final class Settings {
         });
         g.addPreference(l);
         return l;
-    }
-
-    /** setEnabled, and a grey title when off: the app's preference classes paint every title white. */
-    public static void enable(Preference pref, boolean on) {
-        pref.setEnabled(on);
-        CharSequence title = pref.getTitle();
-        if (title == null) {
-            return;
-        }
-        SpannableString t = new SpannableString(title.toString());
-        if (!on) {
-            t.setSpan(new ForegroundColorSpan(DISABLED), 0, t.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-        }
-        pref.setTitle(t);
     }
 
     private static void prepare(Preference pref, String key, String title) {

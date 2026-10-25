@@ -29,11 +29,9 @@
 
 .field private static final TIMEOUT_MS:J = 0x1388L
 
-.field private static final UPDATES:I = 0x28
+.field private static busy:Z = false
 
-.field private static busy:Z
-
-.field private static button:Ljava/lang/ref/WeakReference;
+.field private static button:Ljava/lang/ref/WeakReference; = null
     .annotation system Ldalvik/annotation/Signature;
         value = {
             "Ljava/lang/ref/WeakReference<",
@@ -43,26 +41,30 @@
     .end annotation
 .end field
 
-.field private static deadline:J
+.field private static deadline:J = 0x0L
 
 .field private static final requested:Ljava/util/concurrent/atomic/AtomicBoolean;
 
-.field private static runHandle:J
+.field private static runHandle:J = 0x0L
 
-.field private static running:Z
+.field private static running:Z = false
 
-.field private static start1:I
+.field private static start1:I = 0x0
 
-.field private static start2:I
+.field private static start2:I = 0x0
 
-.field private static taps:I
+.field private static taps:I = 0x0
+
+.field private static target:I = 0x0
+
+.field public static volatile updates:I = 0x28
 
 
 # direct methods
 .method static constructor <clinit>()V
     .locals 2
 
-    .line 49
+    .line 50
     new-instance v0, Landroid/os/Handler;
 
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -73,14 +75,14 @@
 
     sput-object v0, Lseekpatch/Flat;->MAIN:Landroid/os/Handler;
 
-    .line 51
+    .line 52
     new-instance v0, Ljava/util/concurrent/atomic/AtomicBoolean;
 
     invoke-direct {v0}, Ljava/util/concurrent/atomic/AtomicBoolean;-><init>()V
 
     sput-object v0, Lseekpatch/Flat;->requested:Ljava/util/concurrent/atomic/AtomicBoolean;
 
-    .line 54
+    .line 55
     new-instance v0, Ljava/lang/ref/WeakReference;
 
     const/4 v1, 0x0
@@ -95,7 +97,7 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 63
+    .line 65
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -104,7 +106,7 @@
 .method static synthetic access$000(Landroid/widget/TextView;)V
     .locals 0
 
-    .line 34
+    .line 35
     invoke-static {p0}, Lseekpatch/Flat;->tap(Landroid/widget/TextView;)V
 
     return-void
@@ -113,7 +115,7 @@
 .method static synthetic access$100()Ljava/util/concurrent/atomic/AtomicBoolean;
     .locals 1
 
-    .line 34
+    .line 35
     sget-object v0, Lseekpatch/Flat;->requested:Ljava/util/concurrent/atomic/AtomicBoolean;
 
     return-object v0
@@ -122,7 +124,7 @@
 .method static synthetic access$200(Ljava/lang/String;)V
     .locals 0
 
-    .line 34
+    .line 35
     invoke-static {p0}, Lseekpatch/Flat;->done(Ljava/lang/String;)V
 
     return-void
@@ -131,7 +133,7 @@
 .method static synthetic access$300()Z
     .locals 1
 
-    .line 34
+    .line 35
     sget-boolean v0, Lseekpatch/Flat;->busy:Z
 
     return v0
@@ -140,7 +142,7 @@
 .method static synthetic access$302(Z)Z
     .locals 0
 
-    .line 34
+    .line 35
     sput-boolean p0, Lseekpatch/Flat;->busy:Z
 
     return p0
@@ -149,7 +151,7 @@
 .method static synthetic access$400()I
     .locals 1
 
-    .line 34
+    .line 35
     sget v0, Lseekpatch/Flat;->taps:I
 
     return v0
@@ -158,7 +160,7 @@
 .method static synthetic access$500()Ljava/lang/ref/WeakReference;
     .locals 1
 
-    .line 34
+    .line 35
     sget-object v0, Lseekpatch/Flat;->button:Ljava/lang/ref/WeakReference;
 
     return-object v0
@@ -167,13 +169,13 @@
 .method public static attach(Landroid/app/Activity;)V
     .locals 7
 
-    .line 69
+    .line 71
     const-string v0, "seek-patch"
 
     .line 0
     const-string v1, "flat_field: no top bar for the button ("
 
-    .line 69
+    .line 71
     :try_start_0
     const-string v2, "main_view_top_panel"
 
@@ -181,12 +183,12 @@
 
     move-result-object v2
 
-    .line 70
+    .line 72
     instance-of v3, v2, Landroid/widget/RelativeLayout;
 
     if-nez v3, :cond_0
 
-    .line 71
+    .line 73
     new-instance p0, Ljava/lang/StringBuilder;
 
     invoke-direct {p0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
@@ -205,37 +207,37 @@
 
     return-void
 
-    .line 74
+    .line 76
     :cond_0
     new-instance v1, Landroid/widget/TextView;
 
     invoke-direct {v1, p0}, Landroid/widget/TextView;-><init>(Landroid/content/Context;)V
 
-    .line 75
+    .line 77
     const-string v3, "Flat field"
 
     invoke-virtual {v1, v3}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
     const/4 v3, -0x1
 
-    .line 76
+    .line 78
     invoke-virtual {v1, v3}, Landroid/widget/TextView;->setTextColor(I)V
 
     const/4 v3, 0x2
 
     const/high16 v4, 0x41400000    # 12.0f
 
-    .line 77
+    .line 79
     invoke-virtual {v1, v3, v4}, Landroid/widget/TextView;->setTextSize(IF)V
 
     const/16 v3, 0x11
 
-    .line 78
+    .line 80
     invoke-virtual {v1, v3}, Landroid/widget/TextView;->setGravity(I)V
 
     const/16 v3, 0xc
 
-    .line 79
+    .line 81
     invoke-static {p0, v3}, Lseekpatch/Flat;->dp(Landroid/app/Activity;I)I
 
     move-result v4
@@ -248,14 +250,14 @@
 
     invoke-virtual {v1, v4, v6, v5, v6}, Landroid/widget/TextView;->setPadding(IIII)V
 
-    .line 80
+    .line 82
     new-instance v4, Landroid/graphics/drawable/GradientDrawable;
 
     invoke-direct {v4}, Landroid/graphics/drawable/GradientDrawable;-><init>()V
 
     const/16 v5, 0xe
 
-    .line 81
+    .line 83
     invoke-static {p0, v5}, Lseekpatch/Flat;->dp(Landroid/app/Activity;I)I
 
     move-result v5
@@ -266,12 +268,12 @@
 
     const v5, 0x33ffffff
 
-    .line 82
+    .line 84
     invoke-virtual {v4, v5}, Landroid/graphics/drawable/GradientDrawable;->setColor(I)V
 
     const/4 v5, 0x1
 
-    .line 83
+    .line 85
     invoke-static {p0, v5}, Lseekpatch/Flat;->dp(Landroid/app/Activity;I)I
 
     move-result v5
@@ -280,24 +282,24 @@
 
     invoke-virtual {v4, v5, v6}, Landroid/graphics/drawable/GradientDrawable;->setStroke(II)V
 
-    .line 84
+    .line 86
     invoke-virtual {v1, v4}, Landroid/widget/TextView;->setBackground(Landroid/graphics/drawable/Drawable;)V
 
-    .line 85
+    .line 87
     new-instance v4, Lseekpatch/Flat$1;
 
     invoke-direct {v4, v1}, Lseekpatch/Flat$1;-><init>(Landroid/widget/TextView;)V
 
     invoke-virtual {v1, v4}, Landroid/widget/TextView;->setOnClickListener(Landroid/view/View$OnClickListener;)V
 
-    .line 91
+    .line 93
     new-instance v4, Lseekpatch/Flat$2;
 
     invoke-direct {v4}, Lseekpatch/Flat$2;-><init>()V
 
     invoke-virtual {v1, v4}, Landroid/widget/TextView;->setOnLongClickListener(Landroid/view/View$OnLongClickListener;)V
 
-    .line 98
+    .line 100
     new-instance v4, Landroid/widget/RelativeLayout$LayoutParams;
 
     const/16 v5, 0x1c
@@ -312,27 +314,27 @@
 
     const/16 v5, 0xb
 
-    .line 99
+    .line 101
     invoke-virtual {v4, v5}, Landroid/widget/RelativeLayout$LayoutParams;->addRule(I)V
 
     const/16 v5, 0xf
 
-    .line 100
+    .line 102
     invoke-virtual {v4, v5}, Landroid/widget/RelativeLayout$LayoutParams;->addRule(I)V
 
-    .line 101
+    .line 103
     invoke-static {p0, v3}, Lseekpatch/Flat;->dp(Landroid/app/Activity;I)I
 
     move-result p0
 
     iput p0, v4, Landroid/widget/RelativeLayout$LayoutParams;->rightMargin:I
 
-    .line 102
+    .line 104
     check-cast v2, Landroid/widget/RelativeLayout;
 
     invoke-virtual {v2, v1, v4}, Landroid/widget/RelativeLayout;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 103
+    .line 105
     new-instance p0, Ljava/lang/ref/WeakReference;
 
     invoke-direct {p0, v1}, Ljava/lang/ref/WeakReference;-><init>(Ljava/lang/Object;)V
@@ -346,7 +348,7 @@
     :catchall_0
     move-exception p0
 
-    .line 105
+    .line 107
     const-string v1, "flat_field: no button"
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
@@ -358,7 +360,7 @@
 .method private static done(Ljava/lang/String;)V
     .locals 2
 
-    .line 203
+    .line 210
     sget-object v0, Lseekpatch/Flat;->MAIN:Landroid/os/Handler;
 
     new-instance v1, Lseekpatch/Flat$5;
@@ -375,7 +377,7 @@
 
     int-to-float p1, p1
 
-    .line 253
+    .line 260
     invoke-virtual {p0}, Landroid/app/Activity;->getResources()Landroid/content/res/Resources;
 
     move-result-object p0
@@ -400,7 +402,7 @@
 
     const/4 v0, 0x0
 
-    .line 239
+    .line 246
     :try_start_0
     invoke-virtual {p0}, Landroid/app/Activity;->getResources()Landroid/content/res/Resources;
 
@@ -423,7 +425,7 @@
     :catch_0
     move-object v1, v0
 
-    .line 243
+    .line 250
     :goto_0
     invoke-virtual {p0}, Landroid/app/Activity;->getPackageName()Ljava/lang/String;
 
@@ -450,7 +452,7 @@
 
     goto :goto_2
 
-    .line 244
+    .line 251
     :cond_0
     invoke-virtual {p0}, Landroid/app/Activity;->getResources()Landroid/content/res/Resources;
 
@@ -465,7 +467,7 @@
     :goto_2
     if-eqz v4, :cond_1
 
-    .line 246
+    .line 253
     invoke-virtual {p0, v4}, Landroid/app/Activity;->findViewById(I)Landroid/view/View;
 
     move-result-object p0
@@ -484,7 +486,7 @@
 .method public static frame(J)V
     .locals 6
 
-    .line 138
+    .line 144
     sget-boolean v0, Lseekpatch/Flat;->running:Z
 
     if-nez v0, :cond_0
@@ -502,7 +504,7 @@
     :cond_0
     const/4 v0, 0x0
 
-    .line 142
+    .line 148
     :try_start_0
     sget-object v1, Lseekpatch/Flat;->requested:Ljava/util/concurrent/atomic/AtomicBoolean;
 
@@ -514,12 +516,12 @@
 
     if-eqz v1, :cond_1
 
-    .line 143
+    .line 149
     invoke-static {p0, p1}, Lseekpatch/Flat;->start(J)V
 
     goto :goto_1
 
-    .line 144
+    .line 150
     :cond_1
     sget-wide v1, Lseekpatch/Flat;->runHandle:J
 
@@ -527,10 +529,10 @@
 
     if-eqz v1, :cond_2
 
-    .line 145
+    .line 151
     sput-boolean v0, Lseekpatch/Flat;->running:Z
 
-    .line 146
+    .line 152
     const-string v1, "Camera reconnected, tap again"
 
     invoke-static {v1}, Lseekpatch/Flat;->done(Ljava/lang/String;)V
@@ -542,7 +544,7 @@
 
     const/4 v2, 0x4
 
-    .line 148
+    .line 154
     invoke-static {p0, p1, v1, v2}, Lseekpatch/Flat;->get(JII)I
 
     move-result v1
@@ -551,7 +553,7 @@
 
     sub-int/2addr v1, v3
 
-    .line 149
+    .line 155
     sget v3, Lseekpatch/Flat;->start2:I
 
     const/high16 v4, -0x80000000
@@ -573,27 +575,28 @@
 
     sub-int/2addr v2, v3
 
-    .line 148
+    .line 154
     :goto_0
     invoke-static {v1, v2}, Ljava/lang/Math;->max(II)I
 
     move-result v1
 
-    const/16 v2, 0x28
+    .line 156
+    sget v2, Lseekpatch/Flat;->target:I
 
     if-lt v1, v2, :cond_4
 
-    .line 151
+    .line 157
     invoke-static {p0, p1, v1}, Lseekpatch/Flat;->stop(JI)V
 
-    .line 152
+    .line 158
     const-string v1, "Flat field set"
 
     invoke-static {v1}, Lseekpatch/Flat;->done(Ljava/lang/String;)V
 
     goto :goto_1
 
-    .line 153
+    .line 159
     :cond_4
     invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
 
@@ -605,10 +608,10 @@
 
     if-lez v2, :cond_5
 
-    .line 154
+    .line 160
     invoke-static {p0, p1, v1}, Lseekpatch/Flat;->stop(JI)V
 
-    .line 155
+    .line 161
     const-string v1, "Flat field interrupted, tap again"
 
     invoke-static {v1}, Lseekpatch/Flat;->done(Ljava/lang/String;)V
@@ -620,10 +623,10 @@
     :catchall_0
     move-exception v1
 
-    .line 159
+    .line 165
     sput-boolean v0, Lseekpatch/Flat;->running:Z
 
-    .line 160
+    .line 166
     const-string v2, "seek-patch"
 
     const-string v3, "flat_field: failed"
@@ -632,18 +635,18 @@
 
     const/16 v1, 0x7599
 
-    .line 162
+    .line 168
     :try_start_1
     invoke-static {p0, p1, v1, v0}, Lseekpatch/Flat;->set(JII)V
 
     const v1, 0x111d9
 
-    .line 163
+    .line 169
     invoke-static {p0, p1, v1, v0}, Lseekpatch/Flat;->set(JII)V
     :try_end_1
     .catchall {:try_start_1 .. :try_end_1} :catchall_1
 
-    .line 167
+    .line 173
     :catchall_1
     const-string p0, "Flat field failed"
 
@@ -657,7 +660,7 @@
 .method private static get(JII)I
     .locals 2
 
-    .line 218
+    .line 225
     invoke-static {p3}, Ljava/nio/ByteBuffer;->allocateDirect(I)Ljava/nio/ByteBuffer;
 
     move-result-object v0
@@ -668,7 +671,7 @@
 
     move-result-object v0
 
-    .line 219
+    .line 226
     invoke-static {p0, p1, p2, v0, p3}, Lseekpatch/SeekIP;->getFeature(JILjava/nio/ByteBuffer;I)I
 
     move-result p0
@@ -681,7 +684,7 @@
 
     if-ne p3, p0, :cond_0
 
-    .line 223
+    .line 230
     invoke-virtual {v0, p1}, Ljava/nio/ByteBuffer;->getShort(I)S
 
     move-result p0
@@ -696,7 +699,7 @@
     :goto_0
     return p0
 
-    .line 221
+    .line 228
     :cond_1
     new-instance p1, Ljava/lang/IllegalStateException;
 
@@ -728,7 +731,7 @@
 
     const/4 v0, 0x4
 
-    .line 227
+    .line 234
     invoke-static {v0}, Ljava/nio/ByteBuffer;->allocateDirect(I)Ljava/nio/ByteBuffer;
 
     move-result-object v1
@@ -741,10 +744,10 @@
 
     const/4 v2, 0x0
 
-    .line 228
+    .line 235
     invoke-virtual {v1, v2, p3}, Ljava/nio/ByteBuffer;->putInt(II)Ljava/nio/ByteBuffer;
 
-    .line 229
+    .line 236
     invoke-static {p0, p1, p2, v1, v0}, Lseekpatch/SeekIP;->setFeature(JILjava/nio/ByteBuffer;I)I
 
     move-result p0
@@ -753,7 +756,7 @@
 
     return-void
 
-    .line 231
+    .line 238
     :cond_0
     new-instance p1, Ljava/lang/IllegalStateException;
 
@@ -783,7 +786,7 @@
 .method private static start(J)V
     .locals 6
 
-    .line 173
+    .line 179
     const-string v0, " (limit "
 
     const-string v1, ")"
@@ -793,7 +796,7 @@
     .line 0
     const-string v3, "flat_field: learning; detail "
 
-    .line 173
+    .line 179
     :try_start_0
     new-instance v4, Ljava/lang/StringBuilder;
 
@@ -825,7 +828,7 @@
 
     const/16 v3, 0x7597
 
-    .line 174
+    .line 180
     invoke-static {p0, p1, v3, v5}, Lseekpatch/Flat;->get(JII)I
 
     move-result v3
@@ -848,7 +851,7 @@
 
     move-result-object v0
 
-    .line 173
+    .line 179
     invoke-static {v2, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_0
     .catch Ljava/lang/IllegalStateException; {:try_start_0 .. :try_end_0} :catch_0
@@ -858,7 +861,7 @@
     :catch_0
     move-exception v0
 
-    .line 176
+    .line 182
     new-instance v3, Ljava/lang/StringBuilder;
 
     const-string v4, "flat_field: learning ("
@@ -884,7 +887,7 @@
 
     const/4 v1, 0x4
 
-    .line 178
+    .line 184
     invoke-static {p0, p1, v0, v1}, Lseekpatch/Flat;->get(JII)I
 
     move-result v0
@@ -895,7 +898,7 @@
 
     const/high16 v2, -0x80000000
 
-    .line 180
+    .line 186
     :try_start_1
     invoke-static {p0, p1, v0, v1}, Lseekpatch/Flat;->get(JII)I
 
@@ -907,7 +910,7 @@
 
     goto :goto_1
 
-    .line 182
+    .line 188
     :catch_1
     sput v2, Lseekpatch/Flat;->start2:I
 
@@ -916,32 +919,41 @@
 
     const/4 v1, 0x1
 
-    .line 184
+    .line 190
     invoke-static {p0, p1, v0, v1}, Lseekpatch/Flat;->set(JII)V
 
-    .line 185
+    .line 191
     sget v0, Lseekpatch/Flat;->start2:I
 
     if-eq v0, v2, :cond_0
 
     const v0, 0x111d9
 
-    .line 186
+    .line 192
     invoke-static {p0, p1, v0, v1}, Lseekpatch/Flat;->set(JII)V
 
-    .line 188
+    .line 194
     :cond_0
     sput-boolean v1, Lseekpatch/Flat;->running:Z
 
-    .line 189
+    .line 195
     sput-wide p0, Lseekpatch/Flat;->runHandle:J
 
-    .line 190
+    .line 196
+    sget p0, Lseekpatch/Flat;->updates:I
+
+    sput p0, Lseekpatch/Flat;->target:I
+
+    .line 197
     invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
 
     move-result-wide p0
 
-    const-wide/16 v0, 0x1388
+    sget v0, Lseekpatch/Flat;->target:I
+
+    invoke-static {v0}, Lseekpatch/Flat;->timeout(I)J
+
+    move-result-wide v0
 
     add-long/2addr p0, v0
 
@@ -955,15 +967,15 @@
 
     const/4 v0, 0x0
 
-    .line 194
+    .line 201
     sput-boolean v0, Lseekpatch/Flat;->running:Z
 
     const/16 v1, 0x7599
 
-    .line 195
+    .line 202
     invoke-static {p0, p1, v1, v0}, Lseekpatch/Flat;->set(JII)V
 
-    .line 196
+    .line 203
     sget v1, Lseekpatch/Flat;->start2:I
 
     const/high16 v2, -0x80000000
@@ -972,10 +984,10 @@
 
     const v1, 0x111d9
 
-    .line 197
+    .line 204
     invoke-static {p0, p1, v1, v0}, Lseekpatch/Flat;->set(JII)V
 
-    .line 199
+    .line 206
     :cond_0
     new-instance p0, Ljava/lang/StringBuilder;
 
@@ -1001,9 +1013,9 @@
 .end method
 
 .method private static tap(Landroid/widget/TextView;)V
-    .locals 4
+    .locals 5
 
-    .line 110
+    .line 112
     sget-boolean v0, Lseekpatch/Flat;->busy:Z
 
     if-eqz v0, :cond_0
@@ -1013,32 +1025,32 @@
     :cond_0
     const/4 v0, 0x1
 
-    .line 113
+    .line 115
     sput-boolean v0, Lseekpatch/Flat;->busy:Z
 
-    .line 114
+    .line 116
     sget v1, Lseekpatch/Flat;->taps:I
 
     add-int/2addr v1, v0
 
     sput v1, Lseekpatch/Flat;->taps:I
 
-    .line 115
+    .line 117
     const-string v2, "Hold still\u2026"
 
     invoke-virtual {p0, v2}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
     const v2, 0x3f19999a    # 0.6f
 
-    .line 116
+    .line 118
     invoke-virtual {p0, v2}, Landroid/widget/TextView;->setAlpha(F)V
 
-    .line 117
+    .line 119
     sget-object p0, Lseekpatch/Flat;->requested:Ljava/util/concurrent/atomic/AtomicBoolean;
 
     invoke-virtual {p0, v0}, Ljava/util/concurrent/atomic/AtomicBoolean;->set(Z)V
 
-    .line 118
+    .line 120
     sget-object p0, Lseekpatch/Flat;->MAIN:Landroid/os/Handler;
 
     new-instance v0, Lseekpatch/Flat$3;
@@ -1049,14 +1061,47 @@
 
     invoke-virtual {p0, v0, v2, v3}, Landroid/os/Handler;->postDelayed(Ljava/lang/Runnable;J)Z
 
-    .line 126
+    .line 128
     new-instance v0, Lseekpatch/Flat$4;
 
     invoke-direct {v0, v1}, Lseekpatch/Flat$4;-><init>(I)V
 
-    const-wide/16 v1, 0x1f40
+    sget v1, Lseekpatch/Flat;->updates:I
 
+    .line 135
+    invoke-static {v1}, Lseekpatch/Flat;->timeout(I)J
+
+    move-result-wide v1
+
+    const-wide/16 v3, 0xbb8
+
+    add-long/2addr v1, v3
+
+    .line 128
     invoke-virtual {p0, v0, v1, v2}, Landroid/os/Handler;->postDelayed(Ljava/lang/Runnable;J)Z
 
     return-void
+.end method
+
+.method private static timeout(I)J
+    .locals 4
+
+    int-to-long v0, p0
+
+    const-wide/16 v2, 0x96
+
+    mul-long/2addr v0, v2
+
+    const-wide/16 v2, 0x3e8
+
+    add-long/2addr v0, v2
+
+    const-wide/16 v2, 0x1388
+
+    .line 139
+    invoke-static {v2, v3, v0, v1}, Ljava/lang/Math;->max(JJ)J
+
+    move-result-wide v0
+
+    return-wide v0
 .end method

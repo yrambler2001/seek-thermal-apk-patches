@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 203
+    .line 210
     iput-object p1, p0, Lseekpatch/Flat$5;->val$message:Ljava/lang/String;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -46,10 +46,10 @@
 
     const/4 v0, 0x0
 
-    .line 206
+    .line 213
     invoke-static {v0}, Lseekpatch/Flat;->access$302(Z)Z
 
-    .line 207
+    .line 214
     invoke-static {}, Lseekpatch/Flat;->access$500()Ljava/lang/ref/WeakReference;
 
     move-result-object v1
@@ -62,17 +62,17 @@
 
     if-eqz v1, :cond_0
 
-    .line 209
+    .line 216
     const-string v2, "Flat field"
 
     invoke-virtual {v1, v2}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
     const/high16 v2, 0x3f800000    # 1.0f
 
-    .line 210
+    .line 217
     invoke-virtual {v1, v2}, Landroid/widget/TextView;->setAlpha(F)V
 
-    .line 211
+    .line 218
     invoke-virtual {v1}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object v1

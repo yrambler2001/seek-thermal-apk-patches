@@ -1,5 +1,5 @@
 """seek-patch's settings in the app's Settings -> Image & Video screen, shared by the patches that have
-any (smoothing_settings, sharp_scaling, video_quality).
+any (smoothing_settings, flat_field, sharp_scaling, photo_1x, video_quality).
 
 Two hooks, added once by whichever of those patches comes first, call the Java helper
 seekpatch.Settings (helpers/java/seekpatch/Settings.java):
@@ -12,8 +12,8 @@ seekpatch.Settings (helpers/java/seekpatch/Settings.java):
 The fragment is found by behaviour: the one PreferenceFragment that names the "Image smoothing"
 preference ("use_smoothing", which it logs when it changes) and inflates its preferences in onCreate.
 Resources are never read, so the hooks work with `apktool d -r` as well as with --side-by-side.
-A patch adds its own section class (seekpatch.Filters, Upscale, VideoSettings); Settings finds
-them by name at run time.
+A patch adds its own section class (seekpatch.Filters, FlatSettings, Upscale, PhotoSettings,
+VideoSettings); Settings finds them by name at run time.
 """
 from __future__ import annotations
 

@@ -20,9 +20,14 @@ import java.io.OutputStream;
  * own gallery, which lists every file under the photo folder, does not show it twice), under the
  * photo's name.  The pixels are turned upright by the photo's EXIF orientation, which PNG viewers
  * do not read.
+ *
+ * <p>{@link #enabled} is the <i>Also save a 1x PNG</i> setting (seekpatch.PhotoSettings, off by
+ * default); without a settings screen it stays on.
  */
 public final class Photo1x {
     private static final String TAG = "seek-patch";
+
+    public static volatile boolean enabled = true;
 
     private static Bitmap frame;
     private static Context context;
@@ -32,7 +37,7 @@ public final class Photo1x {
 
     public static synchronized void capture(Context c, Bitmap bitmap) {
         context = c != null ? c.getApplicationContext() : null;
-        frame = bitmap;
+        frame = enabled ? bitmap : null;
     }
 
     public static void saved(File photo, int exifOrientation) {

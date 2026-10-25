@@ -66,7 +66,8 @@ def test_patch_matrix(toolchain, path, tmp_path):
             dex = b"".join(z.read(n) for n in z.namelist() if n.startswith("classes") and n.endswith(".dex"))
         # each patch's settings, wherever it applies (the settings screen exists from 2.0 on)
         for patch, section in (("sharp_scaling", b"Lseekpatch/Upscale;"), ("video_quality", b"Lseekpatch/VideoSettings;"),
-                               ("smoothing_settings", b"Lseekpatch/Filters;")):
+                               ("smoothing_settings", b"Lseekpatch/Filters;"), ("flat_field", b"Lseekpatch/FlatSettings;"),
+                               ("photo_1x", b"Lseekpatch/PhotoSettings;")):
             assert (section in dex) == expected[patch], patch
         if expected["smart_smoothing"]:  # one per arm ABI the app ships, stored
             assert sorted(i.filename.split("/")[1] for i in libs) == sorted(seekip & {"arm64-v8a", "armeabi-v7a"})

@@ -92,6 +92,11 @@ def test_sharp_scaling(make_project, shape):
     helper = text(tree, "Lseekpatch/SharpScale;")
     assert ".field public static sharpness:F = 2.0f" in helper and ".field public static photoFactor:I = 2" in helper
     assert "glUniform2f" in helper and 'const-string v0, "thermalSharp"' in helper and "glUniform1f" in helper
+    # photoFactor 0 (Blocky): the frame drawn with an unfiltered copy of the paint
+    assert re.search(r"sget v5, Lseekpatch/SharpScale;->photoFactor:I\n\s+if-nez v5, :factor\n\s+if-eqz p4, :draw\n"
+                     r"\s+new-instance v0, Landroid/graphics/Paint;\n\s+invoke-direct \{v0, p4\}, Landroid/graphics/Paint;"
+                     r"-><init>\(Landroid/graphics/Paint;\)V\n\s+const/4 v1, 0x0\n\s+invoke-virtual \{v0, v1\}, "
+                     r"Landroid/graphics/Paint;->setFilterBitmap\(Z\)V\n\s+move-object p4, v0\n\s+goto :draw\n", helper)
     # the settings: Upscale, behind the shared hooks
     assert tree.path_of("Lseekpatch/Upscale;") and tree.path_of("Lseekpatch/Settings;")
     assert text(tree, "Lfix/ImageSettings;").count(SCREEN) == 1
@@ -104,7 +109,7 @@ def test_sharp_scaling_sharpness_is_configurable(make_project):
     assert ".field public static sharpness:F = 3.5f" in helper
     assert ".field public static photoFactor:I = 4" in helper  # photo path rounds to an integer factor
     assert report[0].startswith("sharpness 3.5")
-    assert report[-1] == "settings: iOS-style upscaling, Upscaling sharpness (seekpatch.Upscale)"
+    assert report[-1] == "settings: Upscaling (seekpatch.Upscale)"
 
 
 def test_sharp_scaling_without_a_settings_screen(make_project):
@@ -197,7 +202,7 @@ def test_png_photos_needs_the_preference(make_project):
 @pytest.mark.parametrize("shape", SHAPES)
 def test_photo_1x(make_project, shape):
     tree = tree_of(make_project, shape)
-    photo_1x.apply(tree, Options())
+    report = photo_1x.apply(tree, Options())
     pipeline = text(tree, "Lfix/Pipeline;")
     e0 = next(m for m in methods(pipeline) if m.name == "e0")
     assert re.search(r"\.locals 5\n\n\s+# seek-patch photo_1x[^\n]*\n\s+iget-object v0, p0, Lfix/Pipeline;->ctx:"
@@ -207,6 +212,19 @@ def test_photo_1x(make_project, shape):
     assert re.search(r"invoke-static \{\}, Lfix/Pipeline;->o0\(\)I\n\s+move-result v0\n\s+invoke-static \{p2, v0\}, "
                      r"Lseekpatch/Photo1x;->saved\(Ljava/io/File;I\)V\n\n\s+return-void", exif.body)
     assert tree.path_of("Lseekpatch/Photo1x;")
+    assert report[-1] == "settings: Also save a 1x PNG (seekpatch.PhotoSettings)"
+    assert tree.path_of("Lseekpatch/PhotoSettings;") and tree.path_of("Lseekpatch/Settings;")
+    # on unless the setting says otherwise: without a settings screen the patch saves with every photo
+    assert ".field public static volatile enabled:Z = true" in text(tree, "Lseekpatch/Photo1x;")
+
+
+def test_photo_1x_without_a_settings_screen(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "ImageSettings.smali").unlink()
+    tree = SmaliTree(str(root))
+    report = photo_1x.apply(tree, Options())
+    assert report[-1].startswith("no settings: expected one PreferenceFragment")
+    assert tree.path_of("Lseekpatch/Photo1x;") and not tree.path_of("Lseekpatch/PhotoSettings;")
 
 
 def test_photo_1x_needs_the_exif_writer(make_project):
@@ -255,15 +273,16 @@ def test_video_quality(make_project, shape):
 
 def test_settings_hooks_are_shared(make_project):
     tree = tree_of(make_project, "lambda")
-    for p in (sharp_scaling, smoothing_settings, video_quality):
+    for p in (sharp_scaling, smoothing_settings, video_quality, flat_field, photo_1x):
         report = p.apply(tree, Options())
         assert not any(line.startswith("no settings") for line in report)
     assert text(tree, "Lfix/ImageSettings;").count(SCREEN) == 1 and text(tree, "Lfix/Main;").count(ATTACH) == 1
     assert "# seek-patch sharp_scaling: seek-patch's settings" in text(tree, "Lfix/ImageSettings;")  # the first
-    assert all(tree.path_of(f"Lseekpatch/{c};") for c in ("Upscale", "VideoSettings", "Filters", "Settings"))
+    sections = ("Filters", "FlatSettings", "Upscale", "PhotoSettings", "VideoSettings")
+    assert all(tree.path_of(f"Lseekpatch/{c};") for c in sections + ("Settings",))
     # Settings looks the sections up by name: the names it lists are the classes the patches add
     settings = text(tree, "Lseekpatch/Settings;")
-    assert all(f'"seekpatch.{c}"' in settings for c in ("Filters", "Upscale", "VideoSettings"))
+    assert all(f'"seekpatch.{c}"' in settings for c in sections)
 
 
 def test_video_quality_options(make_project):
@@ -346,13 +365,17 @@ def test_flat_field(make_project, shape):
     report = flat_field.apply(tree, Options())
     assert re.search(r"Lfix/Pipeline;->set\(JLfix/Features;I\)V\n\n\s+# seek-patch flat_field: .*\n\s+"
                      r"invoke-static \{p1, p2\}, Lseekpatch/Flat;->frame\(J\)V\n", text(tree, "Lfix/Pipeline;"))
-    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch flat_field: .*\n\s+"
+    # the settings load first (their hook is added second, at the same place), then the button
+    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch flat_field: .*\n\s+invoke-static/range \{p0 \.\. p0\}, "
+                     + re.escape(ATTACH) + r"\n\n\s+# seek-patch flat_field: .*\n\s+"
                      r"invoke-static \{p0\}, Lseekpatch/Flat;->attach\(Landroid/app/Activity;\)V\n", text(tree, "Lfix/Main;"))
     seekip = text(tree, "Lseekpatch/SeekIP;")
     assert "invoke-static/range {p0 .. p4}, Lfix/NativeLib;->c(JILjava/nio/ByteBuffer;I)I" in seekip
     assert "invoke-static/range {p0 .. p4}, Lfix/NativeLib;->g(JILjava/nio/ByteBuffer;I)I" in seekip
     assert all(tree.path_of(f"Lseekpatch/Flat{s};") for s in ("", "$1", "$2", "$3", "$4", "$5"))
     assert "Lfix/NativeLib;->c(" in report[0]
+    assert report[-1] == "settings: Flat field frames (seekpatch.FlatSettings)"
+    assert tree.path_of("Lseekpatch/FlatSettings;") and tree.path_of("Lseekpatch/Settings;")
 
 
 def test_flat_field_shares_the_feature_call_with_no_smoothing(make_project):
@@ -479,7 +502,7 @@ def test_smoothing_settings(make_project, shape):
     assert SCREEN not in text(tree, "Lfix/MainSettings;")
     assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch smoothing_settings: .*\n\s+"
                      r"invoke-static/range \{p0 \.\. p0\}, " + re.escape(ATTACH) + "\n", text(tree, "Lfix/Main;"))
-    assert all(tree.path_of(c) for c in ("Lseekpatch/Filters;", "Lseekpatch/Filters$1;", "Lseekpatch/Settings;",
+    assert all(tree.path_of(c) for c in ("Lseekpatch/Filters;", "Lseekpatch/Settings;",
                                          "Lseekpatch/Settings$1;", "Lseekpatch/SeekIP;"))
     assert "Lfix/NativeLib;->g(JILjava/nio/ByteBuffer;I)I" in report[0]
     assert report[1] == "settings: ImageSettings.onCreate -> Settings.screen, Main.onCreate -> Settings.attach"

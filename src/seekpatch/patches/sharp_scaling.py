@@ -19,10 +19,11 @@ followed by bilinear.  (Measured: see docs/sharp-scaling.md.)
                         copy of the frame bitmap with the same filtered Paint (CPU, once per capture).
 
     settings            where the release has the settings screen (settings.py), Settings -> Image &
-                        Video gets "iOS-style upscaling" and "Upscaling sharpness" (seekpatch.Upscale).
-                        --sharpness is where they start; they set the shader's uniform thermalSharp
-                        (sharpness 1 or less returns the coordinate unchanged: the exact stock
-                        bilinear sample) and the photo's nearest factor (1: the stock draw).
+                        Video gets "Upscaling" (seekpatch.Upscale): Smooth (stock), Sharp 1.5 - 8 or
+                        Blocky.  --sharpness is where it starts; it sets the shader's uniform
+                        thermalSharp (1 or less returns the coordinate unchanged: the exact stock
+                        bilinear sample; Blocky is 1000) and the photo's nearest factor (1: the stock
+                        draw; 0, Blocky: the frame drawn with an unfiltered copy of the Paint).
 
 Image processing and temperatures are untouched.
 """
@@ -88,7 +89,8 @@ HELPER_SMALI = """.class public final Lseekpatch/SharpScale;
 # changed at run time by seekpatch.Upscale (the settings)
 .field public static sharpness:F = {sharpness}
 
-# the photo's nearest upscale before the filtered draw (1: the stock draw)
+# the photo's nearest upscale before the filtered draw (1: the stock draw; 0: drawn unfiltered, square
+# pixels)
 .field public static photoFactor:I = {k}
 
 
@@ -155,11 +157,22 @@ HELPER_SMALI = """.class public final Lseekpatch/SharpScale;
     return-void
 .end method
 
-# Canvas.drawBitmap(bitmap, src, dst, paint) with the bitmap photoFactor x nearest-upscaled first
+# Canvas.drawBitmap(bitmap, src, dst, paint) with the bitmap photoFactor x nearest-upscaled first, or
+# (photoFactor 0) with a copy of the paint that does not filter
 .method public static draw(Landroid/graphics/Canvas;Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/Rect;Landroid/graphics/Paint;)V
     .locals 6
 
     sget v5, Lseekpatch/SharpScale;->photoFactor:I
+    if-nez v5, :factor
+    if-eqz p4, :draw
+    new-instance v0, Landroid/graphics/Paint;
+    invoke-direct {{v0, p4}}, Landroid/graphics/Paint;-><init>(Landroid/graphics/Paint;)V
+    const/4 v1, 0x0
+    invoke-virtual {{v0, v1}}, Landroid/graphics/Paint;->setFilterBitmap(Z)V
+    move-object p4, v0
+    goto :draw
+
+    :factor
     const/4 v0, 0x1
     if-le v5, v0, :draw
 
@@ -296,4 +309,4 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
               f"vertex shader highp, thermalSize / thermalSharp before {n_draw} glDrawArrays",
               f"{tree.rel(upload_path)} {upload_name}() records the texture size; "
               f"photo {tree.rel(photo_path)} {photo_name}(): {n_photo} drawBitmap call(s) {k}x nearest first"]
-    return report + optional_settings(tree, NAME, "Upscale", "iOS-style upscaling, Upscaling sharpness")
+    return report + optional_settings(tree, NAME, "Upscale", "Upscaling")

@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
-import android.preference.SwitchPreference;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
@@ -69,7 +68,8 @@ public final class Filters {
         smartOn = p.getBoolean(SMART, false) && Settings.present("seekpatch.Smooth");
     }
 
-    /** Settings: the switches, in place of the app's "Image smoothing" (the last item of the screen). */
+    /** Settings: the switches, in place of the app's "Image smoothing" (the last item of the screen).  None is
+     * ever greyed out: the app's switch class draws a disabled "on" much like "off". */
     public static void screen(PreferenceFragment f, SharedPreferences p) {
         PreferenceScreen s = f.getPreferenceScreen();
         Preference old = f.findPreference(Settings.OLD_SWITCH);
@@ -77,8 +77,8 @@ public final class Filters {
             s.removePreference(old);  // replaced by the switches below
         }
         boolean smart = Settings.present("seekpatch.Smooth");
-        final SwitchPreference temporal = Settings.addSwitch(s, p, TEMPORAL, "Default temporal smoothing",
-                "Seek's filter: averages each pixel over recent frames", true, null);
+        Settings.addSwitch(s, p, TEMPORAL, "Default temporal smoothing", "Seek's filter: averages each pixel over recent frames"
+                + (smart ? "; Smart smoothing replaces it while on" : ""), true, null);
         Settings.addSwitch(s, p, SPATIAL, "Default spatial smoothing (3×3)",
                 "Seek's filter: blurs each pixel with its neighbours", false, null);
         Settings.addSwitch(s, p, PATTERN, "Default pattern correction",
@@ -86,27 +86,12 @@ public final class Filters {
         if (!smart) {
             return;
         }
-        final SwitchPreference[] under = new SwitchPreference[2];
-        final SharedPreferences prefs = p;
         Settings.addSwitch(s, p, SMART, "Smart smoothing", "Follows the camera's motion; replaces temporal smoothing",
-                false, new Runnable() {
-                    @Override
-                    public void run() {
-                        enable(prefs, temporal, under);  // the new value is stored already
-                    }
-                });
-        under[0] = Settings.addSwitch(s, p, STRIPES, "Stripe correction", null, true, null);
-        under[1] = Settings.addSwitch(s, p, EDGE, "Left-edge levelling", null, true, null);
-        enable(p, temporal, under);
-    }
-
-    /** Smart smoothing replaces the temporal filter; stripes and edge are its options. */
-    private static void enable(SharedPreferences p, SwitchPreference temporal, SwitchPreference[] under) {
-        boolean smart = p.getBoolean(SMART, false);
-        Settings.enable(temporal, !smart);
-        for (SwitchPreference u : under) {
-            Settings.enable(u, smart);
-        }
+                false, null);
+        Settings.addSwitch(s, p, STRIPES, "Stripe correction", "Part of Smart smoothing: removes column stripes",
+                true, null);
+        Settings.addSwitch(s, p, EDGE, "Left-edge levelling", "Part of Smart smoothing: levels the bright strip at the left edge",
+                true, null);
     }
 
     /** Camera thread, right after the app's feature 900; sentOn: the value it sent (its hidden switch). */

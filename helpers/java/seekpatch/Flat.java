@@ -27,8 +27,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * that already look flat: no 16x16 block with detail over one limit, no step between neighbouring
  * blocks over another.  A camera that has warmed unevenly puts a gradient into every frame, never
  * passes, and keeps an empty map.  Feature 30105 makes the stage learn from every frame regardless.
- * A tap sets it until the stage has learned from {@link #UPDATES} frames, then clears it, and the
- * stock test takes over again.  {@link #frame} runs on the camera thread before every frame,
+ * A tap sets it until the stage has learned from {@link #updates} frames (40 unless the <i>Flat field
+ * frames</i> setting says otherwise, seekpatch.FlatSettings), then clears it, and the stock test
+ * takes over again.  {@link #frame} runs on the camera thread before every frame,
  * right after the app has sent its own features.
  */
 public final class Flat {
@@ -41,9 +42,9 @@ public final class Flat {
     private static final int COUNT = 30104;
     private static final int FORCE = 30105;
     private static final int FILTER2 = 40000;
-    /** The map moves 1/8 of the way per frame: after 40 frames (7/8)^40 = 0.5 % is left. */
-    private static final int UPDATES = 40;
-    private static final long TIMEOUT_MS = 5000;
+    /** Frames per tap.  The map moves 1/8 of the way per frame: after 40 frames (7/8)^40 = 0.5 % is left. */
+    public static volatile int updates = 40;
+    private static final long TIMEOUT_MS = 5000;  // at least; 150 ms a frame for long runs on slow cameras
     private static final long NO_CAMERA_MS = 2000;
     private static final String LABEL = "Flat field";
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
@@ -58,6 +59,7 @@ public final class Flat {
     private static long runHandle;
     private static int start1;
     private static int start2;  // Integer.MIN_VALUE: the second filter does not answer
+    private static int target;  // this run's frames
     private static long deadline;
 
     private Flat() {
@@ -130,7 +132,11 @@ public final class Flat {
                     done("Flat field interrupted, tap again");  // the frames stopped
                 }
             }
-        }, NO_CAMERA_MS + TIMEOUT_MS + 1000);
+        }, NO_CAMERA_MS + timeout(updates) + 1000);
+    }
+
+    private static long timeout(int frames) {
+        return Math.max(TIMEOUT_MS, frames * 150L + 1000);
     }
 
     /** Camera thread, before every frame, with the image library's handle. */
@@ -147,7 +153,7 @@ public final class Flat {
             } else {
                 int learned = Math.max(get(handle, COUNT, 4) - start1,
                         start2 == Integer.MIN_VALUE ? 0 : get(handle, FILTER2 + COUNT, 4) - start2);
-                if (learned >= UPDATES) {
+                if (learned >= target) {
                     stop(handle, learned);
                     done("Flat field set");
                 } else if (SystemClock.uptimeMillis() > deadline) {
@@ -187,7 +193,8 @@ public final class Flat {
         }
         running = true;
         runHandle = handle;
-        deadline = SystemClock.uptimeMillis() + TIMEOUT_MS;
+        target = updates;
+        deadline = SystemClock.uptimeMillis() + timeout(target);
     }
 
     private static void stop(long handle, int learned) {

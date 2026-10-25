@@ -15,6 +15,9 @@ The patch adds:
                                                   clears it
     seekpatch.SeekIP                              the app's seekIPsetFeature / seekIPgetFeature
                                                   (shared with smoothing_settings, see seek.py)
+    the "Flat field frames" setting               seekpatch.FlatSettings, in Settings -> Image &
+                                                  Video (settings.py): 5 - 60 frames a tap, 40 by
+                                                  default
 
 Versions: the gradient features are verified in libseekip 2.10.5.0 (app 2.2.2) and 2.11.3.2
 (2.2.3 - 2.3.4); the patch keeps to the apps no_smoothing is verified on.  Source of the helper:
@@ -28,6 +31,7 @@ from ..helpers import add_helpers
 from ..smali import PatchError, SmaliTree, class_descriptor
 from .base import Options, ensure_unpatched, mark
 from .seek import camera_activity, feature_900_call, seekip_class
+from .settings import optional_settings
 
 NAME = "flat_field"
 SUMMARY = 'a "Flat field" button: point at a uniform surface, tap, and the camera\'s own gradient is removed'
@@ -63,4 +67,5 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
 
     add_helpers(tree, "Flat")
     return [f"{tree.rel(call.path)}: Flat.frame after the feature-900 call; features via {setfeature} / {getfeature}",
-            f"{tree.rel(activity_path)}: the button after {activity.split('/')[-1][:-1]}.setContentView"]
+            f"{tree.rel(activity_path)}: the button after {activity.split('/')[-1][:-1]}.setContentView",
+            *optional_settings(tree, NAME, "FlatSettings", "Flat field frames")]

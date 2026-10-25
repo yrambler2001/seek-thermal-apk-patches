@@ -7,31 +7,41 @@
 # static fields
 .field private static final TAG:Ljava/lang/String; = "seek-patch"
 
-.field private static context:Landroid/content/Context;
+.field private static context:Landroid/content/Context; = null
+
+.field public static volatile enabled:Z = true
 
 .field private static frame:Landroid/graphics/Bitmap;
 
 
 # direct methods
+.method static constructor <clinit>()V
+    .locals 0
+
+    return-void
+.end method
+
 .method private constructor <init>()V
     .locals 0
 
-    .line 30
+    .line 35
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
 .end method
 
 .method public static declared-synchronized capture(Landroid/content/Context;Landroid/graphics/Bitmap;)V
-    .locals 1
+    .locals 2
 
     const-class v0, Lseekpatch/Photo1x;
 
     monitor-enter v0
 
+    const/4 v1, 0x0
+
     if-eqz p0, :cond_0
 
-    .line 34
+    .line 39
     :try_start_0
     invoke-virtual {p0}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
 
@@ -42,25 +52,35 @@
     :catchall_0
     move-exception p0
 
-    goto :goto_1
+    goto :goto_2
 
     :cond_0
-    const/4 p0, 0x0
+    move-object p0, v1
 
     :goto_0
     sput-object p0, Lseekpatch/Photo1x;->context:Landroid/content/Context;
 
-    .line 35
+    .line 40
+    sget-boolean p0, Lseekpatch/Photo1x;->enabled:Z
+
+    if-eqz p0, :cond_1
+
+    goto :goto_1
+
+    :cond_1
+    move-object p1, v1
+
+    :goto_1
     sput-object p1, Lseekpatch/Photo1x;->frame:Landroid/graphics/Bitmap;
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
-    .line 36
+    .line 41
     monitor-exit v0
 
     return-void
 
-    :goto_1
+    :goto_2
     monitor-exit v0
 
     throw p0
@@ -71,31 +91,31 @@
 
     const-string v0, "cannot create "
 
-    .line 41
+    .line 46
     const-class v1, Lseekpatch/Photo1x;
 
     monitor-enter v1
 
-    .line 42
+    .line 47
     :try_start_0
     sget-object v2, Lseekpatch/Photo1x;->frame:Landroid/graphics/Bitmap;
 
-    .line 43
+    .line 48
     sget-object v3, Lseekpatch/Photo1x;->context:Landroid/content/Context;
 
     const/4 v4, 0x0
 
-    .line 44
+    .line 49
     sput-object v4, Lseekpatch/Photo1x;->frame:Landroid/graphics/Bitmap;
 
-    .line 45
+    .line 50
     monitor-exit v1
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_1
 
     if-eqz p0, :cond_0
 
-    .line 46
+    .line 51
     invoke-virtual {p0}, Ljava/io/File;->getParentFile()Ljava/io/File;
 
     move-result-object v1
@@ -108,7 +128,7 @@
     :goto_0
     if-eqz v2, :cond_6
 
-    .line 47
+    .line 52
     invoke-virtual {v2}, Landroid/graphics/Bitmap;->isRecycled()Z
 
     move-result v5
@@ -119,7 +139,7 @@
 
     goto/16 :goto_3
 
-    .line 50
+    .line 55
     :cond_1
     new-instance v5, Ljava/io/File;
 
@@ -147,19 +167,19 @@
 
     invoke-direct {v5, v6, v1}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 51
+    .line 56
     invoke-virtual {p0}, Ljava/io/File;->getName()Ljava/lang/String;
 
     move-result-object p0
 
     const/16 v1, 0x2e
 
-    .line 52
+    .line 57
     invoke-virtual {p0, v1}, Ljava/lang/String;->lastIndexOf(I)I
 
     move-result v1
 
-    .line 53
+    .line 58
     new-instance v6, Ljava/io/File;
 
     new-instance v7, Ljava/lang/StringBuilder;
@@ -187,7 +207,7 @@
 
     invoke-direct {v6, v5, p0}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 55
+    .line 60
     :try_start_1
     invoke-virtual {v5}, Ljava/io/File;->isDirectory()Z
 
@@ -203,7 +223,7 @@
 
     goto :goto_1
 
-    .line 56
+    .line 61
     :cond_3
     new-instance p0, Ljava/io/IOException;
 
@@ -221,14 +241,14 @@
 
     throw p0
 
-    .line 58
+    .line 63
     :cond_4
     :goto_1
     invoke-static {v2, p1}, Lseekpatch/Photo1x;->upright(Landroid/graphics/Bitmap;I)Landroid/graphics/Bitmap;
 
     move-result-object p0
 
-    .line 59
+    .line 64
     new-instance p1, Ljava/io/FileOutputStream;
 
     invoke-direct {p1, v6}, Ljava/io/FileOutputStream;-><init>(Ljava/io/File;)V
@@ -236,7 +256,7 @@
     .catch Ljava/io/IOException; {:try_start_1 .. :try_end_1} :catch_1
     .catch Ljava/lang/RuntimeException; {:try_start_1 .. :try_end_1} :catch_0
 
-    .line 61
+    .line 66
     :try_start_2
     sget-object v0, Landroid/graphics/Bitmap$CompressFormat;->PNG:Landroid/graphics/Bitmap$CompressFormat;
 
@@ -250,13 +270,13 @@
 
     if-eqz p0, :cond_5
 
-    .line 65
+    .line 70
     :try_start_3
     invoke-virtual {p1}, Ljava/io/OutputStream;->close()V
 
     if-eqz v3, :cond_6
 
-    .line 68
+    .line 73
     invoke-virtual {v6}, Ljava/io/File;->getPath()Ljava/lang/String;
 
     move-result-object p0
@@ -278,7 +298,7 @@
 
     goto :goto_3
 
-    .line 62
+    .line 67
     :cond_5
     :try_start_4
     new-instance p0, Ljava/io/IOException;
@@ -294,11 +314,11 @@
     :catchall_0
     move-exception p0
 
-    .line 65
+    .line 70
     :try_start_5
     invoke-virtual {p1}, Ljava/io/OutputStream;->close()V
 
-    .line 66
+    .line 71
     throw p0
     :try_end_5
     .catch Ljava/io/IOException; {:try_start_5 .. :try_end_5} :catch_1
@@ -312,7 +332,7 @@
     :catch_1
     move-exception p0
 
-    .line 71
+    .line 76
     :goto_2
     const-string p1, "seek-patch"
 
@@ -343,7 +363,7 @@
     :catchall_1
     move-exception p0
 
-    .line 45
+    .line 50
     :try_start_6
     monitor-exit v1
     :try_end_6
@@ -389,7 +409,7 @@
 
     return-object p0
 
-    .line 81
+    .line 86
     :cond_3
     new-instance v5, Landroid/graphics/Matrix;
 
@@ -397,10 +417,10 @@
 
     int-to-float p1, p1
 
-    .line 82
+    .line 87
     invoke-virtual {v5, p1}, Landroid/graphics/Matrix;->postRotate(F)Z
 
-    .line 83
+    .line 88
     invoke-virtual {p0}, Landroid/graphics/Bitmap;->getWidth()I
 
     move-result v3

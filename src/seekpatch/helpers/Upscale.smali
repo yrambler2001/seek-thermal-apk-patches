@@ -5,15 +5,19 @@
 
 
 # static fields
+.field private static final BLOCKY:Ljava/lang/String; = "blocky"
+
+.field private static final BLOCKY_SHARPNESS:F = 1000.0f
+
 .field private static final CHOICES:[F
 
 .field private static final DEFAULT:F
 
-.field private static final IOS:Ljava/lang/String; = "ios_upscaling"
+.field private static final KEY:Ljava/lang/String; = "upscaling"
 
 .field private static final MAX_PHOTO_FACTOR:I = 0x8
 
-.field private static final SHARPNESS:Ljava/lang/String; = "upscaling_sharpness"
+.field private static final SMOOTH:Ljava/lang/String; = "android"
 
 .field private static final TAG:Ljava/lang/String; = "seek-patch"
 
@@ -26,14 +30,14 @@
 
     const/4 v0, 0x6
 
-    .line 24
+    .line 25
     new-array v0, v0, [F
 
     fill-array-data v0, :array_0
 
     sput-object v0, Lseekpatch/Upscale;->CHOICES:[F
 
-    .line 27
+    .line 30
     sget v0, Lseekpatch/SharpScale;->sharpness:F
 
     sput v0, Lseekpatch/Upscale;->DEFAULT:F
@@ -56,14 +60,14 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 31
+    .line 34
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
 .end method
 
 .method private static add(Ljava/util/List;Ljava/util/List;F)V
-    .locals 3
+    .locals 2
     .annotation system Ldalvik/annotation/Signature;
         value = {
             "(",
@@ -76,10 +80,12 @@
         }
     .end annotation
 
-    .line 80
+    .line 87
     new-instance v0, Ljava/lang/StringBuilder;
 
-    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+    const-string v1, "Sharp "
+
+    invoke-direct {v0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
 
     invoke-static {p2}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
 
@@ -87,7 +93,7 @@
 
     invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v1, ": blends over "
+    const-string v1, ": blends "
 
     invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -115,7 +121,7 @@
 
     if-nez v1, :cond_0
 
-    .line 82
+    .line 89
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
@@ -130,74 +136,15 @@
 
     move-result-object v0
 
-    goto :goto_0
-
-    .line 83
+    .line 91
     :cond_0
-    sget-object v1, Lseekpatch/Upscale;->CHOICES:[F
-
-    const/4 v2, 0x0
-
-    aget v2, v1, v2
-
-    cmpl-float v2, p2, v2
-
-    if-nez v2, :cond_1
-
-    .line 84
-    new-instance v1, Ljava/lang/StringBuilder;
-
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v0, ", softer"
-
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v0
-
-    goto :goto_0
-
-    .line 85
-    :cond_1
-    array-length v2, v1
-
-    add-int/lit8 v2, v2, -0x1
-
-    aget v1, v1, v2
-
-    cmpl-float v1, p2, v1
-
-    if-nez v1, :cond_2
-
-    .line 86
-    new-instance v1, Ljava/lang/StringBuilder;
-
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v0, ", nearly blocky"
-
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v0
-
-    .line 88
-    :cond_2
-    :goto_0
     sget v1, Lseekpatch/Upscale;->DEFAULT:F
 
     cmpl-float v1, p2, v1
 
-    if-nez v1, :cond_3
+    if-nez v1, :cond_1
 
-    .line 89
+    .line 92
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
@@ -212,11 +159,11 @@
 
     move-result-object v0
 
-    .line 91
-    :cond_3
+    .line 94
+    :cond_1
     invoke-interface {p0, v0}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
-    .line 92
+    .line 95
     invoke-static {p2}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
 
     move-result-object p0
@@ -227,69 +174,96 @@
 .end method
 
 .method public static load(Landroid/content/SharedPreferences;)V
-    .locals 3
+    .locals 2
 
-    .line 36
-    const-string v0, "ios_upscaling"
+    .line 39
+    invoke-static {p0}, Lseekpatch/Upscale;->value(Landroid/content/SharedPreferences;)Ljava/lang/String;
 
-    const/4 v1, 0x1
+    move-result-object p0
 
-    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+    .line 41
+    const-string v0, "android"
+
+    invoke-virtual {v0, p0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
     move-result v0
 
-    .line 37
-    invoke-static {p0}, Lseekpatch/Upscale;->sharpness(Landroid/content/SharedPreferences;)F
-
-    move-result p0
-
     if-eqz v0, :cond_0
 
-    move v2, p0
+    const/high16 p0, 0x3f800000    # 1.0f
+
+    .line 42
+    sput p0, Lseekpatch/SharpScale;->sharpness:F
+
+    const/4 p0, 0x1
+
+    .line 43
+    sput p0, Lseekpatch/SharpScale;->photoFactor:I
+
+    .line 44
+    const-string p0, "smooth (Android\'s bilinear)"
 
     goto :goto_0
 
+    .line 45
     :cond_0
-    const/high16 v2, 0x3f800000    # 1.0f
+    const-string v0, "blocky"
 
-    .line 38
-    :goto_0
-    sput v2, Lseekpatch/SharpScale;->sharpness:F
+    invoke-virtual {v0, p0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v0
 
     if-eqz v0, :cond_1
 
+    const/high16 p0, 0x447a0000    # 1000.0f
+
+    .line 46
+    sput p0, Lseekpatch/SharpScale;->sharpness:F
+
+    const/4 p0, 0x0
+
+    .line 47
+    sput p0, Lseekpatch/SharpScale;->photoFactor:I
+
+    .line 48
+    const-string p0, "blocky (photo unfiltered)"
+
+    goto :goto_0
+
+    .line 50
+    :cond_1
+    invoke-static {p0}, Ljava/lang/Float;->parseFloat(Ljava/lang/String;)F
+
+    move-result v0
+
+    .line 51
+    sput v0, Lseekpatch/SharpScale;->sharpness:F
+
     const/4 v1, 0x2
 
-    .line 39
-    invoke-static {p0}, Ljava/lang/Math;->round(F)I
+    .line 52
+    invoke-static {v0}, Ljava/lang/Math;->round(F)I
 
-    move-result v2
+    move-result v0
 
-    invoke-static {v1, v2}, Ljava/lang/Math;->max(II)I
+    invoke-static {v1, v0}, Ljava/lang/Math;->max(II)I
 
-    move-result v1
+    move-result v0
 
-    const/16 v2, 0x8
+    const/16 v1, 0x8
 
-    invoke-static {v2, v1}, Ljava/lang/Math;->min(II)I
+    invoke-static {v1, v0}, Ljava/lang/Math;->min(II)I
 
-    move-result v1
+    move-result v0
 
-    :cond_1
-    sput v1, Lseekpatch/SharpScale;->photoFactor:I
+    sput v0, Lseekpatch/SharpScale;->photoFactor:I
 
-    if-eqz v0, :cond_2
-
-    .line 40
+    .line 53
     new-instance v0, Ljava/lang/StringBuilder;
 
-    const-string v1, "iOS, sharpness "
+    const-string v1, "sharp "
 
     invoke-direct {v0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
-
-    invoke-static {p0}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
-
-    move-result-object p0
 
     invoke-virtual {v0, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -309,26 +283,20 @@
 
     move-result-object p0
 
-    goto :goto_1
-
-    .line 41
-    :cond_2
-    const-string p0, "Android (stock bilinear)"
-
-    .line 42
-    :goto_1
+    .line 55
+    :goto_0
     sget-object v0, Lseekpatch/Upscale;->loaded:Ljava/lang/String;
 
     invoke-virtual {p0, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
     move-result v0
 
-    if-nez v0, :cond_3
+    if-nez v0, :cond_2
 
-    .line 43
+    .line 56
     sput-object p0, Lseekpatch/Upscale;->loaded:Ljava/lang/String;
 
-    .line 44
+    .line 57
     new-instance v0, Ljava/lang/StringBuilder;
 
     const-string v1, "sharp_scaling: upscaling "
@@ -345,232 +313,156 @@
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    :cond_3
+    :cond_2
     return-void
 .end method
 
 .method public static screen(Landroid/preference/PreferenceFragment;Landroid/content/SharedPreferences;)V
-    .locals 12
+    .locals 13
 
-    .line 50
-    invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
-
-    move-result-object p0
-
-    const/4 v8, 0x1
-
-    .line 51
-    new-array v9, v8, [Landroid/preference/ListPreference;
-
-    .line 52
-    new-instance v6, Lseekpatch/Upscale$1;
-
-    invoke-direct {v6, v9, p1}, Lseekpatch/Upscale$1;-><init>([Landroid/preference/ListPreference;Landroid/content/SharedPreferences;)V
-
-    const-string v2, "ios_upscaling"
-
-    const-string v3, "iOS-style upscaling"
-
-    const/4 v4, 0x0
-
-    const/4 v5, 0x1
-
-    move-object v0, p0
-
-    move-object v1, p1
-
-    invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
-
-    move-result-object v0
-
-    .line 58
-    const-string v1, "iOS: each pixel stays sharp, blended only at its edges"
-
-    invoke-virtual {v0, v1}, Landroid/preference/SwitchPreference;->setSummaryOn(Ljava/lang/CharSequence;)V
-
-    .line 59
-    const-string v1, "Android: smooth bilinear, each pixel blended across its width"
-
-    invoke-virtual {v0, v1}, Landroid/preference/SwitchPreference;->setSummaryOff(Ljava/lang/CharSequence;)V
-
-    .line 60
+    .line 63
     new-instance v0, Ljava/util/ArrayList;
 
     invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
 
-    .line 61
+    .line 64
     new-instance v1, Ljava/util/ArrayList;
 
     invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
 
-    .line 63
+    .line 65
+    const-string v2, "Smooth: Android\'s bilinear, blends across each pixel"
+
+    invoke-interface {v0, v2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+
+    .line 66
+    const-string v2, "android"
+
+    invoke-interface {v1, v2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+
+    .line 68
     sget-object v2, Lseekpatch/Upscale;->CHOICES:[F
 
     array-length v3, v2
 
-    const/4 v10, 0x0
-
-    move v4, v10
+    const/4 v4, 0x0
 
     move v5, v4
 
+    move v6, v5
+
     :goto_0
-    if-ge v4, v3, :cond_2
+    if-ge v5, v3, :cond_2
 
-    aget v6, v2, v4
+    aget v7, v2, v5
 
-    if-nez v5, :cond_0
+    const/4 v8, 0x1
 
-    .line 64
-    sget v7, Lseekpatch/Upscale;->DEFAULT:F
+    if-nez v6, :cond_0
 
-    cmpg-float v11, v7, v6
+    .line 69
+    sget v9, Lseekpatch/Upscale;->DEFAULT:F
 
-    if-gez v11, :cond_0
+    cmpg-float v10, v9, v7
 
-    .line 65
-    invoke-static {v0, v1, v7}, Lseekpatch/Upscale;->add(Ljava/util/List;Ljava/util/List;F)V
+    if-gez v10, :cond_0
 
-    move v5, v8
+    .line 70
+    invoke-static {v0, v1, v9}, Lseekpatch/Upscale;->add(Ljava/util/List;Ljava/util/List;F)V
 
-    .line 68
+    move v6, v8
+
+    .line 73
     :cond_0
-    sget v7, Lseekpatch/Upscale;->DEFAULT:F
+    sget v9, Lseekpatch/Upscale;->DEFAULT:F
 
-    cmpl-float v7, v6, v7
+    cmpl-float v9, v7, v9
 
-    if-nez v7, :cond_1
-
-    move v7, v8
+    if-nez v9, :cond_1
 
     goto :goto_1
 
     :cond_1
-    move v7, v10
+    move v8, v4
 
     :goto_1
-    or-int/2addr v5, v7
+    or-int/2addr v6, v8
 
-    .line 69
-    invoke-static {v0, v1, v6}, Lseekpatch/Upscale;->add(Ljava/util/List;Ljava/util/List;F)V
+    .line 74
+    invoke-static {v0, v1, v7}, Lseekpatch/Upscale;->add(Ljava/util/List;Ljava/util/List;F)V
 
-    add-int/lit8 v4, v4, 0x1
+    add-int/lit8 v5, v5, 0x1
 
     goto :goto_0
 
     :cond_2
-    if-nez v5, :cond_3
+    if-nez v6, :cond_3
 
-    .line 72
+    .line 77
     sget v2, Lseekpatch/Upscale;->DEFAULT:F
 
     invoke-static {v0, v1, v2}, Lseekpatch/Upscale;->add(Ljava/util/List;Ljava/util/List;F)V
 
-    .line 74
+    .line 79
     :cond_3
-    new-array v2, v10, [Ljava/lang/String;
+    const-string v2, "Blocky: square pixels, no blending"
 
-    invoke-interface {v0, v2}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
+    invoke-interface {v0, v2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
-    move-result-object v0
+    .line 80
+    const-string v2, "blocky"
 
-    move-object v4, v0
+    invoke-interface {v1, v2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
-    check-cast v4, [Ljava/lang/String;
+    .line 81
+    invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
 
-    new-array v0, v10, [Ljava/lang/String;
+    move-result-object v5
 
-    .line 75
-    invoke-interface {v1, v0}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
+    new-array p0, v4, [Ljava/lang/String;
 
-    move-result-object v0
-
-    move-object v5, v0
-
-    check-cast v5, [Ljava/lang/String;
-
-    invoke-static {p1}, Lseekpatch/Upscale;->sharpness(Landroid/content/SharedPreferences;)F
-
-    move-result v0
-
-    invoke-static {v0}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
-
-    move-result-object v6
-
-    const/4 v7, 0x0
-
-    .line 74
-    const-string v2, "upscaling_sharpness"
-
-    const-string v3, "Upscaling sharpness"
-
-    move-object v0, p0
-
-    move-object v1, p1
-
-    invoke-static/range {v0 .. v7}, Lseekpatch/Settings;->addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
+    invoke-interface {v0, p0}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
 
     move-result-object p0
 
-    aput-object p0, v9, v10
+    move-object v9, p0
 
-    .line 76
-    const-string v0, "ios_upscaling"
+    check-cast v9, [Ljava/lang/String;
 
-    invoke-interface {p1, v0, v8}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+    new-array p0, v4, [Ljava/lang/String;
 
-    move-result p1
+    .line 82
+    invoke-interface {v1, p0}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
 
-    invoke-static {p0, p1}, Lseekpatch/Settings;->enable(Landroid/preference/Preference;Z)V
+    move-result-object p0
+
+    move-object v10, p0
+
+    check-cast v10, [Ljava/lang/String;
+
+    invoke-static {p1}, Lseekpatch/Upscale;->value(Landroid/content/SharedPreferences;)Ljava/lang/String;
+
+    move-result-object v11
+
+    const/4 v12, 0x0
+
+    .line 81
+    const-string v7, "upscaling"
+
+    const-string v8, "Upscaling"
+
+    move-object v6, p1
+
+    invoke-static/range {v5 .. v12}, Lseekpatch/Settings;->addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
+
+    move-result-object p0
+
+    const-string p1, "Upscaling: how the camera\'s pixels are enlarged"
+
+    .line 83
+    invoke-virtual {p0, p1}, Landroid/preference/ListPreference;->setDialogTitle(Ljava/lang/CharSequence;)V
 
     return-void
-.end method
-
-.method private static sharpness(Landroid/content/SharedPreferences;)F
-    .locals 3
-
-    .line 97
-    :try_start_0
-    const-string v0, "upscaling_sharpness"
-
-    sget v1, Lseekpatch/Upscale;->DEFAULT:F
-
-    invoke-static {v1}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
-
-    move-result-object v2
-
-    invoke-interface {p0, v0, v2}, Landroid/content/SharedPreferences;->getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
-
-    move-result-object p0
-
-    invoke-static {p0}, Ljava/lang/Float;->parseFloat(Ljava/lang/String;)F
-
-    move-result p0
-    :try_end_0
-    .catch Ljava/lang/RuntimeException; {:try_start_0 .. :try_end_0} :catch_0
-
-    const/high16 v0, 0x3f800000    # 1.0f
-
-    cmpl-float v0, p0, v0
-
-    if-lez v0, :cond_0
-
-    const/high16 v0, 0x41800000    # 16.0f
-
-    cmpg-float v0, p0, v0
-
-    if-gtz v0, :cond_0
-
-    move v1, p0
-
-    :cond_0
-    return v1
-
-    .line 100
-    :catch_0
-    sget p0, Lseekpatch/Upscale;->DEFAULT:F
-
-    return p0
 .end method
 
 .method private static text(F)Ljava/lang/String;
@@ -578,7 +470,7 @@
 
     float-to-double v0, p0
 
-    .line 105
+    .line 116
     invoke-static {v0, v1}, Ljava/lang/Math;->rint(D)D
 
     move-result-wide v2
@@ -600,6 +492,79 @@
 
     move-result-object p0
 
+    :goto_0
+    return-object p0
+.end method
+
+.method private static value(Landroid/content/SharedPreferences;)Ljava/lang/String;
+    .locals 2
+
+    .line 100
+    const-string v0, "upscaling"
+
+    const/4 v1, 0x0
+
+    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
+
+    .line 101
+    const-string v0, "android"
+
+    invoke-virtual {v0, p0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v0
+
+    if-nez v0, :cond_2
+
+    const-string v0, "blocky"
+
+    invoke-virtual {v0, p0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_0
+
+    goto :goto_0
+
+    .line 105
+    :cond_0
+    :try_start_0
+    invoke-static {p0}, Ljava/lang/Float;->parseFloat(Ljava/lang/String;)F
+
+    move-result p0
+
+    const/high16 v0, 0x3f800000    # 1.0f
+
+    cmpl-float v0, p0, v0
+
+    if-lez v0, :cond_1
+
+    const/high16 v0, 0x41800000    # 16.0f
+
+    cmpg-float v0, p0, v0
+
+    if-gtz v0, :cond_1
+
+    .line 107
+    invoke-static {p0}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
+
+    move-result-object p0
+    :try_end_0
+    .catch Ljava/lang/RuntimeException; {:try_start_0 .. :try_end_0} :catch_0
+
+    return-object p0
+
+    .line 112
+    :catch_0
+    :cond_1
+    sget p0, Lseekpatch/Upscale;->DEFAULT:F
+
+    invoke-static {p0}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
+
+    move-result-object p0
+
+    :cond_2
     :goto_0
     return-object p0
 .end method

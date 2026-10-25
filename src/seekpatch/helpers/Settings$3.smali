@@ -9,7 +9,7 @@
 
 # annotations
 .annotation system Ldalvik/annotation/EnclosingMethod;
-    value = Lseekpatch/Settings;->addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
+    value = Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 .end annotation
 
 .annotation system Ldalvik/annotation/InnerClass;
@@ -35,7 +35,7 @@
         }
     .end annotation
 
-    .line 174
+    .line 178
     iput-object p1, p0, Lseekpatch/Settings$3;->val$p:Landroid/content/SharedPreferences;
 
     iput-object p2, p0, Lseekpatch/Settings$3;->val$key:Ljava/lang/String;
@@ -50,9 +50,9 @@
 
 # virtual methods
 .method public onPreferenceChange(Landroid/preference/Preference;Ljava/lang/Object;)Z
-    .locals 1
+    .locals 2
 
-    .line 177
+    .line 181
     iget-object p1, p0, Lseekpatch/Settings$3;->val$p:Landroid/content/SharedPreferences;
 
     invoke-interface {p1}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
@@ -61,22 +61,24 @@
 
     iget-object v0, p0, Lseekpatch/Settings$3;->val$key:Ljava/lang/String;
 
-    invoke-static {p2}, Ljava/lang/String;->valueOf(Ljava/lang/Object;)Ljava/lang/String;
+    sget-object v1, Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;
 
-    move-result-object p2
+    invoke-virtual {v1, p2}, Ljava/lang/Boolean;->equals(Ljava/lang/Object;)Z
 
-    invoke-interface {p1, v0, p2}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    move-result p2
+
+    invoke-interface {p1, v0, p2}, Landroid/content/SharedPreferences$Editor;->putBoolean(Ljava/lang/String;Z)Landroid/content/SharedPreferences$Editor;
 
     move-result-object p1
 
     invoke-interface {p1}, Landroid/content/SharedPreferences$Editor;->apply()V
 
-    .line 178
+    .line 182
     iget-object p1, p0, Lseekpatch/Settings$3;->val$then:Ljava/lang/Runnable;
 
     if-eqz p1, :cond_0
 
-    .line 179
+    .line 183
     invoke-interface {p1}, Ljava/lang/Runnable;->run()V
 
     :cond_0

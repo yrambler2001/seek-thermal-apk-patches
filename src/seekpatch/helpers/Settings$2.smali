@@ -4,12 +4,12 @@
 .source "Settings.java"
 
 # interfaces
-.implements Landroid/preference/Preference$OnPreferenceChangeListener;
+.implements Ljava/lang/Runnable;
 
 
 # annotations
 .annotation system Ldalvik/annotation/EnclosingMethod;
-    value = Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
+    value = Lseekpatch/Settings;->screen(Landroid/preference/PreferenceFragment;)V
 .end annotation
 
 .annotation system Ldalvik/annotation/InnerClass;
@@ -19,15 +19,11 @@
 
 
 # instance fields
-.field final synthetic val$key:Ljava/lang/String;
-
-.field final synthetic val$p:Landroid/content/SharedPreferences;
-
-.field final synthetic val$then:Ljava/lang/Runnable;
+.field final synthetic val$fragment:Landroid/preference/PreferenceFragment;
 
 
 # direct methods
-.method constructor <init>(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/Runnable;)V
+.method constructor <init>(Landroid/preference/PreferenceFragment;)V
     .locals 0
     .annotation system Ldalvik/annotation/Signature;
         value = {
@@ -35,12 +31,8 @@
         }
     .end annotation
 
-    .line 149
-    iput-object p1, p0, Lseekpatch/Settings$2;->val$p:Landroid/content/SharedPreferences;
-
-    iput-object p2, p0, Lseekpatch/Settings$2;->val$key:Ljava/lang/String;
-
-    iput-object p3, p0, Lseekpatch/Settings$2;->val$then:Ljava/lang/Runnable;
+    .line 96
+    iput-object p1, p0, Lseekpatch/Settings$2;->val$fragment:Landroid/preference/PreferenceFragment;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
@@ -49,40 +41,13 @@
 
 
 # virtual methods
-.method public onPreferenceChange(Landroid/preference/Preference;Ljava/lang/Object;)Z
-    .locals 2
+.method public run()V
+    .locals 1
 
-    .line 152
-    iget-object p1, p0, Lseekpatch/Settings$2;->val$p:Landroid/content/SharedPreferences;
+    .line 99
+    iget-object v0, p0, Lseekpatch/Settings$2;->val$fragment:Landroid/preference/PreferenceFragment;
 
-    invoke-interface {p1}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
+    invoke-static {v0}, Lseekpatch/Settings;->access$100(Landroid/preference/PreferenceFragment;)V
 
-    move-result-object p1
-
-    iget-object v0, p0, Lseekpatch/Settings$2;->val$key:Ljava/lang/String;
-
-    sget-object v1, Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;
-
-    invoke-virtual {v1, p2}, Ljava/lang/Boolean;->equals(Ljava/lang/Object;)Z
-
-    move-result p2
-
-    invoke-interface {p1, v0, p2}, Landroid/content/SharedPreferences$Editor;->putBoolean(Ljava/lang/String;Z)Landroid/content/SharedPreferences$Editor;
-
-    move-result-object p1
-
-    invoke-interface {p1}, Landroid/content/SharedPreferences$Editor;->apply()V
-
-    .line 153
-    iget-object p1, p0, Lseekpatch/Settings$2;->val$then:Ljava/lang/Runnable;
-
-    if-eqz p1, :cond_0
-
-    .line 154
-    invoke-interface {p1}, Ljava/lang/Runnable;->run()V
-
-    :cond_0
-    const/4 p1, 0x1
-
-    return p1
+    return-void
 .end method

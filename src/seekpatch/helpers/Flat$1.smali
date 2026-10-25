@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 85
+    .line 87
     iput-object p1, p0, Lseekpatch/Flat$1;->val$b:Landroid/widget/TextView;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -44,7 +44,7 @@
 .method public onClick(Landroid/view/View;)V
     .locals 0
 
-    .line 88
+    .line 90
     iget-object p1, p0, Lseekpatch/Flat$1;->val$b:Landroid/widget/TextView;
 
     invoke-static {p1}, Lseekpatch/Flat;->access$000(Landroid/widget/TextView;)V

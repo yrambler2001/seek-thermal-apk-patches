@@ -7,7 +7,7 @@ package seekpatch;
 public final class SharpScale {
     /** The shader's blend width, 1/sharpness of a texel; 1 or less: the stock bilinear sample. */
     public static float sharpness;
-    /** The photo's nearest upscale factor before the filtered draw; 1: the stock draw. */
+    /** The photo's nearest upscale factor before the filtered draw; 1: the stock draw; 0: drawn unfiltered. */
     public static int photoFactor;
 
     private SharpScale() {

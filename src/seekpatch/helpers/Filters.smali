@@ -62,7 +62,7 @@
 
     const/4 v0, 0x0
 
-    .line 53
+    .line 52
     invoke-static {v0}, Lseekpatch/Filters;->value(I)Ljava/nio/ByteBuffer;
 
     move-result-object v0
@@ -71,7 +71,7 @@
 
     const/4 v0, 0x1
 
-    .line 54
+    .line 53
     invoke-static {v0}, Lseekpatch/Filters;->value(I)Ljava/nio/ByteBuffer;
 
     move-result-object v0
@@ -80,7 +80,7 @@
 
     const/4 v0, 0x4
 
-    .line 55
+    .line 54
     invoke-static {v0}, Ljava/nio/ByteBuffer;->allocateDirect(I)Ljava/nio/ByteBuffer;
 
     move-result-object v0
@@ -95,7 +95,7 @@
 
     const/4 v0, -0x1
 
-    .line 56
+    .line 55
     sput v0, Lseekpatch/Filters;->loggedChanges:I
 
     return-void
@@ -104,54 +104,9 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 61
+    .line 60
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    return-void
-.end method
-
-.method static synthetic access$000(Landroid/content/SharedPreferences;Landroid/preference/SwitchPreference;[Landroid/preference/SwitchPreference;)V
-    .locals 0
-
-    .line 28
-    invoke-static {p0, p1, p2}, Lseekpatch/Filters;->enable(Landroid/content/SharedPreferences;Landroid/preference/SwitchPreference;[Landroid/preference/SwitchPreference;)V
-
-    return-void
-.end method
-
-.method private static enable(Landroid/content/SharedPreferences;Landroid/preference/SwitchPreference;[Landroid/preference/SwitchPreference;)V
-    .locals 2
-
-    .line 105
-    const-string v0, "smart_smoothing"
-
-    const/4 v1, 0x0
-
-    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
-
-    move-result p0
-
-    xor-int/lit8 v0, p0, 0x1
-
-    .line 106
-    invoke-static {p1, v0}, Lseekpatch/Settings;->enable(Landroid/preference/Preference;Z)V
-
-    .line 107
-    array-length p1, p2
-
-    :goto_0
-    if-ge v1, p1, :cond_0
-
-    aget-object v0, p2, v1
-
-    .line 108
-    invoke-static {v0, p0}, Lseekpatch/Settings;->enable(Landroid/preference/Preference;Z)V
-
-    add-int/lit8 v1, v1, 0x1
-
-    goto :goto_0
-
-    :cond_0
     return-void
 .end method
 
@@ -160,10 +115,10 @@
 
     const-string v0, "smoothing_settings: first-filter mask "
 
-    .line 114
+    .line 99
     sget v1, Lseekpatch/Filters;->changes:I
 
-    .line 115
+    .line 100
     sget-boolean v2, Lseekpatch/Filters;->smartOn:Z
 
     const/4 v3, 0x0
@@ -184,7 +139,7 @@
 
     if-nez v1, :cond_1
 
-    .line 116
+    .line 101
     sget v4, Lseekpatch/Filters;->loggedChanges:I
 
     if-ne v2, v4, :cond_1
@@ -201,13 +156,13 @@
 
     return-void
 
-    .line 120
+    .line 105
     :cond_1
     const-string v4, "seek-patch"
 
     if-nez p2, :cond_2
 
-    .line 121
+    .line 106
     :try_start_0
     sget-object v5, Lseekpatch/Filters;->ON:Ljava/nio/ByteBuffer;
 
@@ -228,7 +183,7 @@
 
     if-eqz v5, :cond_3
 
-    .line 124
+    .line 109
     sget-object v6, Lseekpatch/Filters;->OFF:Ljava/nio/ByteBuffer;
 
     const/16 v7, 0x66
@@ -240,7 +195,7 @@
 
     if-eqz v6, :cond_4
 
-    .line 127
+    .line 112
     sget-object v7, Lseekpatch/Filters;->ON:Ljava/nio/ByteBuffer;
 
     const/16 v8, 0x64
@@ -252,14 +207,14 @@
 
     if-eqz v1, :cond_5
 
-    .line 130
+    .line 115
     sget-object v7, Lseekpatch/Filters;->OFF:Ljava/nio/ByteBuffer;
 
     const/16 v8, 0x6a
 
     invoke-static {p0, p1, v8, v7}, Lseekpatch/Filters;->set(JILjava/nio/ByteBuffer;)V
 
-    .line 132
+    .line 117
     :cond_5
     sget v7, Lseekpatch/Filters;->loggedChanges:I
 
@@ -275,17 +230,17 @@
 
     if-eq p2, v7, :cond_c
 
-    .line 133
+    .line 118
     :cond_6
     sput v2, Lseekpatch/Filters;->loggedChanges:I
 
-    .line 134
+    .line 119
     sput-wide p0, Lseekpatch/Filters;->loggedHandle:J
 
-    .line 135
+    .line 120
     sput-boolean p2, Lseekpatch/Filters;->loggedSent:Z
 
-    .line 136
+    .line 121
     new-instance v2, Ljava/lang/StringBuilder;
 
     invoke-direct {v2, v0}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
@@ -302,7 +257,7 @@
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
-    .line 137
+    .line 122
     const-string p0, "off"
 
     const-string p1, "on"
@@ -347,11 +302,11 @@
     :cond_9
     move-object p0, p1
 
-    .line 138
+    .line 123
     :goto_4
     invoke-virtual {v2, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 139
+    .line 124
     sget-boolean p0, Lseekpatch/Filters;->smartOn:Z
     :try_end_1
     .catchall {:try_start_1 .. :try_end_1} :catchall_0
@@ -375,7 +330,7 @@
 
     goto :goto_6
 
-    .line 140
+    .line 125
     :cond_b
     const-string p1, "; the app sent \"Image smoothing\" off, the on preset was sent again"
 
@@ -386,10 +341,10 @@
 
     move-result-object p0
 
-    .line 136
+    .line 121
     invoke-static {v4, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 142
+    .line 127
     :cond_c
     sput-boolean v3, Lseekpatch/Filters;->warned:Z
     :try_end_2
@@ -397,7 +352,7 @@
 
     goto :goto_8
 
-    .line 144
+    .line 129
     :goto_7
     sget-boolean p1, Lseekpatch/Filters;->warned:Z
 
@@ -405,10 +360,10 @@
 
     const/4 p1, 0x1
 
-    .line 145
+    .line 130
     sput-boolean p1, Lseekpatch/Filters;->warned:Z
 
-    .line 146
+    .line 131
     const-string p1, "smoothing_settings: features not set"
 
     invoke-static {v4, p1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
@@ -421,7 +376,7 @@
 .method public static load(Landroid/content/SharedPreferences;)V
     .locals 4
 
-    .line 66
+    .line 65
     const-string v0, "temporal_smoothing"
 
     const/4 v1, 0x1
@@ -432,7 +387,7 @@
 
     xor-int/2addr v0, v1
 
-    .line 67
+    .line 66
     const-string v2, "spatial_smoothing"
 
     const/4 v3, 0x0
@@ -453,7 +408,7 @@
     :goto_0
     or-int/2addr v0, v2
 
-    .line 68
+    .line 67
     const-string v2, "pattern_correction"
 
     invoke-interface {p0, v2, v1}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
@@ -474,7 +429,7 @@
 
     sput v0, Lseekpatch/Filters;->changes:I
 
-    .line 69
+    .line 68
     const-string v0, "smart_smoothing"
 
     invoke-interface {p0, v0, v3}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
@@ -505,7 +460,7 @@
 .method private static mask(J)Ljava/lang/String;
     .locals 4
 
-    .line 152
+    .line 137
     sget-object v0, Lseekpatch/Filters;->OUT:Ljava/nio/ByteBuffer;
 
     const/4 v1, 0x0
@@ -516,14 +471,14 @@
 
     const/4 v3, 0x4
 
-    .line 153
+    .line 138
     invoke-static {p0, p1, v2, v0, v3}, Lseekpatch/SeekIP;->getFeature(JILjava/nio/ByteBuffer;I)I
 
     move-result p0
 
     if-nez p0, :cond_0
 
-    .line 154
+    .line 139
     new-instance p0, Ljava/lang/StringBuilder;
 
     const-string p1, "0x"
@@ -568,7 +523,7 @@
 .end method
 
 .method public static screen(Landroid/preference/PreferenceFragment;Landroid/content/SharedPreferences;)V
-    .locals 9
+    .locals 8
 
     .line 74
     invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
@@ -595,6 +550,23 @@
 
     move-result p0
 
+    if-eqz p0, :cond_1
+
+    .line 81
+    const-string v0, "; Smart smoothing replaces it while on"
+
+    goto :goto_0
+
+    :cond_1
+    const-string v0, ""
+
+    :goto_0
+    const-string v1, "Seek\'s filter: averages each pixel over recent frames"
+
+    invoke-virtual {v1, v0}, Ljava/lang/String;->concat(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
     const/4 v5, 0x1
 
     const/4 v6, 0x0
@@ -604,15 +576,11 @@
 
     const-string v3, "Default temporal smoothing"
 
-    const-string v4, "Seek\'s filter: averages each pixel over recent frames"
-
     move-object v0, v7
 
     move-object v1, p1
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
-
-    move-result-object v8
 
     const/4 v5, 0x0
 
@@ -636,28 +604,21 @@
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
-    if-nez p0, :cond_1
+    if-nez p0, :cond_2
 
     return-void
 
-    :cond_1
-    const/4 p0, 0x2
+    :cond_2
+    const/4 v5, 0x0
+
+    const/4 v6, 0x0
 
     .line 89
-    new-array p0, p0, [Landroid/preference/SwitchPreference;
-
-    .line 91
-    new-instance v6, Lseekpatch/Filters$1;
-
-    invoke-direct {v6, p1, v8, p0}, Lseekpatch/Filters$1;-><init>(Landroid/content/SharedPreferences;Landroid/preference/SwitchPreference;[Landroid/preference/SwitchPreference;)V
-
     const-string v2, "smart_smoothing"
 
     const-string v3, "Smart smoothing"
 
     const-string v4, "Follows the camera\'s motion; replaces temporal smoothing"
-
-    const/4 v5, 0x0
 
     move-object v0, v7
 
@@ -667,42 +628,23 @@
 
     const/4 v5, 0x1
 
-    const/4 v6, 0x0
-
-    .line 98
+    .line 91
     const-string v2, "smart_stripes"
 
     const-string v3, "Stripe correction"
 
-    const/4 v4, 0x0
+    const-string v4, "Part of Smart smoothing: removes column stripes"
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
-    move-result-object v0
-
-    const/4 v1, 0x0
-
-    aput-object v0, p0, v1
-
-    .line 99
+    .line 93
     const-string v2, "smart_left_edge"
 
     const-string v3, "Left-edge levelling"
 
-    move-object v0, v7
-
-    move-object v1, p1
+    const-string v4, "Part of Smart smoothing: levels the bright strip at the left edge"
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
-
-    move-result-object v0
-
-    const/4 v1, 0x1
-
-    aput-object v0, p0, v1
-
-    .line 100
-    invoke-static {p1, v8, p0}, Lseekpatch/Filters;->enable(Landroid/content/SharedPreferences;Landroid/preference/SwitchPreference;[Landroid/preference/SwitchPreference;)V
 
     return-void
 .end method
@@ -712,7 +654,7 @@
 
     const/4 v0, 0x4
 
-    .line 158
+    .line 143
     invoke-static {p0, p1, p2, p3, v0}, Lseekpatch/SeekIP;->setFeature(JILjava/nio/ByteBuffer;I)I
 
     move-result p0
@@ -721,7 +663,7 @@
 
     return-void
 
-    .line 160
+    .line 145
     :cond_0
     new-instance p1, Ljava/lang/IllegalStateException;
 
@@ -753,7 +695,7 @@
 
     const/4 v0, 0x4
 
-    .line 165
+    .line 150
     invoke-static {v0}, Ljava/nio/ByteBuffer;->allocateDirect(I)Ljava/nio/ByteBuffer;
 
     move-result-object v0
@@ -766,7 +708,7 @@
 
     const/4 v1, 0x0
 
-    .line 166
+    .line 151
     invoke-virtual {v0, v1, p0}, Ljava/nio/ByteBuffer;->putInt(II)Ljava/nio/ByteBuffer;
 
     return-object v0
