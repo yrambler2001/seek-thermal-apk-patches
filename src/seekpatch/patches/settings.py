@@ -14,13 +14,19 @@ preference ("use_smoothing", which it logs when it changes) and inflates its pre
 Resources are never read, so the hooks work with `apktool d -r` as well as with --side-by-side.
 A patch adds its own section class (seekpatch.Filters, FlatSettings, Upscale, PhotoSettings,
 VideoSettings); Settings finds them by name at run time.
+
+seekpatch.Screens comes with Settings: from Settings.attach it makes the settings screens'
+navigation bar dark (they have no theme, so Android 15+ draws them a light one) and puts a divider
+and "Patched by yrambler2001 v<version>" below Send Feedback in the side menu.  The version is
+seek-patch's, in a class written here (seekpatch.About).
 """
 from __future__ import annotations
 
 import re
 
+from .. import __version__
 from ..helpers import add_helpers
-from ..smali import REG, PatchError, SmaliTree, class_descriptor, methods
+from ..smali import REG, PatchError, SmaliTree, class_descriptor, methods, smali_escape
 from .base import mark
 from .seek import camera_activity
 
@@ -29,6 +35,13 @@ ADD_PREFERENCES = "addPreferencesFromResource(I)V"
 HELPER = "Lseekpatch/Settings;"
 SCREEN = f"{HELPER}->screen({FRAGMENT})V"
 ATTACH = f"{HELPER}->attach(Landroid/app/Activity;)V"
+ABOUT = """.class public final Lseekpatch/About;
+.super Ljava/lang/Object;
+.source "seek-patch"
+
+{mark}: the version of seek-patch that patched this app, shown in the side menu
+.field public static version:Ljava/lang/String; = "{version}"
+"""
 
 
 def image_video_fragment(tree: SmaliTree, patch: str) -> tuple[str, int, str]:
@@ -69,7 +82,8 @@ def install(tree: SmaliTree, patch: str) -> list[str]:
     hook = (f"\n{indent}{mark(patch)}: load seek-patch's settings before the first frame\n"
             f"{indent}invoke-static/range {{p0 .. p0}}, {ATTACH}\n")
     tree.set(activity_path, text[:after_layout] + hook + text[after_layout:])
-    add_helpers(tree, "Settings")
+    add_helpers(tree, "Settings", "Screens")
+    tree.add_class("Lseekpatch/About;", ABOUT.format(mark=mark(patch), version=smali_escape(__version__)))
     fragment = class_descriptor(tree.get(fragment_path))
     activity = class_descriptor(tree.get(activity_path))
     return [f"settings: {fragment.split('/')[-1][:-1]}.onCreate -> Settings.screen, "

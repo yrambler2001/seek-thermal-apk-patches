@@ -8,9 +8,9 @@ file through a second method that sets the EXIF tags and copies it to its final 
                             seekpatch.Photo1x.capture, before anything scales it
     EXIF + copy method end  calls seekpatch.Photo1x.saved(final file, the app's EXIF orientation)
 
-which writes the frame as PNG, turned upright, to "<photo folder> 1x/<photo name>.png" -- a sibling
-folder, because Seek's gallery lists everything under the photo folder.  Thermal+ photos store the
-thermal frame.
+which writes the frame as PNG, turned upright, next to the photo, under its name with "_thermal"
+turned into "_1x" (img_thermal_123.png -> img_1x_123.png): Seek's gallery lists only paths matching
+"%Seek Thermal/%_thermal%", so it skips the copy.  Thermal+ photos store the thermal frame.
 
 Settings -> Image & Video gets "Also save a 1x PNG" (seekpatch.PhotoSettings, settings.py), off by
 default; where the release has no settings screen, the frame is saved with every photo.  Sources:
@@ -26,7 +26,7 @@ from .base import Options, ensure_unpatched, mark
 from .settings import optional_settings
 
 NAME = "photo_1x"
-SUMMARY = "a setting to save each photo's thermal frame at the sensor's resolution too (PNG, '... 1x' folder)"
+SUMMARY = "a setting to save each photo's thermal frame at the sensor's resolution too (PNG, img_1x_... next to it)"
 VERSIONS = "2.1.1 - 2.3.4"
 RECOMMENDED = True
 

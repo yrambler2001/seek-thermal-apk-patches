@@ -96,7 +96,7 @@
 
     const-string v3, "Also save a 1x PNG"
 
-    const-string v4, "With each photo, the frame at the sensor\'s resolution, in a \"\u2026 1x\" folder"
+    const-string v4, "With each photo, the frame at the sensor\'s resolution, next to it (img_1x_\u2026)"
 
     move-object v1, p1
 

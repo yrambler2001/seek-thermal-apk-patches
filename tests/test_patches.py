@@ -7,10 +7,12 @@ import re
 import pytest
 from conftest import SHAPES
 
+from seekpatch import __version__
 from seekpatch.patches import (
     BY_NAME,
     Options,
     debug_log,
+    default_palette,
     flat_field,
     full_fps,
     mic_prompt,
@@ -35,6 +37,45 @@ def tree_of(make_project, shape: str, abis: tuple[str, ...] = ABIS) -> SmaliTree
 
 def text(tree: SmaliTree, cls: str) -> str:
     return tree.get(tree.path_of(cls))
+
+
+# default_palette --------------------------------------------------------------------------------
+
+def test_default_palette(make_project):
+    tree = tree_of(make_project, "lambda")
+    report = default_palette.apply(tree, Options())
+    assert report == ["smali/fix/Prefs.smali b(): color_palette defaults to 4 (Tyrian) instead of 2"]
+    prefs = text(tree, "Lfix/Prefs;")
+    read = next(m for m in methods(prefs) if m.name == "b")
+    assert re.search(r'const-string v0, "color_palette"\n\n\s+\.line 8\n\s+# seek-patch default_palette: Tyrian '
+                     r"\(palette 4\) until one is picked, not 2\n\s+const/16 v1, 0x4\n\n\s+\.line 9\n\s+invoke-interface "
+                     r"\{p0, v0, v1\}, Landroid/content/SharedPreferences;->getInt", read.body)
+    assert "const/4 v1, 0x2" not in read.body
+    assert "putInt" in prefs and "seek-patch" not in next(m for m in methods(prefs) if m.name == "Z").body
+    with pytest.raises(AlreadyApplied):
+        default_palette.apply(tree, Options())
+
+
+def test_default_palette_reads_a_filled_array(make_project):
+    root = make_project("lambda")
+    names = ["White", "Black", "Spectra", "Tyrian", "Iron"]  # Tyrian third here: the index comes from the list
+    consts = "\n\n".join(f'    const-string v{i + 1}, "{n}"' for i, n in enumerate(names))
+    (root / "smali" / "fix" / "Palettes.smali").write_text(
+        ".class public Lfix/Palettes;\n.super Ljava/lang/Object;\n\n.method static f()V\n    .locals 6\n\n"
+        f"{consts}\n\n    filled-new-array/range {{v1 .. v5}}, [Ljava/lang/String;\n\n    move-result-object v0\n\n"
+        "    return-void\n.end method\n")
+    tree = SmaliTree(str(root))
+    assert default_palette.apply(tree, Options())[0].endswith("defaults to 3 (Tyrian) instead of 2")
+    assert "const/16 v1, 0x3" in text(tree, "Lfix/Prefs;")
+
+
+def test_default_palette_needs_the_palette_list(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Palettes.smali").unlink()
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match='palette list with "Tyrian"'):
+        default_palette.apply(tree, Options())
+    assert "seek-patch" not in text(tree, "Lfix/Prefs;")
 
 
 # full_fps ---------------------------------------------------------------------------------------
@@ -279,7 +320,10 @@ def test_settings_hooks_are_shared(make_project):
     assert text(tree, "Lfix/ImageSettings;").count(SCREEN) == 1 and text(tree, "Lfix/Main;").count(ATTACH) == 1
     assert "# seek-patch sharp_scaling: seek-patch's settings" in text(tree, "Lfix/ImageSettings;")  # the first
     sections = ("Filters", "FlatSettings", "Upscale", "PhotoSettings", "VideoSettings")
-    assert all(tree.path_of(f"Lseekpatch/{c};") for c in sections + ("Settings",))
+    assert all(tree.path_of(f"Lseekpatch/{c};") for c in sections + ("Settings", "Screens", "Screens$1"))
+    # the side menu's credit shows the version of seek-patch that patched the app
+    assert f'.field public static version:Ljava/lang/String; = "{__version__}"' in text(tree, "Lseekpatch/About;")
+    assert "Lseekpatch/About;->version:Ljava/lang/String;" in text(tree, "Lseekpatch/Screens;")
     # Settings looks the sections up by name: the names it lists are the classes the patches add
     settings = text(tree, "Lseekpatch/Settings;")
     assert all(f'"seekpatch.{c}"' in settings for c in sections)

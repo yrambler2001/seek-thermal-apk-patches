@@ -12,12 +12,12 @@ def test_list(capsys):
     out = capsys.readouterr().out
     for p in ALL:
         assert p.NAME in out and p.VERSIONS in out
-    assert RECOMMENDED == ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x",
-                           "video_quality", "resume_fix", "mic_prompt", "flat_field", "smart_smoothing"]
+    assert RECOMMENDED == ["full_fps", "default_palette", "sharp_scaling", "smoothing_settings", "png_photos",
+                           "photo_1x", "video_quality", "resume_fix", "mic_prompt", "flat_field", "smart_smoothing"]
 
 
 def test_all_leaves_out_the_alternative():
-    assert every_patch() == RECOMMENDED[:2] + ["smoothing_settings"] + RECOMMENDED[3:] + ["debug_log"]
+    assert every_patch() == RECOMMENDED + ["debug_log"]  # not no_smoothing
     assert conflicts(every_patch()) == []
     assert conflicts(["no_smoothing", "smoothing_settings", "flat_field"]) == [("no_smoothing", "smoothing_settings")]
 

@@ -86,30 +86,96 @@
     throw p0
 .end method
 
-.method public static saved(Ljava/io/File;I)V
-    .locals 9
+.method static name(Ljava/lang/String;)Ljava/lang/String;
+    .locals 4
 
-    const-string v0, "cannot create "
+    const/16 v0, 0x2e
+
+    .line 76
+    invoke-virtual {p0, v0}, Ljava/lang/String;->lastIndexOf(I)I
+
+    move-result v0
+
+    if-lez v0, :cond_0
+
+    const/4 v1, 0x0
+
+    .line 77
+    invoke-virtual {p0, v1, v0}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+
+    move-result-object p0
+
+    .line 78
+    :cond_0
+    new-instance v0, Ljava/lang/StringBuilder;
+
+    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+
+    const-string v1, "_thermal"
+
+    invoke-virtual {p0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v2
+
+    const-string v3, "_1x"
+
+    if-eqz v2, :cond_1
+
+    invoke-virtual {p0, v1, v3}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+
+    move-result-object p0
+
+    goto :goto_0
+
+    :cond_1
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v1, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v1, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p0
+
+    :goto_0
+    invoke-virtual {v0, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string p0, ".png"
+
+    invoke-virtual {v0, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p0
+
+    return-object p0
+.end method
+
+.method public static saved(Ljava/io/File;I)V
+    .locals 5
 
     .line 46
-    const-class v1, Lseekpatch/Photo1x;
+    const-class v0, Lseekpatch/Photo1x;
 
-    monitor-enter v1
+    monitor-enter v0
 
     .line 47
     :try_start_0
-    sget-object v2, Lseekpatch/Photo1x;->frame:Landroid/graphics/Bitmap;
+    sget-object v1, Lseekpatch/Photo1x;->frame:Landroid/graphics/Bitmap;
 
     .line 48
-    sget-object v3, Lseekpatch/Photo1x;->context:Landroid/content/Context;
+    sget-object v2, Lseekpatch/Photo1x;->context:Landroid/content/Context;
 
-    const/4 v4, 0x0
+    const/4 v3, 0x0
 
     .line 49
-    sput-object v4, Lseekpatch/Photo1x;->frame:Landroid/graphics/Bitmap;
+    sput-object v3, Lseekpatch/Photo1x;->frame:Landroid/graphics/Bitmap;
 
     .line 50
-    monitor-exit v1
+    monitor-exit v0
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_1
 
@@ -118,145 +184,56 @@
     .line 51
     invoke-virtual {p0}, Ljava/io/File;->getParentFile()Ljava/io/File;
 
-    move-result-object v1
+    move-result-object v0
 
     goto :goto_0
 
     :cond_0
-    move-object v1, v4
+    move-object v0, v3
 
     :goto_0
-    if-eqz v2, :cond_6
+    if-eqz v1, :cond_3
 
     .line 52
-    invoke-virtual {v2}, Landroid/graphics/Bitmap;->isRecycled()Z
+    invoke-virtual {v1}, Landroid/graphics/Bitmap;->isRecycled()Z
 
-    move-result v5
+    move-result v4
 
-    if-nez v5, :cond_6
+    if-nez v4, :cond_3
 
-    if-nez v1, :cond_1
+    if-nez v0, :cond_1
 
-    goto/16 :goto_3
+    goto :goto_2
 
     .line 55
     :cond_1
-    new-instance v5, Ljava/io/File;
+    new-instance v4, Ljava/io/File;
 
-    invoke-virtual {v1}, Ljava/io/File;->getParentFile()Ljava/io/File;
-
-    move-result-object v6
-
-    new-instance v7, Ljava/lang/StringBuilder;
-
-    invoke-direct {v7}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v1}, Ljava/io/File;->getName()Ljava/lang/String;
-
-    move-result-object v1
-
-    invoke-virtual {v7, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v1, " 1x"
-
-    invoke-virtual {v7, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v7}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v1
-
-    invoke-direct {v5, v6, v1}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 56
     invoke-virtual {p0}, Ljava/io/File;->getName()Ljava/lang/String;
 
     move-result-object p0
 
-    const/16 v1, 0x2e
+    invoke-static {p0}, Lseekpatch/Photo1x;->name(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
+
+    invoke-direct {v4, v0, p0}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
     .line 57
-    invoke-virtual {p0, v1}, Ljava/lang/String;->lastIndexOf(I)I
+    :try_start_1
+    invoke-static {v1, p1}, Lseekpatch/Photo1x;->upright(Landroid/graphics/Bitmap;I)Landroid/graphics/Bitmap;
 
-    move-result v1
+    move-result-object p0
 
     .line 58
-    new-instance v6, Ljava/io/File;
-
-    new-instance v7, Ljava/lang/StringBuilder;
-
-    invoke-direct {v7}, Ljava/lang/StringBuilder;-><init>()V
-
-    if-lez v1, :cond_2
-
-    const/4 v8, 0x0
-
-    invoke-virtual {p0, v8, v1}, Ljava/lang/String;->substring(II)Ljava/lang/String;
-
-    move-result-object p0
-
-    :cond_2
-    invoke-virtual {v7, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string p0, ".png"
-
-    invoke-virtual {v7, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v7}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object p0
-
-    invoke-direct {v6, v5, p0}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 60
-    :try_start_1
-    invoke-virtual {v5}, Ljava/io/File;->isDirectory()Z
-
-    move-result p0
-
-    if-nez p0, :cond_4
-
-    invoke-virtual {v5}, Ljava/io/File;->mkdirs()Z
-
-    move-result p0
-
-    if-eqz p0, :cond_3
-
-    goto :goto_1
-
-    .line 61
-    :cond_3
-    new-instance p0, Ljava/io/IOException;
-
-    new-instance p1, Ljava/lang/StringBuilder;
-
-    invoke-direct {p1, v0}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
-
-    invoke-virtual {p1, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/Object;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {p1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object p1
-
-    invoke-direct {p0, p1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
-
-    throw p0
-
-    .line 63
-    :cond_4
-    :goto_1
-    invoke-static {v2, p1}, Lseekpatch/Photo1x;->upright(Landroid/graphics/Bitmap;I)Landroid/graphics/Bitmap;
-
-    move-result-object p0
-
-    .line 64
     new-instance p1, Ljava/io/FileOutputStream;
 
-    invoke-direct {p1, v6}, Ljava/io/FileOutputStream;-><init>(Ljava/io/File;)V
+    invoke-direct {p1, v4}, Ljava/io/FileOutputStream;-><init>(Ljava/io/File;)V
     :try_end_1
     .catch Ljava/io/IOException; {:try_start_1 .. :try_end_1} :catch_1
     .catch Ljava/lang/RuntimeException; {:try_start_1 .. :try_end_1} :catch_0
 
-    .line 66
+    .line 60
     :try_start_2
     sget-object v0, Landroid/graphics/Bitmap$CompressFormat;->PNG:Landroid/graphics/Bitmap$CompressFormat;
 
@@ -268,16 +245,16 @@
     :try_end_2
     .catchall {:try_start_2 .. :try_end_2} :catchall_0
 
-    if-eqz p0, :cond_5
+    if-eqz p0, :cond_2
 
-    .line 70
+    .line 64
     :try_start_3
     invoke-virtual {p1}, Ljava/io/OutputStream;->close()V
 
-    if-eqz v3, :cond_6
+    if-eqz v2, :cond_3
 
-    .line 73
-    invoke-virtual {v6}, Ljava/io/File;->getPath()Ljava/lang/String;
+    .line 67
+    invoke-virtual {v4}, Ljava/io/File;->getPath()Ljava/lang/String;
 
     move-result-object p0
 
@@ -291,15 +268,15 @@
 
     move-result-object p1
 
-    invoke-static {v3, p0, p1, v4}, Landroid/media/MediaScannerConnection;->scanFile(Landroid/content/Context;[Ljava/lang/String;[Ljava/lang/String;Landroid/media/MediaScannerConnection$OnScanCompletedListener;)V
+    invoke-static {v2, p0, p1, v3}, Landroid/media/MediaScannerConnection;->scanFile(Landroid/content/Context;[Ljava/lang/String;[Ljava/lang/String;Landroid/media/MediaScannerConnection$OnScanCompletedListener;)V
     :try_end_3
     .catch Ljava/io/IOException; {:try_start_3 .. :try_end_3} :catch_1
     .catch Ljava/lang/RuntimeException; {:try_start_3 .. :try_end_3} :catch_0
 
-    goto :goto_3
+    goto :goto_2
 
-    .line 67
-    :cond_5
+    .line 61
+    :cond_2
     :try_start_4
     new-instance p0, Ljava/io/IOException;
 
@@ -314,11 +291,11 @@
     :catchall_0
     move-exception p0
 
-    .line 70
+    .line 64
     :try_start_5
     invoke-virtual {p1}, Ljava/io/OutputStream;->close()V
 
-    .line 71
+    .line 65
     throw p0
     :try_end_5
     .catch Ljava/io/IOException; {:try_start_5 .. :try_end_5} :catch_1
@@ -327,13 +304,13 @@
     :catch_0
     move-exception p0
 
-    goto :goto_2
+    goto :goto_1
 
     :catch_1
     move-exception p0
 
-    .line 76
-    :goto_2
+    .line 70
+    :goto_1
     const-string p1, "seek-patch"
 
     new-instance v0, Ljava/lang/StringBuilder;
@@ -342,7 +319,7 @@
 
     invoke-direct {v0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
 
-    invoke-virtual {v0, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+    invoke-virtual {v0, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/Object;)Ljava/lang/StringBuilder;
 
     const-string v1, ": "
 
@@ -356,8 +333,8 @@
 
     invoke-static {p1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    :cond_6
-    :goto_3
+    :cond_3
+    :goto_2
     return-void
 
     :catchall_1
@@ -365,7 +342,7 @@
 
     .line 50
     :try_start_6
-    monitor-exit v1
+    monitor-exit v0
     :try_end_6
     .catchall {:try_start_6 .. :try_end_6} :catchall_1
 
@@ -409,7 +386,7 @@
 
     return-object p0
 
-    .line 86
+    .line 87
     :cond_3
     new-instance v5, Landroid/graphics/Matrix;
 
@@ -417,10 +394,10 @@
 
     int-to-float p1, p1
 
-    .line 87
+    .line 88
     invoke-virtual {v5, p1}, Landroid/graphics/Matrix;->postRotate(F)Z
 
-    .line 88
+    .line 89
     invoke-virtual {p0}, Landroid/graphics/Bitmap;->getWidth()I
 
     move-result v3

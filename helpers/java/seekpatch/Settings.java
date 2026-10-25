@@ -73,6 +73,7 @@ public final class Settings {
         } catch (Throwable t) {
             Log.w(TAG, "settings: not loaded", t);
         }
+        Screens.attach(a);  // the settings screens' navigation bar, the credit in the side menu
     }
 
     /** The Image &amp; Video fragment, after addPreferencesFromResource: add every section's preferences. */

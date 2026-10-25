@@ -16,10 +16,10 @@ import java.io.OutputStream;
  *
  * <p>The photo method hands its frame bitmap (sensor-sized, colorized, no overlays) to
  * {@link #capture} before scaling it up; once the photo file is written, {@link #saved} stores the
- * frame next to it, in a sibling folder named after the photo's with " 1x" appended (so Seek's
- * own gallery, which lists every file under the photo folder, does not show it twice), under the
- * photo's name.  The pixels are turned upright by the photo's EXIF orientation, which PNG viewers
- * do not read.
+ * frame next to it, in the same folder, under the photo's name with "_thermal" turned into "_1x"
+ * (img_thermal_123.png -> img_1x_123.png).  Seek's own gallery lists only files whose path matches
+ * "%Seek Thermal/%_thermal%", so it does not show the copy twice.  The pixels are turned upright by
+ * the photo's EXIF orientation, which PNG viewers do not read.
  *
  * <p>{@link #enabled} is the <i>Also save a 1x PNG</i> setting (seekpatch.PhotoSettings, off by
  * default); without a settings screen it stays on.
@@ -48,18 +48,12 @@ public final class Photo1x {
             c = context;
             frame = null;
         }
-        File folder = photo != null ? photo.getParentFile() : null;
-        if (bitmap == null || bitmap.isRecycled() || folder == null) {
+        File dir = photo != null ? photo.getParentFile() : null;
+        if (bitmap == null || bitmap.isRecycled() || dir == null) {
             return;
         }
-        File dir = new File(folder.getParentFile(), folder.getName() + " 1x");
-        String name = photo.getName();
-        int dot = name.lastIndexOf('.');
-        File out = new File(dir, (dot > 0 ? name.substring(0, dot) : name) + ".png");
+        File out = new File(dir, name(photo.getName()));
         try {
-            if (!dir.isDirectory() && !dir.mkdirs()) {
-                throw new IOException("cannot create " + dir);
-            }
             Bitmap upright = upright(bitmap, exifOrientation);
             OutputStream os = new FileOutputStream(out);
             try {
@@ -75,6 +69,13 @@ public final class Photo1x {
         } catch (IOException | RuntimeException e) {
             Log.w(TAG, "photo_1x: " + out + ": " + e);
         }
+    }
+
+    /** The copy's name: the photo's, "_thermal" -> "_1x" (img_tp_thermal_123.png -> img_tp_1x_123.png), as PNG. */
+    static String name(String photo) {
+        int dot = photo.lastIndexOf('.');
+        String base = dot > 0 ? photo.substring(0, dot) : photo;
+        return (base.contains("_thermal") ? base.replace("_thermal", "_1x") : base + "_1x") + ".png";
     }
 
     /** EXIF 6 / 3 / 8 = rotate 90 / 180 / 270 degrees clockwise to view (the app writes no mirrored values). */

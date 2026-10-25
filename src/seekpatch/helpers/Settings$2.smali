@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 96
+    .line 97
     iput-object p1, p0, Lseekpatch/Settings$2;->val$fragment:Landroid/preference/PreferenceFragment;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -44,7 +44,7 @@
 .method public run()V
     .locals 1
 
-    .line 99
+    .line 100
     iget-object v0, p0, Lseekpatch/Settings$2;->val$fragment:Landroid/preference/PreferenceFragment;
 
     invoke-static {v0}, Lseekpatch/Settings;->access$100(Landroid/preference/PreferenceFragment;)V

@@ -31,7 +31,7 @@ public final class PhotoSettings {
     /** Settings: the switch, appended. */
     public static void screen(PreferenceFragment f, SharedPreferences p) {
         Settings.addSwitch(f.getPreferenceScreen(), p, KEY, "Also save a 1x PNG",
-                "With each photo, the frame at the sensor's resolution, in a \"… 1x\" folder",
+                "With each photo, the frame at the sensor's resolution, next to it (img_1x_…)",
                 false, null);
     }
 }
