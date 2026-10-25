@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 — 2026-10-25
+
+Google Analytics switched off, and 2.1.6 – 2.3.1 no longer crash on Android 9 and later.
 
 - `no_analytics`, in the default set (1.9.1 – 2.3.4): the bundled Google Analytics never starts.
   Nothing is sent, and 2.1.6 – 2.3.1 no longer crash about 15 s after launch on Android 9 and later
