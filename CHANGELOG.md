@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.6.0 — 2026-10-25
+
+Your own temperature calibration, and a switch for the camera's automatic shutter.
+
+- `calibration`, in the default set (2.2.3 – 2.3.4): a **k·x+b** button below the top bar, on the
+  left.  Enter a gain and an offset (*shown = k × measured + b*, b in the app's unit) and every
+  temperature the app shows and saves is corrected: the spot, the minimum and maximum, the
+  temperature bar, the radiometric data, and the coloring modes that work in degrees.  It stays set
+  until changed.  A third small native library, `libseekpatch_calib.so`, hooks libseekip's
+  `thermography_process` and maps its outputs; with no correction set nothing is hooked.
+- `shutter`, in the default set (1.9.1 – 2.3.4): a **Shutter** button below *Lock range*.  A tap
+  suspends the camera's automatic shutter (no clicks or frozen frames; the picture drifts instead),
+  a second tap resumes it and the camera shutters right away.  The command is the camera firmware's
+  own shutter request (USB vendor request 55), read in the Compact's firmware 1.3.0.0; it only sets
+  a flag in the camera's RAM.
+- The floating buttons below the top bar share one helper, `seekpatch.Floating`, which stacks them
+  in a column on each side whichever patches are applied; *Lock range* uses it too, unchanged in
+  look and place.  `add_helpers` leaves a shared helper another patch already added alone.
+
 ## 0.5.0 — 2026-10-25
 
 A Lock range button: the colors stay as they are, whatever enters the view.
