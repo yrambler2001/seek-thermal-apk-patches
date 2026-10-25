@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 — 2026-10-25
+
+A Lock range button: the colors stay as they are, whatever enters the view.
 
 - `lock_range`, in the default set (2.2.3 – 2.3.4): a **Lock range** button below the top bar.  A
   tap keeps the image as it is: the image library's contrast stage stops rebuilding its curve (raw
