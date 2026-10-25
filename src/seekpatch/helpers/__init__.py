@@ -14,7 +14,8 @@ def smali(name: str) -> str:
 
 
 def add_helpers(tree: SmaliTree, *classes: str) -> list[str]:
-    """Add each helper class with its inner classes (Mic -> Mic, Mic$1, Mic$2); returns the descriptors."""
+    """Add each helper class with its inner classes (Mic -> Mic, Mic$1, Mic$2); returns the descriptors.
+    A class another patch already added, unchanged (a shared helper such as Floating), is left as it is."""
     names = sorted(p.name[:-len(".smali")] for p in resources.files(__name__).iterdir() if p.name.endswith(".smali"))
     added = []
     for cls in classes:
@@ -23,6 +24,9 @@ def add_helpers(tree: SmaliTree, *classes: str) -> list[str]:
             raise FileNotFoundError(f"no generated helper {cls}.smali -- run helpers/build.py")
         for n in group:
             text = smali(n)
+            path = tree.path_of(class_descriptor(text))
+            if path and tree.get(path) == text:
+                continue
             tree.add_class(class_descriptor(text), text)
             added.append(class_descriptor(text))
     return added

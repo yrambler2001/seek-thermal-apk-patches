@@ -11,6 +11,7 @@ from seekpatch import __version__
 from seekpatch.patches import (
     BY_NAME,
     Options,
+    calibration,
     debug_log,
     default_palette,
     flat_field,
@@ -22,6 +23,7 @@ from seekpatch.patches import (
     png_photos,
     resume_fix,
     sharp_scaling,
+    shutter,
     smart_smoothing,
     smoothing_settings,
     video_quality,
@@ -474,7 +476,7 @@ def test_lock_range(make_project, shape):
                      r"invoke-static/range \{v1 \.\. v1\}, Lseekpatch/Lock;->high\(F\)F\n\n\s+move-result v1\n", bar)
     assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch lock_range: .*\n\s+"
                      r"invoke-static \{p0\}, Lseekpatch/Lock;->attach\(Landroid/app/Activity;\)V\n", text(tree, "Lfix/Main;"))
-    assert all(tree.path_of(f"Lseekpatch/Lock{s};") for s in ("", "$1", "$2", "$3"))
+    assert all(tree.path_of(f"Lseekpatch/{c};") for c in ("Lock", "Lock$1", "Lock$2", "Floating", "Floating$1"))
     assert not tree.path_of("Lseekpatch/SeekIP;")
     assert sorted(tree.natives) == ["lib/arm64-v8a/libseekpatch_lock.so", "lib/armeabi-v7a/libseekpatch_lock.so"]
     assert all(data[:4] == b"\x7fELF" for data in tree.natives.values())
@@ -531,6 +533,88 @@ def test_lock_range_needs_the_span_reads(make_project):
         with tree.transaction():
             lock_range.apply(tree, Options())
     assert tree.files == before and tree.natives == {}
+
+
+# calibration ------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_calibration(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = calibration.apply(tree, Options())
+    assert re.search(r"Lfix/Pipeline;->set\(JLfix/Features;I\)V\n\n\s+# seek-patch calibration: .*\n\s+"
+                     r"invoke-static \{\}, Lseekpatch/Calib;->frame\(\)V\n", text(tree, "Lfix/Pipeline;"))
+    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch calibration: .*\n\s+"
+                     r"invoke-static \{p0\}, Lseekpatch/Calib;->attach\(Landroid/app/Activity;\)V\n", text(tree, "Lfix/Main;"))
+    assert all(tree.path_of(f"Lseekpatch/{c};") for c in ("Calib", "Calib$1", "Floating", "Floating$1"))
+    assert sorted(tree.natives) == ["lib/arm64-v8a/libseekpatch_calib.so", "lib/armeabi-v7a/libseekpatch_calib.so"]
+    assert all(data[:4] == b"\x7fELF" for data in tree.natives.values())
+    assert report == ["smali/fix/Pipeline.smali: Calib.frame after the feature-900 call",
+                      "smali/fix/Main.smali: the button after Main.setContentView",
+                      "lib/{arm64-v8a,armeabi-v7a}/libseekpatch_calib.so"]
+
+
+def test_calibration_shares_the_floating_buttons_with_lock_range(make_project):
+    tree = tree_of(make_project, "lambda")
+    lock_range.apply(tree, Options())
+    calibration.apply(tree, Options())
+    assert sorted(tree.natives) == ["lib/arm64-v8a/libseekpatch_calib.so", "lib/arm64-v8a/libseekpatch_lock.so",
+                                    "lib/armeabi-v7a/libseekpatch_calib.so", "lib/armeabi-v7a/libseekpatch_lock.so"]
+    main = text(tree, "Lfix/Main;")
+    assert "Lseekpatch/Lock;->attach" in main and "Lseekpatch/Calib;->attach" in main
+    pipeline = text(tree, "Lfix/Pipeline;")
+    assert "Lseekpatch/Lock;->frame()V" in pipeline and "Lseekpatch/Calib;->frame()V" in pipeline
+
+
+def test_calibration_library_exports_its_native_methods():
+    from seekpatch import native
+    for abi in native.ABIS:
+        data = native.library(abi, native.CALIB)
+        for name in (b"Java_seekpatch_Calib_install", b"Java_seekpatch_Calib_set"):
+            assert name in data, (abi, name)
+
+
+def test_calibration_refuses_older_apps(make_project):
+    tree = tree_of(make_project, "lambda")
+    tree._identity = {"versionCode": 272, "versionName": "2.2.2"}
+    with pytest.raises(PatchError, match="2.2.2"):
+        calibration.apply(tree, Options())
+
+
+def test_calibration_needs_an_arm_libseekip(make_project):
+    tree = tree_of(make_project, "lambda", abis=("x86",))
+    with pytest.raises(PatchError, match="no libseekip.so for arm64-v8a / armeabi-v7a"):
+        calibration.apply(tree, Options())
+
+
+# shutter ----------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_shutter(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = shutter.apply(tree, Options())
+    usb = text(tree, "Lfix/Usb;")
+    request = next(m for m in methods(usb) if m.name == "request")
+    assert re.search(r"\.line 1\n\s+# seek-patch shutter: .*\n\s+invoke-static \{p1\}, "
+                     r"Lseekpatch/Shutter;->transfer\(Landroid/hardware/usb/UsbDeviceConnection;\)V\n\n\s+const/4 v0, 0x4\n",
+                     request.body)
+    assert "seek-patch" not in next(m for m in methods(usb) if m.name == "mode").body
+    assert re.search(r"->setContentView\(I\)V\n\n\s+# seek-patch shutter: .*\n\s+"
+                     r"invoke-static \{p0\}, Lseekpatch/Shutter;->attach\(Landroid/app/Activity;\)V\n", text(tree, "Lfix/Main;"))
+    assert all(tree.path_of(f"Lseekpatch/{c};") for c in ("Shutter", "Shutter$1", "Floating"))
+    assert tree.natives == {}
+    assert report == ["smali/fix/Usb.smali request(): Shutter.transfer before the frame request",
+                      "smali/fix/Main.smali: the button after Main.setContentView"]
+
+
+def test_shutter_needs_one_frame_request(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Usb.smali"
+    p.write_text(p.read_text().replace("const/16 v3, 0x53", "const/16 v3, 0x37"))
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match=r"asking the camera for a frame \(request 0x53\), found 0"):
+        with tree.transaction():
+            shutter.apply(tree, Options())
+    assert tree.save() == []
 
 
 # smart_smoothing --------------------------------------------------------------------------------
@@ -687,10 +771,10 @@ def test_smoothing_settings_needs_the_feature_call(make_project):
 
 APPLICABLE = {  # every patch that applies, but no_smoothing (the alternative to smoothing_settings)
     "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
-               "resume_fix", "mic_prompt", "flat_field", "lock_range", "smart_smoothing", "debug_log"],
+               "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
     "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "photo_1x", "video_quality",
-                 "resume_fix", "mic_prompt", "flat_field", "lock_range", "smart_smoothing", "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "debug_log"],
+                 "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "photo_1x", "mic_prompt", "shutter", "debug_log"],
 }
 
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 from types import ModuleType
 
 from . import (
+               calibration,
                debug_log,
                default_palette,
                flat_field,
@@ -21,6 +22,7 @@ from . import (
                png_photos,
                resume_fix,
                sharp_scaling,
+               shutter,
                smart_smoothing,
                smoothing_settings,
                video_quality,
@@ -28,7 +30,8 @@ from . import (
 from .base import Options
 
 ALL: list[ModuleType] = [full_fps, default_palette, sharp_scaling, no_smoothing, smoothing_settings, png_photos, photo_1x,
-                         video_quality, resume_fix, mic_prompt, flat_field, lock_range, smart_smoothing, debug_log]
+                         video_quality, resume_fix, mic_prompt, flat_field, lock_range, shutter,
+                         calibration, smart_smoothing, debug_log]
 BY_NAME = {p.NAME: p for p in ALL}
 RECOMMENDED = [p.NAME for p in ALL if p.RECOMMENDED]
 

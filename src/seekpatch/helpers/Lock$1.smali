@@ -18,22 +18,11 @@
 .end annotation
 
 
-# instance fields
-.field final synthetic val$b:Landroid/widget/TextView;
-
-
 # direct methods
-.method constructor <init>(Landroid/widget/TextView;)V
+.method constructor <init>()V
     .locals 0
-    .annotation system Ldalvik/annotation/Signature;
-        value = {
-            "()V"
-        }
-    .end annotation
 
-    .line 75
-    iput-object p1, p0, Lseekpatch/Lock$1;->val$b:Landroid/widget/TextView;
-
+    .line 57
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -44,8 +33,8 @@
 .method public onClick(Landroid/view/View;)V
     .locals 0
 
-    .line 78
-    iget-object p1, p0, Lseekpatch/Lock$1;->val$b:Landroid/widget/TextView;
+    .line 60
+    check-cast p1, Landroid/widget/TextView;
 
     invoke-static {p1}, Lseekpatch/Lock;->access$000(Landroid/widget/TextView;)V
 

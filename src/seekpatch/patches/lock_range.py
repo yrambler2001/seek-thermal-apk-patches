@@ -128,7 +128,7 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
 
     for abi in abis:
         tree.add_native_library(abi, native.LOCK, native.library(abi, native.LOCK))
-    add_helpers(tree, "Lock")
+    add_helpers(tree, "Lock", "Floating")
     others = [a for a in tree.abis if a not in abis]
     return [f"{tree.rel(call.path)}: Lock.frame after the feature-900 call",
             f"{results}: Lock.scene, the scene's minimum and maximum",
