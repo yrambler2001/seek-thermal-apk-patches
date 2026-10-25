@@ -5,32 +5,42 @@ signed by `tests/test_real_apks.py`.  2.3.4 was also run on a phone (Pixel 8 Pro
 live view, photos, video recording, the microphone prompt, the Flat field, Lock range, k·x+b and Shutter
 buttons, Smart smoothing, the smoothing switches and the hidden switches in Settings, and the
 frame-rate readout.  `shutter` sends its command to the camera, so what it does depends on
-the camera's firmware, not on the app version (see [shutter.md](shutter.md)).
+the camera's firmware, not on the app version (see [shutter.md](shutter.md)).  2.2.2 was run on
+the same phone, once with `no_analytics` alone and once with `http_legacy` alone; neither crashes
+(see [no-analytics.md](no-analytics.md), [http-legacy.md](http-legacy.md)).
 
-| app | versionCode | `full_fps` | `default_palette` | `sharp_scaling` | `smoothing_settings` | `no_smoothing` | `png_photos` | `hidden_settings` | `fps_readout` | `photo_1x` | `video_quality` | `resume_fix` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1.9.1 | 103 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.2 | 104 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.3 | 106 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.4 | 108 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.5 | 109 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 2.0 | 156 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.1 | 158 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.3 | 160 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.1 | 162 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | ✓ | – | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.2 | 180 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.4 | 210 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.5 | 217 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.6 | 240 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.1.7 | 250 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+Installing an older release may run into Google Play Protect, which checks apps installed from
+outside the Play Store.  It can block them with *"Unsafe app blocked — This app was built for an
+older version of Android and doesn't include the latest privacy protections"*.  That refers to the
+app's own targetSdkVersion (30 for 2.2.2), which seek-patch does not change.  The stock APK gets the
+same treatment, and Play Protect is not consistent: one 2.2.2 build installed, and the next was
+blocked.  To install anyway, turn off *Scan apps with Play Protect* in the Play Store's Play
+Protect settings for the install, then turn it back on.
+
+| app | versionCode | `full_fps` | `default_palette` | `sharp_scaling` | `smoothing_settings` | `no_smoothing` | `png_photos` | `hidden_settings` | `fps_readout` | `photo_1x` | `video_quality` | `resume_fix` | `no_analytics` | `http_legacy` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1.9.1 | 103 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.2 | 104 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.3 | 106 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.4 | 108 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.5 | 109 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 2.0 | 156 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.1 | 158 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.3 | 160 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.1 | 162 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | ✓ | – | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.2 | 180 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.4 | 210 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.5 | 217 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.6 | 240 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.1.7 | 250 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 1. 1.9.x saves photos with a different code path; the live-view part would work, but the patch is
    all or nothing.
@@ -58,6 +68,9 @@ the camera's firmware, not on the app version (see [shutter.md](shutter.md)).
 10. The hidden switches are all five from 2.0 on; 1.9.5 has four (no *Show Frame Rate*), 1.9.3 –
     1.9.4 only *Disable Registration*, 1.9.1 – 1.9.2 none.
 11. 1.9.x has no frame-rate readout.
+12. These releases target API 27 or lower, so Android adds the Apache HTTP library by itself;
+    `http_legacy` refuses them (see [http-legacy.md](http-legacy.md)).
+13. 2.3.3 and 2.3.4 declare the library themselves.
 
 The settings in *Settings → Image & Video* come with their patches wherever those apply: upscaling
 (`sharp_scaling`) 2.0 – 2.3.4, the 1x PNG (`photo_1x`) 2.1.1 – 2.3.4, video quality
@@ -70,7 +83,7 @@ patch but it, and `check` tests each patch alone.
 
 `png_photos`, `photo_1x` and `video_quality` start at 2.1.1 / 2.1.2, where the photo and recording
 code they hook first appears in this shape; `resume_fix` matches the same pause code in every
-release.  2.3.1 was checked and built from its `.xapk` split bundle, 2.3.3 from its `.xapk`
+release, `no_analytics` the same Google Analytics thread.  2.3.1 was checked and built from its `.xapk` split bundle, 2.3.3 from its `.xapk`
 and from its per-ABI APKs (`arm64-v8a`, `armeabi-v7a`).
 
 Regenerate against your own folder of APKs:

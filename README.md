@@ -38,6 +38,8 @@ its own colour span.</sub>
 | **Temperature accuracy** | the factory calibration, with emissivity as the only setting | a **k·x+b** button: enter a gain and an offset (from a reference thermometer, say) and every temperature the app shows and saves is corrected, *shown = k × measured + b* | `calibration` |
 | **Noise** | the temporal smoothing blends only pixels that did not change: little effect on a hand-held camera, trails when it does act | a **Smart smoothing** button (off by default; also a switch in Settings): a filter that follows the camera's motion and averages up to 8 frames per pixel, plus stripe and left-edge correction; about half the grain on hand-held scenes, no ghosting on faces | `smart_smoothing` |
 | **Returning from a dialog** | the app crashes (`glError 0x506`) after Android's permission dialog | the live view comes back | `resume_fix` |
+| **Analytics** | up to 2.3.1, Google Analytics runs while *Send Usage Data* is on (the default), and on Android 9+ it crashes 2.1.6 – 2.3.1 about 15 s after launch | never starts: nothing is sent, no crash | `no_analytics` |
+| **Apache HTTP** | on Android 9+, 2.1.6 – 2.3.1 lack the HTTP library they use (they do not declare it): Analytics, the account pages and downloads throw `NoClassDefFoundError` | declared in the manifest, as in 2.3.3: Android loads it | `http_legacy` |
 | **Diagnostics** | the SDK's USB / frame-timing log is compiled out | `adb logcat -s Seekware` | `debug_log` (opt-in) |
 
 Nothing else changes: the same app and the same factory calibration (`calibration` corrects the
@@ -217,6 +219,8 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `default_palette` | 2.0 – 2.3.4 | |
 | `video_quality` | 2.1.2 – 2.3.4 | |
 | `resume_fix` | 1.9.1 – 2.3.4 | |
+| `no_analytics` | 1.9.1 – 2.3.4 | |
+| `http_legacy` | 2.1.6 – 2.3.1 | older releases target API 27 or lower (Android adds the library); 2.3.3 – 2.3.4 declare it |
 | `mic_prompt` | 2.3.1 – 2.3.4 | older releases ask for the microphone with storage and never block on it |
 | `flat_field` | 2.2.0 – 2.3.4 | the gradient features are verified in the image library these versions ship; it refuses older ones |
 | `lock_range` | 2.2.3 – 2.3.4 | arm64-v8a and armeabi-v7a; older image libraries call the contrast curve's builder directly, so there is nothing to hook |
@@ -254,14 +258,17 @@ also drops the manifest attributes that make Android require the splits.
 - [`calibration`](docs/calibration.md) — adds the button and a small native library that hooks the image library's thermography stage, where each frame is turned into degrees, and maps its outputs (the per-pixel temperatures, the spot, the minimum and maximum) through *k × t + b*.
 - [`smart_smoothing`](docs/smart-smoothing.md) — adds the button and a small native library of seek-patch's own: it hooks the image library's first filter, which then runs without its temporal smoothing, and filters its output in place.
 - [`resume_fix`](docs/resume-fix.md) — destroys the live view's EGL surface before the app drops it on pause.
+- [`no_analytics`](docs/no-analytics.md) — replaces the run loop of the bundled Google Analytics thread: the SDK is disabled before it creates its connection, store and uploader, and what the app queues is dropped.
+- [`http_legacy`](docs/http-legacy.md) — adds `<uses-library android:name="org.apache.http.legacy" android:required="false"/>` to the binary manifest (or to the text one with `--side-by-side`).
 - [`debug_log`](docs/debug-log.md) — gives the SDK's stripped log methods a body.
 
 Patches that need more than a few instructions add helper classes written in Java
 ([`helpers/java`](helpers/java)) and compiled to smali, which is committed: patching needs no Android
 SDK.  The native libraries of `smart_smoothing`, `lock_range` and `calibration` ([`helpers/native`](helpers/native)) are committed too, built
 reproducibly with the NDK.  By default only the code is decoded (`apktool -r`): resources and the binary manifest are
-carried over byte for byte, so a rebuild cannot break them.  `--side-by-side` decodes resources too,
-to rename the package.
+carried over byte for byte, so a rebuild cannot break them.  The one exception is `http_legacy`, which adds one
+element to the binary manifest and leaves every other chunk as it was.  `--side-by-side` decodes
+resources too, to rename the package.
 
 ## FAQ
 

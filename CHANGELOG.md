@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- `no_analytics`, in the default set (1.9.1 – 2.3.4): the bundled Google Analytics never starts.
+  Nothing is sent, and 2.1.6 – 2.3.1 no longer crash about 15 s after launch on Android 9 and later
+  (`NoClassDefFoundError: org.apache.http.impl.client.DefaultHttpClient`).  The *Send Usage Data*
+  switch stays in Settings and no longer does anything.
+- `http_legacy`, in the default set (2.1.6 – 2.3.1): the app declares Android's Apache HTTP library
+  (`<uses-library android:name="org.apache.http.legacy" android:required="false"/>`, as Seek's 2.3.3
+  does), so on Android 9 and later its uses of it no longer throw: Google Analytics' fallback store,
+  and in 2.1.6 – 2.2.3 the account pages, downloads from Seek's server and 2.2.3's JSON client.
+  seek-patch can now add an element to the binary manifest (`seekpatch.axml.Document`); every other
+  chunk is written back unchanged.
+
 ## 0.7.0 — 2026-10-25
 
 The app's hidden settings, always shown, and a quicker frame-rate readout.

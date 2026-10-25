@@ -74,6 +74,40 @@ def test_rejects_non_binary_xml():
         axml.manifest_attributes(b"<manifest/>")
 
 
+@pytest.mark.parametrize("path", ["project/AndroidManifest.xml", "split/AndroidManifest.xml"])
+def test_binary_xml_round_trips(path):
+    buf = (FIXTURES / path).read_bytes()
+    assert axml.Document(buf).to_bytes() == buf
+
+
+def test_document_rejects_text_xml():
+    with pytest.raises(axml.AxmlError, match="not a binary XML"):
+        axml.Document(b"<manifest/>")
+
+
+def test_adds_a_uses_library_to_a_binary_manifest():
+    buf = (FIXTURES / "project" / "AndroidManifest.xml").read_bytes()
+    before = axml.Document(buf)
+    assert axml.REQUIRED not in before.resmap  # the fixture has no android:required: the name is mapped in
+    assert axml.uses_libraries(buf) == [] and axml.target_sdk(buf) == 35
+    out = axml.add_uses_library(buf, "org.apache.http.legacy", False, "seek-patch test")
+    assert axml.uses_libraries(out) == [("org.apache.http.legacy", "seek-patch test")]
+    assert axml.manifest_attributes(out) == axml.manifest_attributes(buf)  # the strings it moved still resolve
+    assert axml.target_sdk(out) == 35
+    doc = axml.Document(out)
+    assert doc.resmap == before.resmap + [axml.REQUIRED] and doc.strings[len(before.resmap)] == "required"
+    starts = [doc.strings[n.b] for n in doc.nodes if n.type == 0x0102]
+    assert starts == ["manifest", "uses-sdk", "application", "uses-library", "activity", "intent-filter", "action", "category"]
+    lib = doc.nodes[doc.elements("uses-library")[0]]
+    assert [(doc.resmap[a.name], a.type, a.data) for a in lib.attrs] == [  # sorted by resource id, as aapt2 writes it
+        (axml.NAME, 0x03, doc.strings.index("org.apache.http.legacy")), (axml.REQUIRED, 0x12, 0)]
+    assert all(doc.strings[a.ns] == axml.ANDROID_NS for a in lib.attrs)
+    assert doc.nodes[doc.elements("uses-library")[0] + 1].type == 0x0103  # and its end
+    again = axml.add_uses_library(out, "other.library", True)  # "required" is mapped now: nothing moves
+    assert len(axml.Document(again).resmap) == len(doc.resmap)
+    assert axml.uses_libraries(again) == [("other.library", None), ("org.apache.http.legacy", "seek-patch test")]
+
+
 # manifest (--side-by-side) ----------------------------------------------------------------------
 
 MANIFEST = """<?xml version="1.0" encoding="utf-8"?>
@@ -113,6 +147,18 @@ def test_side_by_side_rename():
 def test_side_by_side_needs_a_new_name():
     with pytest.raises(manifest.ManifestError):
         manifest.rename(MANIFEST, "com.example.app", None)
+
+
+def test_adds_a_uses_library_to_a_text_manifest():
+    assert manifest.uses_libraries(MANIFEST) == []
+    xml = manifest.add_uses_library(MANIFEST, "org.apache.http.legacy", False, "seek-patch test")
+    assert ('    <application android:label="@string/app_name" android:name=".App">\n'
+            "        <!-- seek-patch test -->\n"
+            '        <uses-library android:name="org.apache.http.legacy" android:required="false"/>\n'
+            '        <activity android:name=".Splash"') in xml
+    assert manifest.uses_libraries(xml) == ["org.apache.http.legacy"]
+    with pytest.raises(manifest.ManifestError):
+        manifest.add_uses_library('<manifest><application android:label="x"/></manifest>', "a.b", False)
 
 
 # split installs ---------------------------------------------------------------------------------

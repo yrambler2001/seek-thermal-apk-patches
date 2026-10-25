@@ -14,7 +14,7 @@ import zipfile
 
 import pytest
 
-from seekpatch import apk, zipalign
+from seekpatch import apk, axml, zipalign
 from seekpatch.patches import every_patch
 from seekpatch.toolchain import Toolchain, ToolchainError
 
@@ -22,12 +22,14 @@ APK_DIR = os.environ.get("SEEK_APK_DIR")
 APKS = sorted(p for ext in ("apk", "xapk", "apks", "apkm")
               for p in glob.glob(os.path.join(os.path.expanduser(APK_DIR), "*." + ext))) if APK_DIR else []
 
-# first version each patch supports (all run through 2.3.4)
+# first version each patch supports (all run through 2.3.4, but those in LAST)
 FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0), "no_smoothing": (2, 2, 0),
          "png_photos": (2, 1, 2), "photo_1x": (2, 1, 1), "video_quality": (2, 1, 2), "resume_fix": (1, 9, 1),
          "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0), "smart_smoothing": (2, 2, 3),
          "smoothing_settings": (2, 2, 0), "default_palette": (2, 0), "lock_range": (2, 2, 3),
-         "calibration": (2, 2, 3), "shutter": (1, 9, 1), "hidden_settings": (1, 9, 3), "fps_readout": (2, 0)}
+         "calibration": (2, 2, 3), "shutter": (1, 9, 1), "hidden_settings": (1, 9, 3), "fps_readout": (2, 0),
+         "no_analytics": (1, 9, 1), "http_legacy": (2, 1, 6)}
+LAST = {"http_legacy": (2, 3, 1)}  # 2.3.3 declares the library itself
 
 pytestmark = pytest.mark.skipif(not APKS, reason="set SEEK_APK_DIR to a folder of Seek Thermal apks")
 
@@ -54,7 +56,7 @@ def test_patch_matrix(toolchain, path, tmp_path):
     results = apk.check(toolchain, path, log=lambda _: None)
     if any(why and "already applied" in why for why in results.values()):
         pytest.skip("an already patched apk")
-    expected = {name: version >= first for name, first in FIRST.items()}
+    expected = {name: first <= version <= LAST.get(name, version) for name, first in FIRST.items()}
     assert {n: why is None for n, why in results.items()} == expected, results
     if os.environ.get("SEEK_BUILD"):
         out = str(tmp_path / "patched.apk")
@@ -67,6 +69,10 @@ def test_patch_matrix(toolchain, path, tmp_path):
             calibs = [i for i in z.infolist() if i.filename.endswith("/libseekpatch_calib.so")]
             seekip = {n.split("/")[1] for n in z.namelist() if n.endswith("/libseekip.so")}
             dex = b"".join(z.read(n) for n in z.namelist() if n.startswith("classes") and n.endswith(".dex"))
+            libraries = axml.uses_libraries(z.read("AndroidManifest.xml"))
+        # every version from 2.1.6 on has Apache HTTP declared: by http_legacy up to 2.3.1, by Seek from 2.3.3
+        assert (("org.apache.http.legacy", "seek-patch http_legacy") in libraries) == expected["http_legacy"]
+        assert any(n == "org.apache.http.legacy" for n, _ in libraries) == (version >= (2, 1, 6))
         # each patch's settings, wherever it applies (the settings screen exists from 2.0 on)
         for patch, section in (("sharp_scaling", b"Lseekpatch/Upscale;"), ("video_quality", b"Lseekpatch/VideoSettings;"),
                                ("smoothing_settings", b"Lseekpatch/Filters;"), ("flat_field", b"Lseekpatch/FlatSettings;"),

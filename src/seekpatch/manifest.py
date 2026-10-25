@@ -1,5 +1,6 @@
-"""--side-by-side: give the decoded (text) manifest a new package name and label, so the patched
-app installs next to the store app instead of replacing it.
+"""The decoded (text) manifest.  --side-by-side gives it a new package name and label, so the patched
+app installs next to the store app instead of replacing it; http_legacy adds a <uses-library> (here
+when resources were decoded, else in the binary manifest, see axml).
 
 Only identities are renamed: the package attribute, content-provider authorities and custom
 permissions that live under the old package.  Component class names are left alone (the code is
@@ -82,3 +83,21 @@ def rename(xml: str, new_package: str, label: str | None) -> tuple[str, list[str
                 xml = xml.replace(block, new_block, 1)
         notes.append(f'label "{label}"')
     return xml, notes
+
+
+def uses_libraries(xml: str) -> list[str]:
+    """The android:name of every <uses-library>."""
+    return re.findall(r'<uses-library\b[^>]*?\sandroid:name="([^"]+)"', xml, re.S)
+
+
+def add_uses_library(xml: str, library: str, required: bool, comment: str | None = None) -> str:
+    """<uses-library android:name=library android:required=.../> as the first child of <application>,
+    after <!-- comment --> if given."""
+    apps = list(re.finditer(r"<application\b[^>]*?(/?)>", xml, re.S))
+    if len(apps) != 1 or apps[0].group(1):
+        raise ManifestError(f"expected one <application> with children, found {len(apps)}")
+    start = xml.rfind("\n", 0, apps[0].start()) + 1
+    indent = re.match(r"[ \t]*", xml[start:]).group(0) + "    "
+    lines = ([f"<!-- {escape(comment)} -->"] if comment else []) + [
+        f'<uses-library android:name="{escape(library)}" android:required="{str(required).lower()}"/>']
+    return xml[:apps[0].end()] + "".join(f"\n{indent}{line}" for line in lines) + xml[apps[0].end():]

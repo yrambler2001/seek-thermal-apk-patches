@@ -22,6 +22,9 @@ GAP = r"\n(?:[ \t]*(?:\.line \d+)?[ \t]*\n)*[ \t]*"
 """Between two consecutive instructions: the line break, any blank / .line lines, the indent."""
 
 
+MANIFEST = "AndroidManifest.xml"
+
+
 class PatchError(Exception):
     """A patch could not find, or could not safely change, the code it targets."""
 
@@ -153,6 +156,8 @@ class SmaliTree:
         self._identity: dict[str, object] | None = None
         self.natives: dict[str, bytes] = {}
         """Native libraries to add: path relative to the root (lib/<abi>/<name>.so) -> contents."""
+        self._manifest: bytes | None = None
+        self._manifest_dirty = False
 
     # -- lookup -------------------------------------------------------------------------------
     @property
@@ -229,6 +234,19 @@ class SmaliTree:
         self._created.add(p)
         return p
 
+    @property
+    def manifest(self) -> bytes:
+        """AndroidManifest.xml as decoded: binary (apktool d -r, the default) or text (resources decoded)."""
+        if self._manifest is None:
+            with open(os.path.join(self.root, MANIFEST), "rb") as f:
+                self._manifest = f.read()
+        return self._manifest
+
+    def set_manifest(self, data: bytes) -> None:
+        if data != self.manifest:
+            self._manifest = data
+            self._manifest_dirty = True
+
     def add_native_library(self, abi: str, name: str, data: bytes) -> str:
         """A native library for lib/<abi>/, written by save() and stored uncompressed in the apk (the app
         maps its libraries straight out of it).  Returns its path relative to the root."""
@@ -243,10 +261,12 @@ class SmaliTree:
         """Roll every edit back if the block raises: a failing patch leaves the tree untouched."""
         snapshot, natives = dict(self.files), dict(self.natives)
         dirty, created = set(self._dirty), set(self._created)
+        manifest = self._manifest, self._manifest_dirty
         try:
             yield self
         except BaseException:
             self.files, self.natives, self._dirty, self._created = snapshot, natives, dirty, created
+            self._manifest, self._manifest_dirty = manifest
             raise
 
     def save(self) -> list[str]:
@@ -257,6 +277,11 @@ class SmaliTree:
                 f.write(self.files[p])
         written = sorted(self.rel(p) for p in self._dirty)
         self._dirty.clear()
+        if self._manifest_dirty:
+            with open(os.path.join(self.root, MANIFEST), "wb") as f:
+                f.write(self._manifest)
+            written.append(MANIFEST)
+            self._manifest_dirty = False
         for rel, data in sorted(self.natives.items()):
             p = os.path.join(self.root, *rel.split("/"))
             if not os.path.exists(p):

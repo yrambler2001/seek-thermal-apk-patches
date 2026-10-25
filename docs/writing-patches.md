@@ -12,7 +12,8 @@
   native code of every split and drops the split-only manifest attributes.
 
 - `apktool d -r` decodes the code only.  Resources and the binary manifest are carried over byte for
-  byte, so a rebuild cannot break them.  `--side-by-side` decodes resources too (`apktool d`), to
+  byte, so a rebuild cannot break them.  A patch can still add to the binary manifest through
+  `seekpatch/axml.py` (`Document`, `add_uses_library`), as `http_legacy` does.  `--side-by-side` decodes resources too (`apktool d`), to
   rename the package in the text manifest (`seekpatch/manifest.py`).
 - Before patching, every library the code loads (`System.loadLibrary`) must be inside the apk — a
   base apk from a split install, whose native code lives in a config split, is refused.
@@ -41,7 +42,8 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
 
 `SmaliTree` (`seekpatch/smali.py`) holds every smali file in memory: `containing(*needles)`,
 `path_of(descriptor)`, `get` / `set`, `replace_method_body`, `add_class`, and the app's
-`version_code` / `version`.  `add_native_library(abi, name, data)` adds a `.so` to `lib/<abi>/` (`abis` lists the
+`version_code` / `version`.  `manifest` / `set_manifest(data)` read and replace `AndroidManifest.xml`
+as decoded: binary by default, text with `--side-by-side`, so a patch that edits it handles both.  `add_native_library(abi, name, data)` adds a `.so` to `lib/<abi>/` (`abis` lists the
 apk's ABIs); it is stored uncompressed, as the app maps its libraries out of the apk.  `methods(text)` iterates methods with their header and body.  Nothing
 is written until `save()`; the CLI wraps each patch in `tree.transaction()`, so a patch that raises
 leaves the tree exactly as it found it.  That is what lets the default set skip a patch that does not

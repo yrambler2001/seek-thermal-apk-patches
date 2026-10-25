@@ -7,7 +7,7 @@ import re
 import pytest
 from conftest import SHAPES
 
-from seekpatch import __version__
+from seekpatch import __version__, axml
 from seekpatch.patches import (
     BY_NAME,
     Options,
@@ -18,8 +18,10 @@ from seekpatch.patches import (
     fps_readout,
     full_fps,
     hidden_settings,
+    http_legacy,
     lock_range,
     mic_prompt,
+    no_analytics,
     no_smoothing,
     photo_1x,
     png_photos,
@@ -375,6 +377,139 @@ def test_resume_fix(make_project, shape):
 def test_resume_fix_needs_the_window(make_project):
     with pytest.raises(PatchError, match="window-surface field"):
         resume_fix.apply(tree_of(make_project, "virtual"), Options())
+
+
+# no_analytics -----------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_no_analytics(make_project, shape):
+    tree = tree_of(make_project, shape)
+    assert no_analytics.apply(tree, Options()) == [
+        "smali/fix/Analytics.smali run(): disabled before it starts (e), queue drained -- no Lfix/Uploader;: "
+        "no Google Play services connection, no hit store, nothing sent"]
+    cls = text(tree, "Lfix/Analytics;")
+    run = next(m for m in methods(cls) if m.name == "run")
+    assert "Lfix/Uploader;" not in run.body  # never set up
+    assert "invoke-interface" not in run.body  # the queued work is dropped, not run
+    assert re.search(r"const/4 v0, 0x1\n\n\s+iput-boolean v0, p0, Lfix/Analytics;->e:Z\n", run.body)  # the disabled flag
+    assert re.search(r":seekpatch_next\n\s+iget-boolean v0, p0, Lfix/Analytics;->c:Z\n\n\s+if-nez v0, :seekpatch_closed", run.body)
+    assert re.search(r"iget-object v0, p0, Lfix/Analytics;->g:Ljava/util/concurrent/LinkedBlockingQueue;\n\n\s+"
+                     r"invoke-virtual \{v0\}, Ljava/util/concurrent/LinkedBlockingQueue;->take\(\)Ljava/lang/Object;\n"
+                     r"\s+:seekpatch_try_end\n\s+\.catch Ljava/lang/InterruptedException;", run.body)
+    assert all("seek-patch" not in m.body for m in methods(cls) if m.name != "run")  # the app still queues its work
+    with pytest.raises(AlreadyApplied):
+        no_analytics.apply(tree, Options())
+
+
+def test_no_analytics_needs_the_thread(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Analytics.smali").unlink()
+    with pytest.raises(PatchError, match="one Google Analytics thread"):
+        no_analytics.apply(SmaliTree(str(root)), Options())
+
+
+def test_no_analytics_needs_the_work_loop(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "Analytics.smali"
+    path.write_text(path.read_text().replace("    check-cast v1, Ljava/lang/Runnable;\n", ""))
+    with pytest.raises(PatchError, match="one work loop"):
+        no_analytics.apply(SmaliTree(str(root)), Options())
+
+
+def test_no_analytics_refuses_a_proxy_made_elsewhere(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Other.smali").write_text(
+        ".class Lfix/Other;\n.super Ljava/lang/Object;\n\n.method static a(Landroid/content/Context;)V\n    .locals 2\n\n"
+        "    new-instance v0, Lfix/Uploader;\n\n    const/4 v1, 0x0\n\n"
+        "    invoke-direct {v0, p0, v1}, Lfix/Uploader;-><init>(Landroid/content/Context;Ljava/lang/Thread;)V\n\n"
+        "    return-void\n.end method\n")
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match="created in 2 places"):
+        no_analytics.apply(tree, Options())
+    assert tree.save() == []
+
+
+# http_legacy ------------------------------------------------------------------------------------
+
+LIBRARY = "org.apache.http.legacy"
+
+
+def _binary_manifest(root, edit) -> None:
+    """Rewrite the project's binary manifest through axml.Document."""
+    path = root / "AndroidManifest.xml"
+    doc = axml.Document(path.read_bytes())
+    edit(doc)
+    path.write_bytes(doc.to_bytes())
+
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_http_legacy(make_project, shape):
+    root = make_project(shape)
+    tree = SmaliTree(str(root))
+    assert http_legacy.apply(tree, Options()) == [
+        'AndroidManifest.xml: <uses-library android:name="org.apache.http.legacy" android:required="false"/> '
+        "(targetSdkVersion 35; Apache HTTP used in 1 classes)"]
+    assert axml.uses_libraries(tree.manifest) == [(LIBRARY, "seek-patch http_legacy")]
+    with pytest.raises(AlreadyApplied):
+        http_legacy.apply(tree, Options())
+    assert tree.save() == ["AndroidManifest.xml"]
+    assert axml.uses_libraries((root / "AndroidManifest.xml").read_bytes()) == [(LIBRARY, "seek-patch http_legacy")]
+    with pytest.raises(AlreadyApplied):  # from the file, as when an already patched apk comes back
+        http_legacy.apply(SmaliTree(str(root)), Options())
+
+
+def test_http_legacy_in_a_text_manifest(make_project):  # --side-by-side decodes the manifest
+    root = make_project("lambda")
+    (root / "AndroidManifest.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://schemas.android.com/apk/res/android" '
+        'package="org.example.seekfixture">\n    <application android:label="Fixture">\n'
+        '        <activity android:name=".MainActivity"/>\n    </application>\n</manifest>\n')
+    (root / "apktool.yml").write_text((root / "apktool.yml").read_text().replace(
+        "  minSdkVersion: 19\n", "  minSdkVersion: 19\n  targetSdkVersion: 30\n"))
+    tree = SmaliTree(str(root))
+    assert "targetSdkVersion 30" in http_legacy.apply(tree, Options())[0]
+    assert ('    <application android:label="Fixture">\n        <!-- seek-patch http_legacy -->\n'
+            '        <uses-library android:name="org.apache.http.legacy" android:required="false"/>\n') in tree.manifest.decode()
+    with pytest.raises(AlreadyApplied):
+        http_legacy.apply(tree, Options())
+
+
+def test_http_legacy_leaves_an_app_that_declares_it(make_project):  # 2.3.3, 2.3.4
+    root = make_project("lambda")
+    (root / "AndroidManifest.xml").write_bytes(
+        axml.add_uses_library((root / "AndroidManifest.xml").read_bytes(), LIBRARY, False))
+    with pytest.raises(PatchError, match="already declares") as e:
+        http_legacy.apply(SmaliTree(str(root)), Options())
+    assert not isinstance(e.value, AlreadyApplied)  # the default set skips it
+
+
+def test_http_legacy_leaves_an_app_that_targets_27(make_project):  # up to 2.1.5: Android adds the library
+    root = make_project("lambda")
+
+    def target_27(doc):
+        doc.attribute(doc.nodes[doc.elements("uses-sdk")[0]], axml.TARGET_SDK_VERSION).data = 27
+    _binary_manifest(root, target_27)
+    with pytest.raises(PatchError, match="targets API 27"):
+        http_legacy.apply(SmaliTree(str(root)), Options())
+
+
+def test_http_legacy_needs_a_use_of_apache_http(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Uploader.smali").unlink()
+    with pytest.raises(PatchError, match="does not use Apache HTTP"):
+        http_legacy.apply(SmaliTree(str(root)), Options())
+
+
+def test_a_failing_patch_leaves_the_manifest_untouched(make_project):
+    root = make_project("lambda")
+    before = (root / "AndroidManifest.xml").read_bytes()
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match="later"):
+        with tree.transaction():
+            http_legacy.apply(tree, Options())
+            raise PatchError("a later step fails")
+    assert tree.manifest == before
+    assert tree.save() == []
 
 
 # mic_prompt -------------------------------------------------------------------------------------
@@ -870,13 +1005,13 @@ def test_smoothing_settings_needs_the_feature_call(make_project):
 
 APPLICABLE = {  # every patch that applies, but no_smoothing (the alternative to smoothing_settings)
     "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
-               "photo_1x", "video_quality", "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter",
-               "calibration", "smart_smoothing", "debug_log"],
+               "photo_1x", "video_quality", "resume_fix", "no_analytics", "http_legacy", "mic_prompt", "flat_field",
+               "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
     "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
-                 "photo_1x", "video_quality", "resume_fix", "mic_prompt", "flat_field", "lock_range", "shutter",
-                 "calibration", "smart_smoothing", "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "fps_readout", "photo_1x", "mic_prompt",
-                "shutter", "debug_log"],
+                 "photo_1x", "video_quality", "resume_fix", "no_analytics", "http_legacy", "mic_prompt", "flat_field",
+                 "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "fps_readout", "photo_1x", "no_analytics",
+                "http_legacy", "mic_prompt", "shutter", "debug_log"],
 }
 
 

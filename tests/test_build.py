@@ -11,7 +11,7 @@ import pytest
 from conftest import SHAPES, split_apk
 from test_patches import ABIS, APPLICABLE
 
-from seekpatch import apk, native, zipalign
+from seekpatch import apk, axml, native, zipalign
 from seekpatch.smali import PatchError
 from seekpatch.toolchain import Toolchain, ToolchainError
 
@@ -59,6 +59,8 @@ def test_patched_fixture_assembles_and_signs(make_project, toolchain, tmp_path, 
             assert b"Lseekpatch/Smooth;" in z.read("classes.dex")
         if "smoothing_settings" in APPLICABLE[shape]:
             assert b"Lseekpatch/Filters;" in z.read("classes.dex") and b"Lseekpatch/Settings;" in z.read("classes.dex")
+        # http_legacy: apktool b carries the edited binary manifest over
+        assert axml.uses_libraries(z.read("AndroidManifest.xml")) == [("org.apache.http.legacy", "seek-patch http_legacy")]
     assert zipalign.check(signed) == []
     info = apk.app_info(signed)
     assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture", "2.3.4", 294)
@@ -110,11 +112,13 @@ def test_patch_refuses_a_split_base_apk(fixture_apk, toolchain, tmp_path):
 
 def test_side_by_side(fixture_apk, toolchain, tmp_path):
     out = str(tmp_path / "out.apk")
-    plan = apk.Plan(["full_fps", "sharp_scaling"], side_by_side=True, label="Seek (patched)")
+    plan = apk.Plan(["full_fps", "sharp_scaling", "http_legacy"], side_by_side=True, label="Seek (patched)")
     apk.patch_apk(toolchain, fixture_apk("lambda"), out, plan, log=QUIET)
     info = apk.app_info(out)
     assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture.patched", "2.3.4", 294)
     assert zipalign.check(out) == []
+    with zipfile.ZipFile(out) as z:  # added to the text manifest, compiled by apktool (the comment is dropped)
+        assert axml.uses_libraries(z.read("AndroidManifest.xml")) == [("org.apache.http.legacy", None)]
 
 
 @pytest.fixture
