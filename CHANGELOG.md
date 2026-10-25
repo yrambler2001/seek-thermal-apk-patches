@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-10-25
+
+Settings in the app for Seek's filters, Smart smoothing, upscaling, the flat field, the 1x PNG and
+video quality; Tyrian as the default palette; the 1x copy beside its photo.
 
 - `smoothing_settings`, in the default set: *Settings → Image & Video* gets a switch for each of
   Seek's filters in place of *Image smoothing* — *Default temporal smoothing* (on), *Default spatial
