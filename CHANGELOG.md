@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.10.0 — 2026-10-26
+
+Fixes from a Redmi 4X (Android 7.1.2): clean sound in videos, one USB permission dialog, bitrate
+choices for video, and Celsius by default.
+
+- `default_unit`, in the default set (1.9.1 – 2.3.4): a new install shows Celsius.  The stock app
+  defaults to Fahrenheit on a phone set to English (US) (its `default_unit` resource); every read of
+  that resource now answers Celsius.  A unit already stored, picked or from an earlier start, stays.
+
+- `usb_prompt`, in the default set (1.9.1 – 2.3.4): after the camera was plugged in, the app asked
+  twice for it: the camera library searches when the camera screen is created and again when it
+  resumes, and the second search came before the first answer.  A second *Allow … to access the USB
+  device?* came up over the live picture and did nothing.  A request is now skipped while the same
+  camera's dialog waits for its answer.
+- `video_quality`: the sound stuttered about three times a second on Android 7.  The app stamps each
+  microphone block with the time its read started, and Android 7's AAC encoder gives each frame the
+  stamp of the block it starts in: 20 ms apart, every 15th 40 ms, for frames of 21.3 ms.  Blocks and
+  frames are now stamped with the time of their first sample, counted in samples (starting again
+  where the microphone dropped some), and the encoder's 2-byte configuration no longer goes into the
+  file as the first sound frame (a decoder error); a silent frame takes its place.
+- `video_quality`: the sound was distorted, with a click at every microphone block (about 47 a
+  second on a Redmi 4X), in the stock app too.  The app copies each block from its direct buffer's
+  backing array from index 0, and Android keeps the bytes 4 bytes in: each block started with a
+  silent sample and lost its last.  Blocks are now copied from their first byte.
+- `video_quality`: a *Video codec* setting, H.265 (the default, as `--video-codec`) or H.264, next to
+  *Video quality*.  On a phone without an H.265 encoder it says that it records H.264, and the sizes
+  in *Video quality* follow the codec that records.
+- `video_quality`: *Video quality* also offers bitrates, 2 – 40 Mbit/s (up to the encoder's
+  highest), next to the QPs.  Where the encoder takes no QP (no QP bounds before Android 12, no
+  constant-quality mode, as on the Redmi 4X) the list has only the bitrates, 12 Mbit/s by default,
+  and that is also what such an encoder now records at without a choice (was 24 Mbit/s, capped by
+  the encoder: 20 on the Redmi).  An encoder that refuses the profile keeps its rate control.
+- `reconnect_fix`, 2.3.0+: after the camera was unplugged and plugged in again with the app in the
+  background, tapping the app closed it, and the permission dialog came up over the home screen;
+  the picture came only with the next tap.  The camera screen no longer closes itself when it comes
+  back without a camera: it asks for the camera and opens it.
+- The floating buttons are in one row below the top bar: *k·x+b* and *Shutter* on the left, *Lock
+  range* on the right; a button that does not fit goes to a second row.  *Shutter* was under *Lock
+  range*, over the picture on a 16:9 screen.
+- The settings' switch summaries were black on the black screen on Android 7; they are now the light
+  grey of the app's own list summaries.
+
 ## 0.9.0 — 2026-10-26
 
 A steady live view, the phone's camera only in Thermal+, and the camera comes back after the camera
