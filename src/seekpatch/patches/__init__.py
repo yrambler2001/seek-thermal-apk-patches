@@ -33,11 +33,12 @@ from . import (
                smart_smoothing,
                smoothing_settings,
                steady_fps,
+               usb_queue,
                video_quality,
 )
 from .base import Options
 
-ALL: list[ModuleType] = [full_fps, steady_fps, default_palette, sharp_scaling, no_smoothing, smoothing_settings, png_photos,
+ALL: list[ModuleType] = [full_fps, steady_fps, usb_queue, default_palette, sharp_scaling, no_smoothing, smoothing_settings, png_photos,
                          hidden_settings, fps_readout, photo_1x,
                          video_quality, phone_camera, resume_fix, reconnect_fix, no_analytics, http_legacy, mic_prompt, flat_field, lock_range, shutter,
                          calibration, smart_smoothing, debug_log]
