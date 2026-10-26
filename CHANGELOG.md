@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 — 2026-10-26
 
 A steady live view, the phone's camera only in Thermal+, and the camera comes back after the camera
 screen has closed.
