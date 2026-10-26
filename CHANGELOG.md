@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- `relaunch_fix`, in the default set (1.9.1 – 2.3.4): opened again soon after it was swiped away or
+  force-stopped, the app often started with a flat magenta picture, every pixel and the spot at
+  -40 °C, until the camera was unplugged (the stock app too).  The process dying mid-stream can
+  leave the phone and the camera one step apart in USB's packet numbering (the data toggle), and the
+  phone then dropped the camera's first packet as a repeat: the header of the first frame, which the
+  camera library needs to start its thermography.  The camera's interface is now set again when the
+  app takes it, so both ends start over.  On a Compact PRO FF and a Pixel 8 Pro: 30 of 30 relaunches
+  with the picture, against 10 of 14 stuck before.
+
 ## 0.10.0 — 2026-10-26
 
 Fixes from a Redmi 4X (Android 7.1.2): clean sound in videos, one USB permission dialog, bitrate

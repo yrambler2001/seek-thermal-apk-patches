@@ -28,7 +28,7 @@ FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0), "n
          "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0), "smart_smoothing": (2, 2, 3),
          "smoothing_settings": (2, 2, 0), "default_palette": (2, 0), "default_unit": (1, 9, 1), "lock_range": (2, 2, 3),
          "calibration": (2, 2, 3), "shutter": (1, 9, 1), "hidden_settings": (1, 9, 3), "fps_readout": (2, 0),
-         "no_analytics": (1, 9, 1), "http_legacy": (2, 1, 6), "reconnect_fix": (1, 9, 1), "usb_prompt": (1, 9, 1),
+         "no_analytics": (1, 9, 1), "http_legacy": (2, 1, 6), "reconnect_fix": (1, 9, 1), "usb_prompt": (1, 9, 1), "relaunch_fix": (1, 9, 1),
          "steady_fps": (1, 9, 1), "phone_camera": (2, 1, 2)}
 LAST = {"http_legacy": (2, 3, 1)}  # 2.3.3 declares the library itself
 

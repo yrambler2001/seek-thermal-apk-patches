@@ -43,14 +43,16 @@ its own colour span.</sub>
 | **Returning from a dialog** | the app crashes (`glError 0x506`) after Android's permission dialog | the live view comes back | `resume_fix` |
 | **Reconnecting** | from 2.2.0, once the camera screen has closed (Back on the home page, or, from 2.3.0, coming back after unplugging the camera in the background), the app loses the camera until it is swiped away: from 2.3.0 *Connect Your Camera* with the camera plugged in, in 2.2.x a black live view after the next unplug and replug.  From 2.3.0 the tap that brings the app back after an unplug closes it, and the permission dialog comes up over the home screen | the camera comes back, in the screen the tap brought back | `reconnect_fix` |
 | **USB permission** | after the camera is plugged in, the app asks twice: a second *Allow … to access the USB device?* comes up over the live picture and does nothing | one dialog | `usb_prompt` |
+| **Reopening** | opened again soon after it was swiped away or force-stopped, the app often starts with a flat magenta picture: every pixel and the spot at -40 °C, until the camera is unplugged (a USB packet lost: the first frame's header) | the picture | `relaunch_fix` |
 | **Analytics** | up to 2.3.1, Google Analytics runs while *Send Usage Data* is on (the default), and on Android 9+ it crashes 2.1.6 – 2.3.1 about 15 s after launch | never starts: nothing is sent, no crash | `no_analytics` |
 | **Apache HTTP** | on Android 9+, 2.1.6 – 2.3.1 lack the HTTP library they use (they do not declare it): Analytics, the account pages and downloads throw `NoClassDefFoundError` | declared in the manifest, as in 2.3.3: Android loads it | `http_legacy` |
 | **Diagnostics** | the SDK's USB / frame-timing log is compiled out | `adb logcat -s Seekware` | `debug_log` (opt-in) |
 
 Nothing else changes: the same app and the same factory calibration (`calibration` corrects the
 readings only once you set k and b).  The patches never change the camera's firmware or flash;
-the one USB request they add is the firmware's own shutter switch, sent only after the Shutter
-button is tapped, which unplugging the camera undoes.
+the USB requests they add are the firmware's own shutter switch, sent only after the Shutter
+button is tapped, which unplugging the camera undoes, and a standard SET_INTERFACE when the app
+opens the camera (`relaunch_fix`), which only restarts the USB packet numbering.
 
 ## Quick start
 
@@ -229,6 +231,7 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `resume_fix` | 1.9.1 – 2.3.4 | |
 | `reconnect_fix` | 1.9.1 – 2.3.4 | the bug is in 2.2.0 – 2.3.4; 1.9.1 – 2.1.7 register the receiver again themselves and only get the part that keeps other Seek apps' permission answers out |
 | `usb_prompt` | 1.9.1 – 2.3.4 | the second dialog seen on Android 7.1.2 (Redmi 4X) |
+| `relaunch_fix` | 1.9.1 – 2.3.4 | the stuck start seen with a Compact PRO FF; the Compact is untested |
 | `no_analytics` | 1.9.1 – 2.3.4 | |
 | `http_legacy` | 2.1.6 – 2.3.1 | older releases target API 27 or lower (Android adds the library); 2.3.3 – 2.3.4 declare it |
 | `mic_prompt` | 2.3.1 – 2.3.4 | older releases ask for the microphone with storage and never block on it |
@@ -273,6 +276,7 @@ also drops the manifest attributes that make Android require the splits.
 - [`resume_fix`](docs/resume-fix.md) — destroys the live view's EGL surface before the app drops it on pause.
 - [`reconnect_fix`](docs/reconnect-fix.md) — from 2.2.0 empties the camera library's `unRegisterUSBIntent()`, so its USB receiver stays registered, and from 2.3.0 closes and releases a camera the last camera screen left open when the next one registers, and drops the `finish()` in `MainActivity.onRestart()` that closed the screen when it came back without a camera; the permission request is addressed to the app itself and, on Android 13+, the receiver is not exported, so another Seek app's answers do not reach it.
 - [`usb_prompt`](docs/usb-prompt.md) — routes the camera library's permission requests through a small helper that skips one while the same camera's dialog waits for its answer; the library's receiver ends the wait.
+- [`relaunch_fix`](docs/relaunch-fix.md) — has the camera library set the camera's USB interface again right after claiming it, which resets both ends' data toggles: the first packet of the first frame is no longer dropped as a repeat.
 - [`no_analytics`](docs/no-analytics.md) — replaces the run loop of the bundled Google Analytics thread: the SDK is disabled before it creates its connection, store and uploader, and what the app queues is dropped.
 - [`http_legacy`](docs/http-legacy.md) — adds `<uses-library android:name="org.apache.http.legacy" android:required="false"/>` to the binary manifest (or to the text one with `--side-by-side`).
 - [`debug_log`](docs/debug-log.md) — gives the SDK's stripped log methods a body.

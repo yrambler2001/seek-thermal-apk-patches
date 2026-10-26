@@ -28,6 +28,7 @@ from . import (
                photo_1x,
                png_photos,
                reconnect_fix,
+               relaunch_fix,
                resume_fix,
                sharp_scaling,
                shutter,
@@ -41,7 +42,7 @@ from .base import Options
 
 ALL: list[ModuleType] = [full_fps, steady_fps, default_palette, default_unit, sharp_scaling, no_smoothing, smoothing_settings, png_photos,
                          hidden_settings, fps_readout, photo_1x,
-                         video_quality, phone_camera, resume_fix, reconnect_fix, usb_prompt, no_analytics, http_legacy, mic_prompt, flat_field, lock_range, shutter,
+                         video_quality, phone_camera, resume_fix, reconnect_fix, usb_prompt, relaunch_fix, no_analytics, http_legacy, mic_prompt, flat_field, lock_range, shutter,
                          calibration, smart_smoothing, debug_log]
 BY_NAME = {p.NAME: p for p in ALL}
 RECOMMENDED = [p.NAME for p in ALL if p.RECOMMENDED]

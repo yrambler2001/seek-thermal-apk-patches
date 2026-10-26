@@ -28,6 +28,7 @@ from seekpatch.patches import (
     photo_1x,
     png_photos,
     reconnect_fix,
+    relaunch_fix,
     resume_fix,
     sharp_scaling,
     shutter,
@@ -803,6 +804,44 @@ def test_usb_prompt_refuses_another_class_asking(make_project):
 """)
     with pytest.raises(PatchError, match="Lfix/Main; asks for USB permission with an answer not addressed to Lfix/Camera;"):
         usb_prompt.apply(SmaliTree(str(root)), Options())
+
+# relaunch_fix -----------------------------------------------------------------------------------
+
+CLAIM_HELPER = ("Lseekpatch/Relaunch;->claimInterface(Landroid/hardware/usb/UsbDeviceConnection;"
+                "Landroid/hardware/usb/UsbInterface;Z)Z")
+CLAIM_CALL = ("    invoke-virtual {v1, v2, v4}, Landroid/hardware/usb/UsbDeviceConnection;->claimInterface("
+              "Landroid/hardware/usb/UsbInterface;Z)Z\n")
+
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_relaunch_fix(make_project, shape):
+    tree = tree_of(make_project, shape)
+    assert relaunch_fix.apply(tree, Options()) == [
+        "smali/fix/UsbLink.smali: claimInterface() through seekpatch.Relaunch, which sets the interface again "
+        "(both ends' data toggles back to DATA0)"]
+    link = text(tree, "Lfix/UsbLink;")
+    assert re.search(r"# seek-patch relaunch_fix: [^\n]*\n\s+invoke-static \{v1, v2, v4\}, " + re.escape(CLAIM_HELPER)
+                     + r"\n\n\s+move-result v4\n", link)
+    assert "UsbDeviceConnection;->claimInterface" not in link
+    assert tree.path_of("Lseekpatch/Relaunch;")
+    with pytest.raises(AlreadyApplied):
+        relaunch_fix.apply(tree, Options())
+
+
+def test_relaunch_fix_needs_the_usb_init(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "UsbLink.smali"
+    path.write_text(path.read_text().replace('"claim interface failed"', '"no claim"'))
+    with pytest.raises(PatchError, match="expected one USB init class"):
+        relaunch_fix.apply(SmaliTree(str(root)), Options())
+
+
+def test_relaunch_fix_refuses_a_second_claim(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "UsbLink.smali"
+    path.write_text(path.read_text().replace(CLAIM_CALL, CLAIM_CALL + "\n" + CLAIM_CALL))
+    with pytest.raises(PatchError, match="expected one plain claimInterface"):
+        relaunch_fix.apply(SmaliTree(str(root)), Options())
 
 # no_analytics -----------------------------------------------------------------------------------
 
