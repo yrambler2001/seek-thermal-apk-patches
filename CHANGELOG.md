@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.11.0 — 2026-10-26
+
+A fix for the magenta -40 °C picture when the app is opened again after it was killed.
 
 - `relaunch_fix`, in the default set (1.9.1 – 2.3.4): opened again soon after it was swiped away or
   force-stopped, the app often started with a flat magenta picture, every pixel and the spot at
@@ -8,7 +10,7 @@
   leave the phone and the camera one step apart in USB's packet numbering (the data toggle), and the
   phone then dropped the camera's first packet as a repeat: the header of the first frame, which the
   camera library needs to start its thermography.  The camera's interface is now set again when the
-  app takes it, so both ends start over.  On a Compact PRO FF and a Pixel 8 Pro: 30 of 30 relaunches
+  app takes it, so both ends start over.  On a Compact PRO FF and a Pixel 8 Pro: 40 of 40 relaunches
   with the picture, against 10 of 14 stuck before.
 
 ## 0.10.0 — 2026-10-26

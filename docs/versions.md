@@ -8,7 +8,7 @@ frame-rate readout, the steady live view, the phone camera opening and closing w
 back after Back.  2.3.4 also ran on a Redmi 4X (Android 7.1.2): the floating buttons in one row,
 the settings' summaries, the *Video codec* setting, the *Video quality* bitrates, the sound's
 timestamps and clicks, and one USB permission dialog.  With a Compact PRO FF on the Pixel, 2.3.4
-started with a picture after 30 relaunches in a row (`relaunch_fix`).  `shutter` sends its
+started with a picture after 40 relaunches in a row (`relaunch_fix`).  `shutter` sends its
 command to the camera, so what it does depends on the camera's firmware, not on the app version
 (see [shutter.md](shutter.md)).  2.2.2 was run on
 the same phone, once with `no_analytics` alone and once with `http_legacy` alone; neither crashes

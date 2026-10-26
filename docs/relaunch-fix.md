@@ -45,11 +45,13 @@ once the interface is claimed, sets it again (`UsbDeviceConnection.setInterface`
 This happens before the first command, so both ends start at DATA0.  The log says
 `relaunch_fix: interface 0 set again, packet numbering starts over`.
 
-With the patch, 30 of 30 relaunches on the same phone started with the picture and a whole first
-frame:
+With the patch, 40 of 40 relaunches on the same phone started with the picture:
 
-- 10 relaunches a second after a force-stop;
-- 20 relaunches with 0–2 s waits after sessions of 4–12 s.
+- 10 relaunches a second after a force-stop, each with a whole first frame;
+- 20 relaunches with 0–2 s waits after sessions of 4–12 s, each with a whole first frame;
+- 10 relaunches a second after a force-stop with the default patches alone (no logging).
+
+Home and reopen, and Back and reopen, bring the picture back as before.
 
 Only the Compact PRO FF has run with it.  The Compact uses the same library and opening code, so
 the patch applies to it as well, but it is untested.

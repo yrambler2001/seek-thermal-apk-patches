@@ -1,3 +1,3 @@
 """seek-patch: unofficial patches for the Seek Thermal Android app."""
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
