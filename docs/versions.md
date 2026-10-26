@@ -4,7 +4,8 @@ Every release below was decoded, checked, patched with all applicable patches, r
 signed by `tests/test_real_apks.py`.  2.3.4 was also run on a phone (Pixel 8 Pro, Android 16):
 live view, photos, video recording, the microphone prompt, the Flat field, Lock range, k·x+b and Shutter
 buttons, Smart smoothing, the smoothing switches and the hidden switches in Settings, the
-frame-rate readout, and the camera coming back after Back.  `shutter` sends its command to the camera, so what it does depends on
+frame-rate readout, the steady live view, the phone camera opening and closing with Thermal+, and the camera coming
+back after Back.  `shutter` sends its command to the camera, so what it does depends on
 the camera's firmware, not on the app version (see [shutter.md](shutter.md)).  2.2.2 was run on
 the same phone, once with `no_analytics` alone and once with `http_legacy` alone; neither crashes
 (see [no-analytics.md](no-analytics.md), [http-legacy.md](http-legacy.md)).
@@ -17,30 +18,30 @@ same treatment, and Play Protect is not consistent: one 2.2.2 build installed, a
 blocked.  To install anyway, turn off *Scan apps with Play Protect* in the Play Store's Play
 Protect settings for the install, then turn it back on.
 
-| app | versionCode | `full_fps` | `default_palette` | `sharp_scaling` | `smoothing_settings` | `no_smoothing` | `png_photos` | `hidden_settings` | `fps_readout` | `photo_1x` | `video_quality` | `resume_fix` | `reconnect_fix` | `no_analytics` | `http_legacy` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1.9.1 | 103 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.2 | 104 | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.3 | 106 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.4 | 108 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.5 | 109 | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 2.0 | 156 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.1 | 158 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.3 | 160 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.1 | 162 | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | ✓ | – | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.2 | 180 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.4 | 210 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.5 | 217 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.6 | 240 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.1.7 | 250 | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| app | versionCode | `full_fps` | `steady_fps` | `default_palette` | `sharp_scaling` | `smoothing_settings` | `no_smoothing` | `png_photos` | `hidden_settings` | `fps_readout` | `photo_1x` | `video_quality` | `phone_camera` | `resume_fix` | `reconnect_fix` | `no_analytics` | `http_legacy` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1.9.1 | 103 | ✓ | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.2 | 104 | ✓ | ✓ | – ⁷ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.3 | 106 | ✓ | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.4 | 108 | ✓ | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.5 | 109 | ✓ | ✓ | – ⁷ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 2.0 | 156 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.1 | 158 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.3 | 160 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.1 | 162 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | ✓ | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.2 | 180 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.4 | 210 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.5 | 217 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.6 | 240 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.1.7 | 250 | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 1. 1.9.x saves photos with a different code path; the live-view part would work, but the patch is
    all or nothing.
@@ -76,6 +77,8 @@ Protect settings for the install, then turn it back on.
     [reconnect-fix.md](reconnect-fix.md)).
 15. In 2.2.x the camera manager keeps its camera for the next screen: `reconnect_fix` keeps the
     receiver registered, and there is no camera to release.
+16. `phone_camera` needs `video_quality` (without it recordings take the phone camera's frames),
+    which starts at 2.1.2; the code it changes has the same shape back to 1.9.1.
 
 The settings in *Settings → Image & Video* come with their patches wherever those apply: upscaling
 (`sharp_scaling`) 2.0 – 2.3.4, the 1x PNG (`photo_1x`) 2.1.1 – 2.3.4, video quality

@@ -2,8 +2,23 @@
 
 ## Unreleased
 
-The camera comes back after the camera screen has closed.
+A steady live view, the phone's camera only in Thermal+, and the camera comes back after the camera
+screen has closed.
 
+- `steady_fps`, in the default set (1.9.1 – 2.3.4): the live view stuttered, and the frame-rate
+  readout jumped between 28 and 32, with a ~32 fps camera.  Android ran the screen at 30 Hz,
+  dropping about two frames a second; the camera library's USB thread waited up to 22 ms for a CPU
+  behind the phone camera's threads, so about one frame a second was never fetched; and frames
+  reached the screen 21 – 39 ms apart.  The live view now asks for the screen's top rate (60 Hz on
+  the Pixel while the app holds the camera), the USB thread and frame loop run first, and each
+  frame is presented a steady ~40 ms after it arrived: on a Pixel 8 Pro every frame is shown,
+  33 ms apart with every 7th or 8th at 17 ms, and a third as many frames are lost.
+- `phone_camera`, in the default set (2.1.2 – 2.3.4): the app ran the phone's own rear camera with
+  the live view, also in the plain thermal view, where nothing uses it.  It now opens with Thermal+
+  and closes without it.  On a Pixel 8 Pro that frees about 1.5 CPU cores, and the plain view gets
+  120 Hz: Android holds an app with a camera open at 60 Hz.  It needs `full_fps` and
+  `video_quality`; patches can now declare what they need (`REQUIRES`), and `seek-patch` refuses a
+  set that leaves it out.
 - `reconnect_fix`, in the default set (1.9.1 – 2.3.4): from 2.2.0, once the camera screen had closed
   (Back on the home page, or, from 2.3.0, coming back to the app after unplugging the camera in the
   background), the app lost the camera until its process was killed: from 2.3.0 *Connect Your

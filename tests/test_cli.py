@@ -12,8 +12,8 @@ def test_list(capsys):
     out = capsys.readouterr().out
     for p in ALL:
         assert p.NAME in out and p.VERSIONS in out
-    assert RECOMMENDED == ["full_fps", "default_palette", "sharp_scaling", "smoothing_settings", "png_photos",
-                           "hidden_settings", "fps_readout", "photo_1x", "video_quality", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt", "flat_field", "lock_range",
+    assert RECOMMENDED == ["full_fps", "steady_fps", "default_palette", "sharp_scaling", "smoothing_settings", "png_photos",
+                           "hidden_settings", "fps_readout", "photo_1x", "video_quality", "phone_camera", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt", "flat_field", "lock_range",
                            "shutter", "calibration", "smart_smoothing"]
 
 
@@ -28,6 +28,13 @@ def test_patch_refuses_alternatives(tmp_path):
     f.write_bytes(b"")
     with pytest.raises(SystemExit, match="alternatives"):
         main(["patch", str(f), "-p", "smoothing_settings", "-p", "no_smoothing"])
+
+
+def test_patch_refuses_a_missing_requirement(tmp_path):
+    f = tmp_path / "x.apk"
+    f.write_bytes(b"")
+    with pytest.raises(SystemExit, match="phone_camera needs video_quality: add it"):
+        main(["patch", str(f), "-p", "full_fps", "-p", "phone_camera"])
 
 
 def test_version(capsys):

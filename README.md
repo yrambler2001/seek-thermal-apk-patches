@@ -23,6 +23,8 @@ its own colour span.</sub>
 | | stock app | with seek-patch | patch |
 |---|---|---|---|
 | **Frame rate** | **15 fps** on screen: the live view redraws only when the phone's *own rear camera* delivers a frame, and the app runs that camera at 15 fps | **~28 fps**, every thermal frame (the Compact sends ~30) | `full_fps` |
+| **Smoothness** | the screen runs the live view at 30 Hz, so about two frames a second are dropped and the one before stays up twice as long; the camera's USB thread waits behind the phone camera's threads and about one frame a second is never fetched; frames reach the screen 21 – 39 ms apart | every frame the camera sends is shown, a steady delay after it arrived: 33 ms apart, every 4th 25 ms (120 Hz, with `phone_camera`; at 60 Hz every 7th or 8th 17 ms), and a third as many frames lost | `steady_fps` |
+| **Phone camera** | the phone's own rear camera runs with the live view, also in the plain thermal view, where nothing uses it: about 1.5 CPU cores on a Pixel 8 Pro, and Android holds the screen at 60 Hz for an app with a camera open | it runs only in Thermal+; the plain view gets the screen's top rate | `phone_camera` |
 | **Palette** | a new install starts in *Spectra* | starts in *Tyrian* (a palette you pick is kept, as before) | `default_palette` |
 | **Upscaling** | plain bilinear: each sensor pixel is smeared across its whole width | iOS-style: each pixel stays sharp, blending only across the middle half; in Settings, *Smooth* (stock), *Sharp 1.5* – *8* or *Blocky* | `sharp_scaling` |
 | **Smoothing switches** | one "Image smoothing" switch, and *off* is the smoother picture: it adds a 3×3 blur, and the temporal smoothing stays on either way | in *Settings → Image & Video*, a switch per filter: temporal smoothing, 3×3 spatial smoothing, pattern correction, and Smart smoothing with its two options; the defaults are the stock picture | `smoothing_settings` (or, opt-in, `no_smoothing`: the old switch's *off* turns both smoothings off) |
@@ -210,6 +212,7 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | patch | versions | |
 |---|---|---|
 | `full_fps` | 1.9.1 – 2.3.4 | |
+| `steady_fps` | 1.9.1 – 2.3.4 | the screen rate needs Android 11+ |
 | `sharp_scaling` | 2.0 – 2.3.4 | 1.9.x saves photos differently |
 | `smoothing_settings` | 2.2.0 – 2.3.4 | the feature ids are verified in the image library these versions ship; it refuses older ones.  The Smart smoothing switches come with `smart_smoothing` |
 | `no_smoothing` | 2.2.0 – 2.3.4 | opt-in, the alternative to `smoothing_settings`; same library check |
@@ -219,6 +222,7 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `photo_1x` | 2.1.1 – 2.3.4 | |
 | `default_palette` | 2.0 – 2.3.4 | |
 | `video_quality` | 2.1.2 – 2.3.4 | |
+| `phone_camera` | 2.1.2 – 2.3.4 | needs `full_fps` and `video_quality`, which starts at 2.1.2 |
 | `resume_fix` | 1.9.1 – 2.3.4 | |
 | `reconnect_fix` | 1.9.1 – 2.3.4 | the bug is in 2.2.0 – 2.3.4; 1.9.1 – 2.1.7 register the receiver again themselves and only get the part that keeps other Seek apps' permission answers out |
 | `no_analytics` | 1.9.1 – 2.3.4 | |
@@ -247,12 +251,14 @@ also drops the manifest attributes that make Android require the splits.
 - [`sharp_scaling`](docs/sharp-scaling.md) — a "sharp bilinear" remap in the thermal fragment shader; photos get the same kernel on the CPU.  Its settings set the shader's sharpness, 1 being the stock sample.
 - [`smoothing_settings`](docs/smoothing-settings.md) — adds the switches to the app's own settings screen; after the app sends the smoothing preset, makes the *on* preset the base and sets the temporal, spatial and pattern-correction stages from the switches.
 - [`no_smoothing`](docs/smoothing-switch.md) (opt-in) — after the app sends the smoothing preset, clears the temporal and spatial filter stages when the switch is off.
+- [`steady_fps`](docs/steady-fps.md) — has the live view's window ask for the screen's top rate, runs the camera library's USB thread and frame loop at nice −19 (its USB thread is a `HandlerThread`, which drops the library's priority) and the render thread at −10, and sets each frame's presentation time to its arrival plus a steady delay.
 - [`png_photos`](docs/png-photos.md) — turns on the app's hidden *Save Uncompressed* setting.
 - [`hidden_settings`](docs/hidden-settings.md) — has the readers of the switches' "allowed" preferences, which the settings screen checks before removing each switch, return true.
 - [`fps_readout`](docs/fps-readout.md) — changes the frame counter's 3000 ms window to 500 ms.
 - [`default_palette`](docs/default-palette.md) — changes the default of the app's `color_palette` preference from Spectra's index to Tyrian's, read from the app's palette list.
 - [`photo_1x`](docs/photo-1x.md) — keeps the photo method's sensor-sized frame and writes it once the photo is saved, when the *Also save a 1x PNG* setting is on.
 - [`video_quality`](docs/video-quality.md) — picks and configures the encoder, hands it every thermal frame, records 48 kHz stereo.  How the QP was chosen is in there; the setting picks it per recording.
+- [`phone_camera`](docs/phone-camera.md) — takes the phone camera's opening out of the live view's start and opens / closes it from the stream's Thermal+ switch; the front / back switch waits for it.
 - [`mic_prompt`](docs/mic-prompt.md) — routes the app's microphone check and request through a small helper, and starts the video once the camera runs again.
 - [`flat_field`](docs/flat-field.md) — adds the button; a tap has the library's gradient stage learn its correction map from the next 40 frames (the *Flat field frames* setting: 5 – 60), which it otherwise does only for frames that already look flat.
 - [`lock_range`](docs/lock-range.md) — adds the button and a second small native library: while locked it keeps the image library's contrast stage from rebuilding its curve (raw value → palette entry) each frame, and the temperature bar keeps the numbers from the tap.

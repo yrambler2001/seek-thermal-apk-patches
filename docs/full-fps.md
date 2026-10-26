@@ -63,7 +63,8 @@ released if drawing throws.
 
 ## Notes
 
-- The display can still drop a few frames when an LTPO panel switches itself to a 30 Hz mode
-  (SurfaceFlinger reports them as dropped); "Force peak refresh rate" in Developer options avoids it.
+- On its own the live view still stutters: Android runs the screen at 30 Hz for it, the camera
+  skips frames when the library's USB thread is late, and frames reach the screen unevenly.
+  [`steady_fps`](steady-fps.md) fixes those.
 - Thermal+ (blending with the phone camera) keeps working by design but has not been tested on a
   phone yet.  Video recording was tested together with `video_quality`.

@@ -163,6 +163,11 @@ def check(tc: Toolchain, apk: str, log: Callable[[str], None] = print) -> dict[s
         for name, patch in BY_NAME.items():
             try:
                 with tree.transaction():
+                    for need in getattr(patch, "REQUIRES", ()):  # applied first, in the same dry run
+                        try:
+                            BY_NAME[need].apply(tree, Options())
+                        except PatchError as e:
+                            raise PatchError(f"{name}: needs {need}, which does not apply ({e})") from e
                     patch.apply(tree, Options())
                     raise _Rollback
             except _Rollback:

@@ -10,16 +10,27 @@
 
 .field protected g:Lfix/Window;
 
+.field protected j:Lfix/PhoneCam;
+
 .field thermalTexture:I
 
 
 # direct methods
-.method public constructor <init>()V
+# the phone camera is opened with the thread (phone_camera)
+.method public constructor <init>(Landroid/content/Context;)V
     .locals 1
 
     const-string v0, "ThermalPlusRenderThread"
 
     invoke-direct {p0, v0}, Landroid/os/HandlerThread;-><init>(Ljava/lang/String;)V
+
+    new-instance v0, Lfix/PhoneCam;
+
+    invoke-direct {v0}, Lfix/PhoneCam;-><init>()V
+
+    iput-object v0, p0, Lfix/Render;->j:Lfix/PhoneCam;
+
+    invoke-virtual {v0, p1}, Lfix/PhoneCam;->s(Landroid/content/Context;)V
 
     return-void
 .end method
@@ -80,10 +91,20 @@
     return-void
 .end method
 
+# the draw: presented now (steady_fps paces it)
 .method private declared-synchronized w()V
-    .locals 0
+    .locals 3
 
     monitor-enter p0
+
+    iget-object v0, p0, Lfix/Render;->g:Lfix/Window;
+
+    .line 30
+    invoke-static {}, Ljava/lang/System;->nanoTime()J
+
+    move-result-wide v1
+
+    invoke-virtual {v0, v1, v2}, Lfix/Window;->f(J)V
 
     monitor-exit p0
 
@@ -105,6 +126,44 @@
     invoke-direct {v1, v0, p1, v2}, Lfix/Window;-><init>(Lfix/Core;Landroid/view/Surface;Z)V
 
     iput-object v1, p0, Lfix/Render;->g:Lfix/Window;
+
+    iget-object v0, p0, Lfix/Render;->j:Lfix/PhoneCam;
+
+    iget-object v1, p0, Lfix/Render;->camera:Landroid/graphics/SurfaceTexture;
+
+    invoke-virtual {v0, v1}, Lfix/PhoneCam;->g(Landroid/graphics/SurfaceTexture;)V
+
+    return-void
+.end method
+
+# stop: the phone camera too (phone_camera)
+.method public declared-synchronized P()V
+    .locals 1
+
+    monitor-enter p0
+
+    iget-object v0, p0, Lfix/Render;->j:Lfix/PhoneCam;
+
+    invoke-virtual {v0}, Lfix/PhoneCam;->v()V
+
+    monitor-exit p0
+
+    return-void
+.end method
+
+# the front / back camera switch (phone_camera)
+.method public declared-synchronized Q()V
+    .locals 2
+
+    monitor-enter p0
+
+    iget-object v0, p0, Lfix/Render;->j:Lfix/PhoneCam;
+
+    iget-object v1, p0, Lfix/Render;->camera:Landroid/graphics/SurfaceTexture;
+
+    invoke-virtual {v0, v1}, Lfix/PhoneCam;->x(Landroid/graphics/SurfaceTexture;)V
+
+    monitor-exit p0
 
     return-void
 .end method

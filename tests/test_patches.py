@@ -23,6 +23,7 @@ from seekpatch.patches import (
     mic_prompt,
     no_analytics,
     no_smoothing,
+    phone_camera,
     photo_1x,
     png_photos,
     reconnect_fix,
@@ -31,6 +32,7 @@ from seekpatch.patches import (
     shutter,
     smart_smoothing,
     smoothing_settings,
+    steady_fps,
     video_quality,
 )
 from seekpatch.patches.settings import ATTACH, SCREEN
@@ -363,6 +365,81 @@ def test_video_quality_refuses_a_reused_format_register(make_project):
         video_quality.apply(SmaliTree(str(root)), Options())
 
 
+# phone_camera -----------------------------------------------------------------------------------
+
+def _with_requirements(tree):
+    full_fps.apply(tree, Options())
+    video_quality.apply(tree, Options())
+    return tree
+
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_phone_camera(make_project, shape):
+    tree = _with_requirements(tree_of(make_project, shape))
+    assert phone_camera.apply(tree, Options()) == [
+        "smali/fix/Render.smali: no phone camera at start (s(), g() -> PhoneCamera.ready)",
+        "smali/fix/Render.smali: seekpatchCameraOn() / seekpatchCameraOff() (g() / v())",
+        "smali/fix/Render.smali Q(): the front / back switch only while the camera is open",
+        "smali/fix/Overlay.smali b1(): opens / closes the phone's camera with Thermal+"]
+    render = text(tree, "Lfix/Render;")
+    assert ".super Landroid/os/HandlerThread;\n.implements Lseekpatch/PhoneCamera$Owner;\n" in render
+    found = {m.name: m.body for m in methods(render)}
+    assert "->s(Landroid/content/Context;)V" not in found["<init>"]  # no camera with the thread
+    assert "# seek-patch phone_camera: the phone's camera opens when Thermal+ goes on, not here" in found["<init>"]
+    assert "Lfix/PhoneCam;->g(" not in found["o"]  # nor with its window
+    assert re.search(r"iput-object v1, p0, Lfix/Render;->g:Lfix/Window;\n(?:.*\n){4}\s+# seek-patch phone_camera: .*\n"
+                     r"\s+invoke-static \{p0\}, Lseekpatch/PhoneCamera;->ready\(Lseekpatch/PhoneCamera\$Owner;\)V", found["o"])
+    assert re.search(r"iget-object v0, p0, Lfix/Render;->j:Lfix/PhoneCam;\n\n\s+iget-object v1, p0, "
+                     r"Lfix/Render;->camera:Landroid/graphics/SurfaceTexture;\n(?:.*\n)*\s+"
+                     r"invoke-virtual \{v0, v1\}, Lfix/PhoneCam;->g\(Landroid/graphics/SurfaceTexture;\)V", found["seekpatchCameraOn"])
+    assert "invoke-virtual {v0}, Lfix/PhoneCam;->v()V" in found["seekpatchCameraOff"]
+    assert re.match(r"\s+\.locals 2\n\n\s+# seek-patch phone_camera: .*\n\s+invoke-static \{p0\}, "
+                    r"Lseekpatch/PhoneCamera;->isOpen\(Ljava/lang/Object;\)Z\n\n\s+move-result v0\n\n\s+"
+                    r"if-nez v0, :seekpatch_open\n\n\s+return-void\n\n\s+:seekpatch_open\n\s+monitor-enter p0", found["Q"])
+    setter = next(m for m in methods(text(tree, "Lfix/Overlay;")) if m.name == "b1")
+    assert re.match(r"\s+\.locals 1\n\n\s+# seek-patch phone_camera: .*\n\s+iget-object v0, p0, Lfix/Overlay;->Y:Lfix/Render;\n\n"
+                    r"\s+invoke-static \{v0, p1\}, Lseekpatch/PhoneCamera;->thermalPlus\(Ljava/lang/Object;Z\)V\n\n"
+                    r"\s+iput-boolean p1", setter.body)
+    for cls in ("Lseekpatch/PhoneCamera;", "Lseekpatch/PhoneCamera$Owner;"):
+        assert tree.path_of(cls)
+    with pytest.raises(AlreadyApplied):
+        phone_camera.apply(tree, Options())
+
+
+@pytest.mark.parametrize("need", ["full_fps", "video_quality"])
+def test_phone_camera_needs_its_requirements(make_project, need):
+    tree = tree_of(make_project, "lambda")
+    BY_NAME["video_quality" if need == "full_fps" else "full_fps"].apply(tree, Options())
+    with pytest.raises(PatchError, match=f"needs {need} applied first"):
+        phone_camera.apply(tree, Options())
+
+
+def test_phone_camera_needs_the_thermal_plus_switch(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Overlay.smali").unlink()
+    tree = _with_requirements(SmaliTree(str(root)))
+    before = dict(tree.files)
+    with pytest.raises(PatchError, match="Thermal\\+ setter"):
+        with tree.transaction():
+            phone_camera.apply(tree, Options())
+    assert tree.files == before
+
+
+def test_phone_camera_keeps_a_setter_that_reads_v0(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Overlay.smali"
+    p.write_text(p.read_text().replace("    iput-boolean p1, p0, Lfix/Overlay;->A:Z\n",
+                                       "    iput-boolean p1, p0, Lfix/Overlay;->A:Z\n\n    if-eqz v0, :cond_1\n", 1))
+    with pytest.raises(PatchError, match="reads v0 before setting it"):
+        phone_camera.apply(_with_requirements(SmaliTree(str(root))), Options())
+
+
+def test_requirements():
+    from seekpatch.patches import missing_requirements
+    assert missing_requirements(["full_fps", "video_quality", "phone_camera"]) == []
+    assert missing_requirements(["full_fps", "phone_camera"]) == [("phone_camera", "video_quality")]
+
+
 # resume_fix -------------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("shape", ["lambda", "accessor"])
@@ -378,6 +455,76 @@ def test_resume_fix(make_project, shape):
 def test_resume_fix_needs_the_window(make_project):
     with pytest.raises(PatchError, match="window-surface field"):
         resume_fix.apply(tree_of(make_project, "virtual"), Options())
+
+
+# steady_fps -------------------------------------------------------------------------------------
+
+STEADY_DRAW = {"lambda": "D", "accessor": "w"}
+
+
+@pytest.mark.parametrize("shape", ["lambda", "accessor"])
+def test_steady_fps(make_project, shape):
+    tree = tree_of(make_project, shape)
+    assert steady_fps.apply(tree, Options()) == [
+        "smali/fix/Render.smali: the live view asks for the screen's top refresh rate; frames presented at their"
+        " arrival plus a steady delay; GL thread at -10",
+        "smali/fix/DeviceHandler.smali: the USB thread at -19 (onLooperPrepared)",
+        "smali/fix/Frames.smali: the frame loop at -19 (run()), arrival times (n())"]
+    render = text(tree, "Lfix/Render;")
+    window = next(m for m in methods(render) if m.name == "o")  # the window asks for the screen's top rate
+    assert re.search(r"invoke-static \{p1\}, Lseekpatch/Steady;->surface\(Landroid/view/Surface;\)V\n\n\s+"
+                     r"invoke-direct \{v1, v0, p1, v2\}, Lfix/Window;-><init>", window.body)
+    draw = next(m for m in methods(render) if m.name == STEADY_DRAW[shape])  # paced presentation time
+    assert re.search(r"invoke-static \{\}, Ljava/lang/System;->nanoTime\(\)J\n\n\s+move-result-wide v1\n\n\s+"
+                     r"# seek-patch steady_fps: the frame's arrival plus a steady delay\n\s+"
+                     r"invoke-static \{v1, v2\}, Lseekpatch/Steady;->present\(J\)J\n\n\s+move-result-wide v1\n\n\s+"
+                     r"invoke-virtual \{v0, v1, v2\}, Lfix/Window;->f\(J\)V", draw.body)
+    for cls, call in (("Lfix/Render;", "glThread"), ("Lfix/DeviceHandler;", "usbThread")):
+        prepared = next(m for m in methods(text(tree, cls)) if m.name == "onLooperPrepared")
+        assert prepared.header == "protected onLooperPrepared()V"
+        assert f"invoke-static {{}}, Lseekpatch/Steady;->{call}()V\n\n    return-void" in prepared.body
+    frames = {m.name: m.body for m in methods(text(tree, "Lfix/Frames;"))}
+    assert re.match(r"\s+\.locals 0\n\n\s+# seek-patch steady_fps: .*\n\s+invoke-static \{\}, "
+                    r"Lseekpatch/Steady;->frameLoop\(\)V\n\n\s+:goto_0", frames["run"])
+    assert re.match(r"\s+\.locals 2\n\n\s+# seek-patch steady_fps: .*\n\s+invoke-static \{\}, "
+                    r"Lseekpatch/Steady;->arrived\(\)V\n\n\s+iget-object v0", frames["n"])
+    assert "Steady" not in frames["o"]  # a buffer coming back is not a frame
+    assert tree.path_of("Lseekpatch/Steady;")
+    with pytest.raises(AlreadyApplied):
+        steady_fps.apply(tree, Options())
+
+
+def test_steady_fps_needs_the_window(make_project):
+    tree = tree_of(make_project, "virtual")
+    before = dict(tree.files)
+    with pytest.raises(PatchError, match="window surface"):
+        with tree.transaction():
+            steady_fps.apply(tree, Options())
+    assert tree.files == before
+
+
+def test_steady_fps_needs_the_presentation_time(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Render.smali"
+    p.write_text(p.read_text().replace("invoke-static {}, Ljava/lang/System;->nanoTime()J", "const-wide/16 v1, 0x0"))
+    with pytest.raises(PatchError, match="presentation time"):
+        steady_fps.apply(SmaliTree(str(root)), Options())
+
+
+def test_steady_fps_needs_the_finished_frame(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Frames.smali"
+    p.write_text(p.read_text().replace("    const/4 v1, 0x1\n", "    const/4 v1, 0x2\n"))
+    with pytest.raises(PatchError, match="finished-frame method"):
+        steady_fps.apply(SmaliTree(str(root)), Options())
+
+
+def test_steady_fps_keeps_an_on_looper_prepared(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "DeviceHandler.smali"
+    p.write_text(p.read_text() + "\n.method protected onLooperPrepared()V\n    .locals 0\n\n    return-void\n.end method\n")
+    with pytest.raises(PatchError, match="already has an onLooperPrepared"):
+        steady_fps.apply(SmaliTree(str(root)), Options())
 
 
 # reconnect_fix ----------------------------------------------------------------------------------
@@ -1141,12 +1288,12 @@ def test_smoothing_settings_needs_the_feature_call(make_project):
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {  # every patch that applies, but no_smoothing (the alternative to smoothing_settings)
-    "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
-               "photo_1x", "video_quality", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt",
-               "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
-    "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
-                 "photo_1x", "video_quality", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy",
-                 "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
+    "lambda": ["full_fps", "steady_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
+               "photo_1x", "video_quality", "phone_camera", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy",
+               "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
+    "accessor": ["full_fps", "steady_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
+                 "photo_1x", "video_quality", "phone_camera", "resume_fix", "reconnect_fix", "no_analytics",
+                 "http_legacy", "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
     "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "fps_readout", "photo_1x",
                 "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt", "shutter", "debug_log"],
 }

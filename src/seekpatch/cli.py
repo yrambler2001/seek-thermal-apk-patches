@@ -12,7 +12,7 @@ from .apk import SEEK_PACKAGE, ApkError, Plan, app_info, check, patch_apk
 from .axml import AxmlError
 from .bundle import BundleError
 from .manifest import ManifestError, valid_package
-from .patches import ALL, BY_NAME, RECOMMENDED, Options, conflicts, every_patch
+from .patches import ALL, BY_NAME, RECOMMENDED, Options, conflicts, every_patch, missing_requirements
 from .smali import PatchError
 from .toolchain import APKEDITOR, APKTOOL, SIGNER, Toolchain, ToolchainError, ensure_jar, find_java, home, java_major
 
@@ -67,6 +67,8 @@ def cmd_patch(args) -> int:
     names = [p.NAME for p in ALL if p.NAME in names]  # canonical order, no duplicates
     for a, b in conflicts(names):
         raise SystemExit(f"error: {a} and {b} are alternatives: pick one")
+    for a, b in missing_requirements(names):
+        raise SystemExit(f"error: {a} needs {b}: add it")
     if not 1.0 < args.sharpness <= 16.0:
         raise SystemExit("error: --sharpness must be > 1 and <= 16 (2 = iOS look)")
     if not 10 <= args.video_qp <= 40:

@@ -33,6 +33,7 @@ SUMMARY = "one line for `seek-patch list`"
 VERSIONS = "2.2.0 - 2.3.4"     # the range you tested
 RECOMMENDED = False            # part of the default set?
 CONFLICTS = ("other_patch",)   # optional: patches it cannot be combined with
+REQUIRES = ("other_patch",)    # optional: patches applied before it (apply() checks their marks)
 
 def apply(tree: SmaliTree, opts: Options) -> list[str]:
     ensure_unpatched(tree, NAME)
