@@ -38,6 +38,7 @@ its own colour span.</sub>
 | **Temperature accuracy** | the factory calibration, with emissivity as the only setting | a **k·x+b** button: enter a gain and an offset (from a reference thermometer, say) and every temperature the app shows and saves is corrected, *shown = k × measured + b* | `calibration` |
 | **Noise** | the temporal smoothing blends only pixels that did not change: little effect on a hand-held camera, trails when it does act | a **Smart smoothing** button (off by default; also a switch in Settings): a filter that follows the camera's motion and averages up to 8 frames per pixel, plus stripe and left-edge correction; about half the grain on hand-held scenes, no ghosting on faces | `smart_smoothing` |
 | **Returning from a dialog** | the app crashes (`glError 0x506`) after Android's permission dialog | the live view comes back | `resume_fix` |
+| **Reconnecting** | from 2.2.0, once the camera screen has closed (Back on the home page, or, from 2.3.0, coming back after unplugging the camera in the background), the app loses the camera until it is swiped away: from 2.3.0 *Connect Your Camera* with the camera plugged in, in 2.2.x a black live view after the next unplug and replug | the camera comes back | `reconnect_fix` |
 | **Analytics** | up to 2.3.1, Google Analytics runs while *Send Usage Data* is on (the default), and on Android 9+ it crashes 2.1.6 – 2.3.1 about 15 s after launch | never starts: nothing is sent, no crash | `no_analytics` |
 | **Apache HTTP** | on Android 9+, 2.1.6 – 2.3.1 lack the HTTP library they use (they do not declare it): Analytics, the account pages and downloads throw `NoClassDefFoundError` | declared in the manifest, as in 2.3.3: Android loads it | `http_legacy` |
 | **Diagnostics** | the SDK's USB / frame-timing log is compiled out | `adb logcat -s Seekware` | `debug_log` (opt-in) |
@@ -219,6 +220,7 @@ patched, rebuilt and signed in testing; 2.3.4 was also run on a phone (Pixel 8 P
 | `default_palette` | 2.0 – 2.3.4 | |
 | `video_quality` | 2.1.2 – 2.3.4 | |
 | `resume_fix` | 1.9.1 – 2.3.4 | |
+| `reconnect_fix` | 1.9.1 – 2.3.4 | the bug is in 2.2.0 – 2.3.4; 1.9.1 – 2.1.7 register the receiver again themselves and only get the part that keeps other Seek apps' permission answers out |
 | `no_analytics` | 1.9.1 – 2.3.4 | |
 | `http_legacy` | 2.1.6 – 2.3.1 | older releases target API 27 or lower (Android adds the library); 2.3.3 – 2.3.4 declare it |
 | `mic_prompt` | 2.3.1 – 2.3.4 | older releases ask for the microphone with storage and never block on it |
@@ -258,6 +260,7 @@ also drops the manifest attributes that make Android require the splits.
 - [`calibration`](docs/calibration.md) — adds the button and a small native library that hooks the image library's thermography stage, where each frame is turned into degrees, and maps its outputs (the per-pixel temperatures, the spot, the minimum and maximum) through *k × t + b*.
 - [`smart_smoothing`](docs/smart-smoothing.md) — adds the button and a small native library of seek-patch's own: it hooks the image library's first filter, which then runs without its temporal smoothing, and filters its output in place.
 - [`resume_fix`](docs/resume-fix.md) — destroys the live view's EGL surface before the app drops it on pause.
+- [`reconnect_fix`](docs/reconnect-fix.md) — from 2.2.0 empties the camera library's `unRegisterUSBIntent()`, so its USB receiver stays registered, and from 2.3.0 closes and releases a camera the last camera screen left open when the next one registers; the permission request is addressed to the app itself and, on Android 13+, the receiver is not exported, so another Seek app's answers do not reach it.
 - [`no_analytics`](docs/no-analytics.md) — replaces the run loop of the bundled Google Analytics thread: the SDK is disabled before it creates its connection, store and uploader, and what the app queues is dropped.
 - [`http_legacy`](docs/http-legacy.md) — adds `<uses-library android:name="org.apache.http.legacy" android:required="false"/>` to the binary manifest (or to the text one with `--side-by-side`).
 - [`debug_log`](docs/debug-log.md) — gives the SDK's stripped log methods a body.

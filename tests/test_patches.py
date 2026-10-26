@@ -25,6 +25,7 @@ from seekpatch.patches import (
     no_smoothing,
     photo_1x,
     png_photos,
+    reconnect_fix,
     resume_fix,
     sharp_scaling,
     shutter,
@@ -377,6 +378,142 @@ def test_resume_fix(make_project, shape):
 def test_resume_fix_needs_the_window(make_project):
     with pytest.raises(PatchError, match="window-surface field"):
         resume_fix.apply(tree_of(make_project, "virtual"), Options())
+
+
+# reconnect_fix ----------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_reconnect_fix(make_project, shape):
+    tree = tree_of(make_project, shape)
+    assert reconnect_fix.apply(tree, Options()) == [
+        "smali/fix/Camera.smali L(Landroid/content/Context;)V: the USB receiver stays registered",
+        "smali/fix/Camera.smali: cameras left open by the last camera screen (list b) are closed "
+        "(Lfix/CameraDevice;->C0), released (Lfix/UsbLink;->a) and opened again when the next one registers",
+        "smali/fix/Camera.smali: the permission answer is addressed to this app, and on Android 13+ the receiver hears "
+        "no other app (PendingIntents: 1, registrations: 2)"]
+    cls = text(tree, "Lfix/Camera;")
+    init = next(m for m in methods(cls) if m.name == "<init>")  # the answer is addressed to this app
+    assert re.search(r"invoke-static \{v0, p1\}, Lfix/Camera;->seekpatch_own\(Landroid/content/Intent;Landroid/content/"
+                     r"Context;\)V\n\n\s+invoke-static \{p1, v2, v0, v2\}, Landroid/app/PendingIntent;->getBroadcast",
+                     init.body)
+    register = ("invoke-static {p1, p0, v0}, Lfix/Camera;->seekpatch_register(Landroid/content/Context;"
+                "Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)Landroid/content/Intent;")
+    assert init.body.count(register) == 2  # with and without flags, both through the helper
+    assert "Lfix/Compat;->a(" not in init.body and "Landroid/content/Context;->registerReceiver(" not in init.body
+    helper = next(m for m in methods(cls) if m.name == "seekpatch_register")
+    assert re.search(r"const/4 v0, 0x4\n\n\s+invoke-virtual \{p0, p1, p2, v0\}, Landroid/content/Context;->registerReceiver"
+                     r"\(Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;I\)", helper.body)  # not exported
+    own = next(m for m in methods(cls) if m.name == "seekpatch_own")
+    assert "Landroid/content/Intent;->setPackage(Ljava/lang/String;)Landroid/content/Intent;" in own.body
+    unregister = next(m for m in methods(cls) if m.name == "L")
+    assert "unregisterReceiver" not in unregister.body
+    assert re.search(r"# seek-patch reconnect_fix: [^\n]*\n\s+return-void\n$", unregister.body)
+    listener = next(m for m in methods(cls) if m.name == "D")  # the release runs before the search's check
+    assert re.search(r"iput-object p1, p0, Lfix/Camera;->d:Ljava/lang/Runnable;\n\n\s+# seek-patch reconnect_fix: "
+                     r"[^\n]*\n\s+invoke-direct \{p0\}, Lfix/Camera;->seekpatch_release\(\)V\n\n\s+"
+                     r"iget-object p1, p0, Lfix/Camera;->b:Ljava/util/ArrayList;", listener.body)
+    release = next(m for m in methods(cls) if m.name == "seekpatch_release")
+    assert release.is_private
+    assert re.search(r"invoke-virtual \{v0, v1\}, Ljava/util/ArrayList;->remove\(I\)Ljava/lang/Object;\n\n\s+"
+                     r"move-result-object v1\n\n\s+check-cast v1, Lfix/CameraDevice;\n\n\s+:seekpatch_try_start\n\s+"
+                     r"invoke-virtual \{v1\}, Lfix/CameraDevice;->C0\(\)V\n\n\s+"
+                     r"iget-object v2, p0, Lfix/Camera;->n:Lfix/UsbLink;\n\n\s+"
+                     r"invoke-virtual \{v1\}, Lfix/CameraDevice;->Z\(\)Lfix/UsbHolder;\n\n\s+move-result-object v1\n\n\s+"
+                     r"invoke-virtual \{v2, v1\}, Lfix/UsbLink;->a\(Lfix/UsbHolder;\)I\n", release.body)
+    unplug = next(m for m in methods(cls) if m.name == "t")
+    assert "seek-patch" not in unplug.body  # unplugging is Seek's own
+    with pytest.raises(AlreadyApplied):
+        reconnect_fix.apply(tree, Options())
+
+
+def test_reconnect_fix_on_an_older_library(make_project):
+    root = make_project("lambda")  # 2.2.x: the DeviceManager keeps the camera, so only the receiver is kept
+    path = root / "smali" / "fix" / "Camera.smali"
+    path.write_text(path.read_text().replace("    invoke-virtual {v0}, Lfix/CameraDevice;->C0()V\n", ""))
+    tree = SmaliTree(str(root))
+    assert reconnect_fix.apply(tree, Options())[1] == (
+        "smali/fix/Camera.smali: no camera to release: up to 2.2.3 the DeviceManager lives as long as the process "
+        "and keeps its camera for the next screen")
+    cls = text(tree, "Lfix/Camera;")
+    assert "unregisterReceiver" not in next(m for m in methods(cls) if m.name == "L").body
+    assert "seekpatch_release" not in cls
+
+
+def test_reconnect_fix_leaves_a_library_registered_again(make_project):
+    root = make_project("lambda")  # up to 2.1.7 the camera screen registers the library again when it starts
+    path = root / "smali" / "fix" / "Camera.smali"
+    path.write_text(path.read_text() + """
+.method public static k(Landroid/content/Context;)V
+    .locals 2
+
+    sget-object v0, Lfix/Camera;->t:Lfix/Camera;
+
+    new-instance v1, Landroid/content/IntentFilter;
+
+    invoke-direct {v1}, Landroid/content/IntentFilter;-><init>()V
+
+    invoke-virtual {p0, v0, v1}, Landroid/content/Context;->registerReceiver(Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)Landroid/content/Intent;
+
+    return-void
+.end method
+""")
+    (root / "smali" / "fix" / "Screen.smali").write_text(
+        ".class Lfix/Screen;\n.super Ljava/lang/Object;\n\n.method static a(Landroid/content/Context;)V\n    .locals 0\n\n"
+        "    invoke-static {p0}, Lfix/Camera;->k(Landroid/content/Context;)V\n\n    return-void\n.end method\n")
+    tree = SmaliTree(str(root))
+    report = reconnect_fix.apply(tree, Options())
+    assert report[0] == ("smali/fix/Camera.smali L(Landroid/content/Context;)V: left as is -- the app registers the "
+                         "receiver again (k(Landroid/content/Context;)V) whenever a camera screen starts")
+    assert report[2].endswith("(PendingIntents: 1, registrations: 3)")  # the registration again is not exported either
+    cls = text(tree, "Lfix/Camera;")
+    assert "unregisterReceiver" in next(m for m in methods(cls) if m.name == "L").body
+    assert "seekpatch_register" in next(m for m in methods(cls) if m.name == "k").body
+
+
+def test_reconnect_fix_needs_the_library(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Camera.smali").unlink()
+    with pytest.raises(PatchError, match="one Seekware library receiver"):
+        reconnect_fix.apply(SmaliTree(str(root)), Options())
+
+
+def test_reconnect_fix_unregisters_only_the_library(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "Camera.smali"
+    path.write_text(path.read_text().replace("    .line 1\n    sget-object v0, Lfix/Camera;->t:Lfix/Camera;",
+                                             "    .line 1\n    sget-object v0, Lfix/Camera;->p:Landroid/app/PendingIntent;"))
+    with pytest.raises(PatchError, match="does not unregister the library"):
+        reconnect_fix.apply(SmaliTree(str(root)), Options())
+
+
+def test_reconnect_fix_needs_a_close_that_releases_the_connection(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "UsbLink.smali"
+    path.write_text(path.read_text().replace(
+        "    invoke-virtual {v0}, Landroid/hardware/usb/UsbDeviceConnection;->close()V\n", ""))
+    tree = SmaliTree(str(root))
+    with pytest.raises(PatchError, match="releases the interface and closes the connection"):
+        with tree.transaction():
+            reconnect_fix.apply(tree, Options())
+    assert tree.save() == []  # the receiver kept before it was rolled back
+
+
+def test_reconnect_fix_needs_the_permission_request(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "Camera.smali"
+    path.write_text(re.sub(r"    invoke-static \{p1, v2, v0, v2\}, Landroid/app/PendingIntent;->getBroadcast[^\n]*\n\n"
+                           r"    move-result-object v0\n\n    sput-object v0, Lfix/Camera;->p:Landroid/app/PendingIntent;\n",
+                           "", path.read_text()))
+    with pytest.raises(PatchError, match="permission request's PendingIntent"):
+        reconnect_fix.apply(SmaliTree(str(root)), Options())
+
+
+def test_reconnect_fix_needs_the_listener_registration(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "Camera.smali"
+    path.write_text(path.read_text().replace("    invoke-direct {p0}, Lfix/Camera;->G()V\n", ""))
+    with pytest.raises(PatchError, match="one listener registration"):
+        reconnect_fix.apply(SmaliTree(str(root)), Options())
 
 
 # no_analytics -----------------------------------------------------------------------------------
@@ -1005,13 +1142,13 @@ def test_smoothing_settings_needs_the_feature_call(make_project):
 
 APPLICABLE = {  # every patch that applies, but no_smoothing (the alternative to smoothing_settings)
     "lambda": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
-               "photo_1x", "video_quality", "resume_fix", "no_analytics", "http_legacy", "mic_prompt", "flat_field",
-               "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
+               "photo_1x", "video_quality", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt",
+               "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
     "accessor": ["full_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
-                 "photo_1x", "video_quality", "resume_fix", "no_analytics", "http_legacy", "mic_prompt", "flat_field",
-                 "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "fps_readout", "photo_1x", "no_analytics",
-                "http_legacy", "mic_prompt", "shutter", "debug_log"],
+                 "photo_1x", "video_quality", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy",
+                 "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "fps_readout", "photo_1x",
+                "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt", "shutter", "debug_log"],
 }
 
 

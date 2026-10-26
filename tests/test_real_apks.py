@@ -28,7 +28,7 @@ FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0), "n
          "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0), "smart_smoothing": (2, 2, 3),
          "smoothing_settings": (2, 2, 0), "default_palette": (2, 0), "lock_range": (2, 2, 3),
          "calibration": (2, 2, 3), "shutter": (1, 9, 1), "hidden_settings": (1, 9, 3), "fps_readout": (2, 0),
-         "no_analytics": (1, 9, 1), "http_legacy": (2, 1, 6)}
+         "no_analytics": (1, 9, 1), "http_legacy": (2, 1, 6), "reconnect_fix": (1, 9, 1)}
 LAST = {"http_legacy": (2, 3, 1)}  # 2.3.3 declares the library itself
 
 pytestmark = pytest.mark.skipif(not APKS, reason="set SEEK_APK_DIR to a folder of Seek Thermal apks")
@@ -79,6 +79,8 @@ def test_patch_matrix(toolchain, path, tmp_path):
                                ("photo_1x", b"Lseekpatch/PhotoSettings;")):
             assert (section in dex) == expected[patch], patch
         assert (b"Lseekpatch/Shutter;" in dex) == expected["shutter"]
+        # reconnect_fix also releases a camera left open from 2.3.0, where the library closes cameras through m.c
+        assert (b"seekpatch_release" in dex) == (version >= (2, 3, 0))
         for patch, cls, stored in (("lock_range", b"Lseekpatch/Lock;", locks), ("calibration", b"Lseekpatch/Calib;", calibs)):
             assert (cls in dex) == expected[patch], patch
             if expected[patch]:  # one per arm ABI the app ships, stored

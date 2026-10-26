@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+The camera comes back after the camera screen has closed.
+
+- `reconnect_fix`, in the default set (1.9.1 – 2.3.4): from 2.2.0, once the camera screen had closed
+  (Back on the home page, or, from 2.3.0, coming back to the app after unplugging the camera in the
+  background), the app lost the camera until its process was killed: from 2.3.0 *Connect Your
+  Camera* with the camera plugged in, in 2.2.x a black live view after the next unplug and replug.
+  The camera library unregisters its USB receiver when the screen closes, and since 2.2.0 nothing
+  registers it again; the patch keeps it registered.  From 2.3.0 it also closes and releases a camera the last
+  screen left open, so the next screen opens it again.  And the receiver hears only its own app: the
+  permission request is addressed to the app's package, and on Android 13+ the receiver is not
+  exported, so with two Seek apps installed one no longer opens the camera on the other's answer.
+
 ## 0.8.0 — 2026-10-25
 
 Google Analytics switched off, and 2.1.6 – 2.3.1 no longer crash on Android 9 and later.
