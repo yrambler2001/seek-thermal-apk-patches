@@ -24,6 +24,14 @@ camera as unplugging it does, releases its USB interface and connection, and emp
 library's own search then asks for permission (already granted, so answered at once) and opens the
 camera again.
 
+From 2.3.0, the camera screen also stays when it comes back without a camera.  MainActivity's
+onRestart() finishes it when the DeviceManager has no camera -- the camera was unplugged while the
+app was in the background -- so the tap that brought the app back closes it, and the permission
+dialog its last search asked for opens a camera for no screen; only the next tap shows the picture.
+The patch drops that finish(): the screen shows *Connect Your Camera*, its search asks for the
+camera, and the camera opens in it, as when the camera is plugged in with the app in front.  Up to
+2.2.3 the screen finishes only after Back on the app's reminder screen, and is left as is.
+
 A receiver that outlives its screen should hear only its own app.  Every Seek app asks for
 permission with the same action, as an implicit broadcast, and registers its receiver exported: the
 answer to one app's request reaches every Seek app that is listening, and one that has permission
@@ -37,7 +45,7 @@ from __future__ import annotations
 
 import re
 
-from ..smali import GAP, REG, PatchError, SmaliTree, class_descriptor, methods
+from ..smali import GAP, REG, PatchError, SmaliTree, class_descriptor, code_start, methods
 from .base import Options, ensure_unpatched, mark
 
 NAME = "reconnect_fix"
@@ -276,8 +284,50 @@ def _isolate(tree: SmaliTree, path: str, cls: str) -> str:
             f"hears no other app (PendingIntents: {len(requests)}, registrations: {len(registrations)})")
 
 
+# onRestart(), 2.3.0+: the screen finishes when the DeviceManager's "has a camera" says no
+RESTART_FINISH = (r"[ \t]*invoke-static \{\}, (" + CLASS + r")->([\w$]+)\(\)Z" + GAP + r"move-result (" + REG + ")" + GAP
+                  + r"if-nez \3, (:\w+)" + GAP + r"invoke-virtual \{p0\}, " + CLASS + r"->finish\(\)V" + GAP + r"\4\n")
+STAY = """{mark}: the screen stays without a camera: its search asks for the one plugged in, which opens in it
+    nop
+"""
+
+
+def _has_camera(tree: SmaliTree, cls: str, name: str) -> bool:
+    """Is cls->name()Z a static "is the field set?" check of one of cls's own static fields?"""
+    path = tree.path_of(cls)
+    m = next((m for m in methods(tree.get(path)) if m.descriptor == f"{name}()Z"), None) if path else None
+    if not m or "static" not in m.header.split():
+        return False
+    field = re.search(r"sget-object (" + REG + "), " + re.escape(cls) + r"->[\w$]+:" + CLASS, m.body)
+    return bool(field and re.search(r"if-(?:eq|ne)z " + field.group(1) + ",", m.body))
+
+
+def _stay_open(tree: SmaliTree) -> str:
+    found = []
+    for path in tree.containing("onRestart()V", "->finish()V"):
+        for m in methods(tree.get(path)):
+            if m.descriptor != "onRestart()V":
+                continue
+            at = code_start(m.body)
+            hit = re.match(RESTART_FINISH, m.body[at:])
+            if hit and _has_camera(tree, hit.group(1), hit.group(2)):
+                found.append((path, m, at, hit))
+    if not found:
+        return ("no camera screen that closes itself without a camera: up to 2.2.3 it does so only after Back on "
+                "the reminder screen")
+    if len(found) != 1:
+        raise PatchError(f"{NAME}: expected one onRestart() that finishes without a camera, found {len(found)}")
+    path, m, at, hit = found[0]
+    finish = re.search(r"^[ \t]*invoke-virtual \{p0\}, " + CLASS + r"->finish\(\)V\n", m.body[at:at + hit.end()], re.M)
+    start, end = at + finish.start(), at + finish.end()
+    tree.replace_method_body(path, m, m.body[:start] + "    " + STAY.format(mark=MARK) + m.body[end:])
+    return (f"{tree.rel(path)} onRestart(): stays open without a camera ({hit.group(1)}->{hit.group(2)}() no "
+            "longer finishes it)")
+
+
 def apply(tree: SmaliTree, opts: Options) -> list[str]:
     ensure_unpatched(tree, NAME)
     path = _library(tree)
     cls = class_descriptor(tree.get(path))
-    return [_keep_receiver(tree, path, cls), _release_left_open(tree, path, cls), _isolate(tree, path, cls)]
+    return [_keep_receiver(tree, path, cls), _release_left_open(tree, path, cls), _isolate(tree, path, cls),
+            _stay_open(tree)]

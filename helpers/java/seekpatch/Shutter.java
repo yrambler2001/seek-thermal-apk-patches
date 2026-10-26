@@ -58,7 +58,7 @@ public final class Shutter {
     private Shutter() {
     }
 
-    /** After the activity's setContentView: the button floats below the top bar, right side, second. */
+    /** After the activity's setContentView: the button floats below the top bar, left side, after calibration's. */
     public static void attach(Activity a) {
         try {
             prefs = a.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
@@ -70,7 +70,7 @@ public final class Shutter {
                             tap((TextView) v);
                         }
                     });
-            if (Floating.place(a, b, true, 20)) {
+            if (Floating.place(a, b, false, 20)) {
                 button = new WeakReference<>(b);
                 show(b);
             }

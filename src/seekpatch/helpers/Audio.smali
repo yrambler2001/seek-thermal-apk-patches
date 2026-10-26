@@ -5,20 +5,57 @@
 
 
 # static fields
+.field private static final FRAME:I = 0x400
+
 .field private static final MONO_BITRATE:I = 0x27100
 
 .field private static final STEREO_BITRATE:I = 0x3e800
 
 .field private static final TAG:Ljava/lang/String; = "seek-patch"
 
+.field private static block:[B = null
+
+.field private static bufferBytes:I = 0x0
+
+.field private static clockOf:Landroid/media/MediaCodec; = null
+
+.field private static frames:J = 0x0L
+
 .field private static mask:I = 0x10
 
 .field private static rate:I = 0xac44
 
+.field private static runStart:[J
+
+.field private static runTime:[J
+
+.field private static runs:I
+
+.field private static samples:J
+
 
 # direct methods
 .method static constructor <clinit>()V
-    .locals 0
+    .locals 2
+
+    const/16 v0, 0x8
+
+    .line 57
+    new-array v1, v0, [J
+
+    sput-object v1, Lseekpatch/Audio;->runStart:[J
+
+    .line 58
+    new-array v0, v0, [J
+
+    sput-object v0, Lseekpatch/Audio;->runTime:[J
+
+    const/4 v0, 0x0
+
+    .line 61
+    new-array v0, v0, [B
+
+    sput-object v0, Lseekpatch/Audio;->block:[B
 
     return-void
 .end method
@@ -26,7 +63,7 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 31
+    .line 63
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -39,7 +76,7 @@
 
     monitor-enter v0
 
-    .line 73
+    .line 108
     :try_start_0
     sget v1, Lseekpatch/Audio;->mask:I
     :try_end_0
@@ -60,7 +97,7 @@
 .method private static channels()I
     .locals 2
 
-    .line 77
+    .line 112
     sget v0, Lseekpatch/Audio;->mask:I
 
     const/16 v1, 0xc
@@ -81,12 +118,12 @@
 .method public static configure(Landroid/media/MediaCodec;Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
     .locals 3
 
-    .line 82
+    .line 117
     const-class v0, Lseekpatch/Audio;
 
     monitor-enter v0
 
-    .line 83
+    .line 118
     :try_start_0
     const-string v1, "sample-rate"
 
@@ -94,29 +131,29 @@
 
     invoke-virtual {p1, v1, v2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 84
+    .line 119
     invoke-static {}, Lseekpatch/Audio;->channels()I
 
     move-result v1
 
-    .line 85
+    .line 120
     monitor-exit v0
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
-    .line 86
+    .line 121
     const-string v0, "channel-count"
 
     invoke-virtual {p1, v0, v1}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 87
+    .line 122
     const-string v0, "aac-profile"
 
     const/4 v2, 0x2
 
     invoke-virtual {p1, v0, v2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 88
+    .line 123
     const-string v0, "bitrate"
 
     if-ne v1, v2, :cond_0
@@ -131,10 +168,10 @@
     :goto_0
     invoke-virtual {p1, v0, v1}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 89
+    .line 124
     invoke-virtual {p0, p1, p2, p3, p4}, Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
 
-    .line 90
+    .line 125
     const-string p0, "seek-patch"
 
     new-instance p2, Ljava/lang/StringBuilder;
@@ -156,11 +193,112 @@
     :catchall_0
     move-exception p0
 
-    .line 85
+    .line 120
     :try_start_1
     monitor-exit v0
     :try_end_1
     .catchall {:try_start_1 .. :try_end_1} :catchall_0
+
+    throw p0
+.end method
+
+.method public static dequeue(Landroid/media/MediaCodec;Landroid/media/MediaCodec$BufferInfo;J)I
+    .locals 4
+
+    .line 184
+    invoke-virtual {p0, p1, p2, p3}, Landroid/media/MediaCodec;->dequeueOutputBuffer(Landroid/media/MediaCodec$BufferInfo;J)I
+
+    move-result p2
+
+    if-gez p2, :cond_0
+
+    return p2
+
+    .line 188
+    :cond_0
+    iget p3, p1, Landroid/media/MediaCodec$BufferInfo;->flags:I
+
+    and-int/lit8 p3, p3, 0x2
+
+    if-eqz p3, :cond_1
+
+    const/4 p1, 0x0
+
+    .line 189
+    invoke-virtual {p0, p2, p1}, Landroid/media/MediaCodec;->releaseOutputBuffer(IZ)V
+
+    const/4 p0, -0x1
+
+    return p0
+
+    .line 192
+    :cond_1
+    const-class p3, Lseekpatch/Audio;
+
+    monitor-enter p3
+
+    .line 193
+    :try_start_0
+    sget-object v0, Lseekpatch/Audio;->clockOf:Landroid/media/MediaCodec;
+
+    if-ne v0, p0, :cond_3
+
+    sget p0, Lseekpatch/Audio;->runs:I
+
+    if-lez p0, :cond_3
+
+    .line 194
+    sget-wide v0, Lseekpatch/Audio;->frames:J
+
+    const-wide/16 v2, 0x400
+
+    mul-long/2addr v0, v2
+
+    invoke-static {v0, v1}, Lseekpatch/Audio;->timeOf(J)J
+
+    move-result-wide v0
+
+    iput-wide v0, p1, Landroid/media/MediaCodec$BufferInfo;->presentationTimeUs:J
+
+    .line 195
+    iget p0, p1, Landroid/media/MediaCodec$BufferInfo;->size:I
+
+    if-lez p0, :cond_2
+
+    .line 196
+    sget-wide v0, Lseekpatch/Audio;->frames:J
+
+    const-wide/16 v2, 0x1
+
+    add-long/2addr v0, v2
+
+    sput-wide v0, Lseekpatch/Audio;->frames:J
+
+    .line 198
+    :cond_2
+    iget p0, p1, Landroid/media/MediaCodec$BufferInfo;->flags:I
+
+    and-int/lit8 p0, p0, 0x4
+
+    if-eqz p0, :cond_3
+
+    const/4 p0, 0x0
+
+    .line 199
+    sput-object p0, Lseekpatch/Audio;->clockOf:Landroid/media/MediaCodec;
+
+    .line 202
+    :cond_3
+    monitor-exit p3
+
+    return p2
+
+    :catchall_0
+    move-exception p0
+
+    monitor-exit p3
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
     throw p0
 .end method
@@ -176,7 +314,7 @@
 
     const v2, 0xbb80
 
-    .line 35
+    .line 67
     :try_start_0
     filled-new-array {v2, v1}, [I
 
@@ -205,10 +343,10 @@
     :goto_0
     if-ge v2, v3, :cond_1
 
-    .line 39
+    .line 71
     aget-object v6, v4, v2
 
-    .line 40
+    .line 72
     aget v7, v6, v5
 
     aget v8, v6, v1
@@ -219,7 +357,7 @@
 
     if-lez v7, :cond_0
 
-    .line 41
+    .line 73
     aget v8, v6, v5
 
     aget v9, v6, v1
@@ -232,17 +370,20 @@
 
     if-eqz v8, :cond_0
 
-    .line 42
+    .line 74
     aget p0, v6, v5
 
     sput p0, Lseekpatch/Audio;->rate:I
 
-    .line 43
+    .line 75
     aget p0, v6, v1
 
     sput p0, Lseekpatch/Audio;->mask:I
 
-    .line 44
+    .line 76
+    sput v10, Lseekpatch/Audio;->bufferBytes:I
+
+    .line 77
     const-string p0, "seek-patch"
 
     new-instance p1, Ljava/lang/StringBuilder;
@@ -279,7 +420,7 @@
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
-    .line 45
+    .line 78
     monitor-exit v0
 
     return v7
@@ -289,46 +430,52 @@
 
     goto :goto_0
 
-    .line 48
+    .line 81
     :cond_1
     :try_start_1
     sput p0, Lseekpatch/Audio;->rate:I
 
-    .line 49
+    .line 82
     sput p1, Lseekpatch/Audio;->mask:I
 
-    .line 50
-    const-string v1, "seek-patch"
-
-    new-instance v2, Ljava/lang/StringBuilder;
-
-    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v3, "audio: 48 kHz unavailable, recording the app\'s own "
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    sget v3, Lseekpatch/Audio;->rate:I
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
-
-    const-string v3, " Hz"
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v2
-
-    invoke-static {v1, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
-
-    .line 51
+    .line 83
     invoke-static {p0, p1, p2}, Landroid/media/AudioRecord;->getMinBufferSize(III)I
 
     move-result p0
+
+    mul-int/lit8 p1, p0, 0x6
+
+    .line 84
+    sput p1, Lseekpatch/Audio;->bufferBytes:I
+
+    .line 85
+    const-string p1, "seek-patch"
+
+    new-instance p2, Ljava/lang/StringBuilder;
+
+    invoke-direct {p2}, Ljava/lang/StringBuilder;-><init>()V
+
+    const-string v1, "audio: 48 kHz unavailable, recording the app\'s own "
+
+    invoke-virtual {p2, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    sget v1, Lseekpatch/Audio;->rate:I
+
+    invoke-virtual {p2, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    const-string v1, " Hz"
+
+    invoke-virtual {p2, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {p2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p2
+
+    invoke-static {p1, p2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_1
     .catchall {:try_start_1 .. :try_end_1} :catchall_0
 
+    .line 86
     monitor-exit v0
 
     return p0
@@ -348,7 +495,7 @@
 
     const/4 v1, 0x0
 
-    .line 57
+    .line 92
     :try_start_0
     new-instance v8, Landroid/media/AudioRecord;
 
@@ -369,7 +516,7 @@
     .catch Ljava/lang/RuntimeException; {:try_start_0 .. :try_end_0} :catch_1
     .catchall {:try_start_0 .. :try_end_0} :catchall_1
 
-    .line 58
+    .line 93
     :try_start_1
     invoke-virtual {v8}, Landroid/media/AudioRecord;->getState()I
 
@@ -384,7 +531,7 @@
 
     move v0, p1
 
-    .line 63
+    .line 98
     :cond_0
     invoke-virtual {v8}, Landroid/media/AudioRecord;->release()V
 
@@ -410,7 +557,7 @@
 
     invoke-virtual {v1}, Landroid/media/AudioRecord;->release()V
 
-    .line 65
+    .line 100
     :cond_1
     throw p0
 
@@ -418,11 +565,291 @@
     :goto_1
     if-eqz v1, :cond_2
 
-    .line 63
+    .line 98
     invoke-virtual {v1}, Landroid/media/AudioRecord;->release()V
 
     :cond_2
     return v0
+.end method
+
+.method public static queue(Landroid/media/MediaCodec;IIIJI)V
+    .locals 17
+
+    move-object/from16 v0, p0
+
+    const-string v1, "audio: the microphone dropped "
+
+    .line 143
+    invoke-static {}, Ljava/lang/System;->nanoTime()J
+
+    move-result-wide v2
+
+    const-wide/16 v4, 0x3e8
+
+    div-long/2addr v2, v4
+
+    .line 145
+    const-class v6, Lseekpatch/Audio;
+
+    monitor-enter v6
+
+    .line 146
+    :try_start_0
+    invoke-static {}, Lseekpatch/Audio;->channels()I
+
+    move-result v7
+
+    mul-int/lit8 v7, v7, 0x2
+
+    .line 147
+    div-int v8, p3, v7
+
+    int-to-long v8, v8
+
+    const-wide/32 v10, 0xf4240
+
+    mul-long v12, v8, v10
+
+    .line 148
+    sget v14, Lseekpatch/Audio;->rate:I
+
+    int-to-long v4, v14
+
+    div-long/2addr v12, v4
+
+    .line 149
+    sget-object v4, Lseekpatch/Audio;->clockOf:Landroid/media/MediaCodec;
+
+    const/4 v5, 0x0
+
+    const-wide/16 v15, 0x0
+
+    if-eq v4, v0, :cond_0
+
+    .line 150
+    sput-object v0, Lseekpatch/Audio;->clockOf:Landroid/media/MediaCodec;
+
+    .line 151
+    sput-wide v15, Lseekpatch/Audio;->samples:J
+
+    .line 152
+    sput-wide v15, Lseekpatch/Audio;->frames:J
+
+    .line 153
+    sput v5, Lseekpatch/Audio;->runs:I
+
+    :cond_0
+    sub-long/2addr v2, v12
+
+    .line 156
+    sget v4, Lseekpatch/Audio;->bufferBytes:I
+
+    div-int/2addr v4, v7
+
+    int-to-long v12, v4
+
+    mul-long/2addr v12, v10
+
+    int-to-long v10, v14
+
+    div-long/2addr v12, v10
+
+    .line 157
+    sget v4, Lseekpatch/Audio;->runs:I
+
+    if-nez v4, :cond_1
+
+    .line 158
+    invoke-static {v0, v2, v3, v7}, Lseekpatch/Audio;->silence(Landroid/media/MediaCodec;JI)J
+
+    move-result-wide v11
+
+    .line 159
+    sget-object v1, Lseekpatch/Audio;->runStart:[J
+
+    aput-wide v15, v1, v5
+
+    .line 160
+    sget-object v1, Lseekpatch/Audio;->runTime:[J
+
+    const-wide/32 v13, 0xf4240
+
+    mul-long/2addr v13, v11
+
+    sget v4, Lseekpatch/Audio;->rate:I
+
+    move-wide/from16 p4, v11
+
+    int-to-long v10, v4
+
+    div-long/2addr v13, v10
+
+    sub-long/2addr v2, v13
+
+    aput-wide v2, v1, v5
+
+    const/4 v1, 0x1
+
+    .line 161
+    sput v1, Lseekpatch/Audio;->runs:I
+
+    move-wide/from16 v1, p4
+
+    .line 162
+    sput-wide v1, Lseekpatch/Audio;->samples:J
+
+    goto :goto_0
+
+    .line 163
+    :cond_1
+    sget-wide v4, Lseekpatch/Audio;->samples:J
+
+    invoke-static {v4, v5}, Lseekpatch/Audio;->timeOf(J)J
+
+    move-result-wide v4
+
+    sub-long v4, v2, v4
+
+    const-wide/32 v10, 0xc350
+
+    add-long/2addr v12, v10
+
+    cmp-long v4, v4, v12
+
+    if-lez v4, :cond_3
+
+    .line 166
+    const-string v4, "seek-patch"
+
+    new-instance v5, Ljava/lang/StringBuilder;
+
+    invoke-direct {v5, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    sget-wide v10, Lseekpatch/Audio;->samples:J
+
+    invoke-static {v10, v11}, Lseekpatch/Audio;->timeOf(J)J
+
+    move-result-wide v10
+
+    sub-long v10, v2, v10
+
+    const-wide/16 v12, 0x3e8
+
+    div-long/2addr v10, v12
+
+    invoke-virtual {v5, v10, v11}, Ljava/lang/StringBuilder;->append(J)Ljava/lang/StringBuilder;
+
+    const-string v1, " ms; the sound goes on from now"
+
+    invoke-virtual {v5, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v5}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v1
+
+    invoke-static {v4, v1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 168
+    sget v1, Lseekpatch/Audio;->runs:I
+
+    sget-object v4, Lseekpatch/Audio;->runStart:[J
+
+    array-length v5, v4
+
+    if-ne v1, v5, :cond_2
+
+    mul-int/lit8 v1, v1, 0x2
+
+    .line 169
+    invoke-static {v4, v1}, Ljava/util/Arrays;->copyOf([JI)[J
+
+    move-result-object v1
+
+    sput-object v1, Lseekpatch/Audio;->runStart:[J
+
+    .line 170
+    sget-object v1, Lseekpatch/Audio;->runTime:[J
+
+    sget v4, Lseekpatch/Audio;->runs:I
+
+    mul-int/lit8 v4, v4, 0x2
+
+    invoke-static {v1, v4}, Ljava/util/Arrays;->copyOf([JI)[J
+
+    move-result-object v1
+
+    sput-object v1, Lseekpatch/Audio;->runTime:[J
+
+    .line 172
+    :cond_2
+    sget-object v1, Lseekpatch/Audio;->runStart:[J
+
+    sget v4, Lseekpatch/Audio;->runs:I
+
+    sget-wide v10, Lseekpatch/Audio;->samples:J
+
+    aput-wide v10, v1, v4
+
+    .line 173
+    sget-object v1, Lseekpatch/Audio;->runTime:[J
+
+    aput-wide v2, v1, v4
+
+    const/4 v1, 0x1
+
+    add-int/2addr v4, v1
+
+    .line 174
+    sput v4, Lseekpatch/Audio;->runs:I
+
+    .line 176
+    :cond_3
+    :goto_0
+    sget-wide v1, Lseekpatch/Audio;->samples:J
+
+    invoke-static {v1, v2}, Lseekpatch/Audio;->timeOf(J)J
+
+    move-result-wide v10
+
+    .line 177
+    sget-wide v1, Lseekpatch/Audio;->samples:J
+
+    add-long/2addr v1, v8
+
+    sput-wide v1, Lseekpatch/Audio;->samples:J
+
+    .line 178
+    monitor-exit v6
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    move-object/from16 v1, p0
+
+    move/from16 v2, p1
+
+    move/from16 v3, p2
+
+    move/from16 v4, p3
+
+    move-wide v5, v10
+
+    move/from16 v7, p6
+
+    .line 179
+    invoke-virtual/range {v1 .. v7}, Landroid/media/MediaCodec;->queueInputBuffer(IIIJI)V
+
+    return-void
+
+    :catchall_0
+    move-exception v0
+
+    .line 178
+    :try_start_1
+    monitor-exit v6
+    :try_end_1
+    .catchall {:try_start_1 .. :try_end_1} :catchall_0
+
+    throw v0
 .end method
 
 .method public static declared-synchronized rate()I
@@ -432,7 +859,7 @@
 
     monitor-enter v0
 
-    .line 69
+    .line 104
     :try_start_0
     sget v1, Lseekpatch/Audio;->rate:I
     :try_end_0
@@ -448,4 +875,201 @@
     monitor-exit v0
 
     throw v1
+.end method
+
+.method public static samples(Ljava/nio/ByteBuffer;)[B
+    .locals 4
+
+    .line 130
+    invoke-virtual {p0}, Ljava/nio/ByteBuffer;->arrayOffset()I
+
+    move-result v0
+
+    if-nez v0, :cond_0
+
+    .line 132
+    invoke-virtual {p0}, Ljava/nio/ByteBuffer;->array()[B
+
+    move-result-object p0
+
+    return-object p0
+
+    .line 134
+    :cond_0
+    sget-object v1, Lseekpatch/Audio;->block:[B
+
+    array-length v1, v1
+
+    invoke-virtual {p0}, Ljava/nio/ByteBuffer;->capacity()I
+
+    move-result v2
+
+    if-eq v1, v2, :cond_1
+
+    .line 135
+    invoke-virtual {p0}, Ljava/nio/ByteBuffer;->capacity()I
+
+    move-result v1
+
+    new-array v1, v1, [B
+
+    sput-object v1, Lseekpatch/Audio;->block:[B
+
+    .line 137
+    :cond_1
+    invoke-virtual {p0}, Ljava/nio/ByteBuffer;->array()[B
+
+    move-result-object v1
+
+    sget-object v2, Lseekpatch/Audio;->block:[B
+
+    const/4 v3, 0x0
+
+    invoke-virtual {p0}, Ljava/nio/ByteBuffer;->capacity()I
+
+    move-result p0
+
+    invoke-static {v1, v0, v2, v3, p0}, Ljava/lang/System;->arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
+
+    .line 138
+    sget-object p0, Lseekpatch/Audio;->block:[B
+
+    return-object p0
+.end method
+
+.method private static silence(Landroid/media/MediaCodec;JI)J
+    .locals 12
+
+    const-wide/16 v0, 0x2710
+
+    const-wide/16 v2, 0x0
+
+    .line 213
+    :try_start_0
+    invoke-virtual {p0, v0, v1}, Landroid/media/MediaCodec;->dequeueInputBuffer(J)I
+
+    move-result v5
+
+    if-gez v5, :cond_0
+
+    return-wide v2
+
+    .line 217
+    :cond_0
+    invoke-virtual {p0, v5}, Landroid/media/MediaCodec;->getInputBuffer(I)Ljava/nio/ByteBuffer;
+
+    move-result-object v0
+
+    .line 218
+    invoke-virtual {v0}, Ljava/nio/ByteBuffer;->capacity()I
+
+    move-result v1
+
+    div-int/2addr v1, p3
+
+    const/16 v4, 0x400
+
+    invoke-static {v4, v1}, Ljava/lang/Math;->min(II)I
+
+    move-result v1
+
+    .line 219
+    invoke-virtual {v0}, Ljava/nio/ByteBuffer;->clear()Ljava/nio/Buffer;
+
+    mul-int v7, v1, p3
+
+    .line 220
+    new-array p3, v7, [B
+
+    invoke-virtual {v0, p3}, Ljava/nio/ByteBuffer;->put([B)Ljava/nio/ByteBuffer;
+
+    int-to-long v0, v1
+
+    const-wide/32 v8, 0xf4240
+
+    mul-long/2addr v8, v0
+
+    .line 221
+    sget p3, Lseekpatch/Audio;->rate:I
+
+    int-to-long v10, p3
+
+    div-long/2addr v8, v10
+
+    sub-long v8, p1, v8
+
+    const/4 v10, 0x0
+
+    const/4 v6, 0x0
+
+    move-object v4, p0
+
+    invoke-virtual/range {v4 .. v10}, Landroid/media/MediaCodec;->queueInputBuffer(IIIJI)V
+    :try_end_0
+    .catch Ljava/lang/RuntimeException; {:try_start_0 .. :try_end_0} :catch_0
+
+    return-wide v0
+
+    :catch_0
+    move-exception p0
+
+    .line 224
+    const-string p1, "seek-patch"
+
+    const-string p2, "audio: no silent lead-in"
+
+    invoke-static {p1, p2, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+
+    return-wide v2
+.end method
+
+.method private static timeOf(J)J
+    .locals 4
+
+    .line 231
+    sget v0, Lseekpatch/Audio;->runs:I
+
+    add-int/lit8 v0, v0, -0x1
+
+    :goto_0
+    if-lez v0, :cond_0
+
+    .line 232
+    sget-object v1, Lseekpatch/Audio;->runStart:[J
+
+    aget-wide v2, v1, v0
+
+    cmp-long v1, v2, p0
+
+    if-lez v1, :cond_0
+
+    add-int/lit8 v0, v0, -0x1
+
+    goto :goto_0
+
+    .line 235
+    :cond_0
+    sget-object v1, Lseekpatch/Audio;->runTime:[J
+
+    aget-wide v2, v1, v0
+
+    sget-object v1, Lseekpatch/Audio;->runStart:[J
+
+    aget-wide v0, v1, v0
+
+    sub-long/2addr p0, v0
+
+    const-wide/32 v0, 0xf4240
+
+    mul-long/2addr p0, v0
+
+    sget v0, Lseekpatch/Audio;->rate:I
+
+    int-to-long v0, v0
+
+    div-long/2addr p0, v0
+
+    add-long/2addr v2, p0
+
+    return-wide v2
 .end method

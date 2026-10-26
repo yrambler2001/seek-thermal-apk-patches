@@ -49,7 +49,7 @@ public final class Calib {
     private Calib() {
     }
 
-    /** After the activity's setContentView: the button floats below the top bar, left side. */
+    /** After the activity's setContentView: the button floats below the top bar, left side, first. */
     public static void attach(final Activity a) {
         try {
             SharedPreferences p = prefs(a);

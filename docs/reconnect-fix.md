@@ -82,6 +82,22 @@ the camera would stay awake.
 In 2.2.x the `DeviceManager` keeps its camera for the next screen, so there is nothing to release:
 the patch keeps the receiver, and the camera plugged back in after an unplug is opened again.
 
+3. From 2.3.0: the camera screen no longer closes itself when it comes back without a camera.
+   `MainActivity.onRestart()` finishes it when the `DeviceManager` has none (`hasCamera()`, 2.3.4's
+   `b.g()`), which is the case after the camera was unplugged with the app in the background, even
+   if it is plugged in again by then.  The tap that brought the app back then closed it: the
+   screen's last search still asked Android for the camera, and the permission dialog came up over
+   the home screen; answering it opened the camera for no screen, and only the next tap showed the
+   picture.  The patch drops that `finish()`.  The screen shows its no-camera state, its search
+   asks for the camera, and the camera opens in it, as when it is plugged in with the app in
+   front.  Up to 2.2.3 the screen finishes only after Back on the reminder screen, and that is left
+   as is.
+
+   On the Redmi 4X (Android 7.1.2, 2.3.4), the user's steps: open the app, Home, unplug, plug in,
+   dismiss Android's app chooser, tap the app.  Before: the permission dialog over the home screen,
+   OK, and the app was gone (`MainActivity` finished in `onRestart()`).  With the patch: not yet
+   tried on the phone (it takes unplugging the camera).
+
 ## Only its own app's answers
 
 Every Seek app asks for permission with the same action, as a broadcast addressed to nobody in

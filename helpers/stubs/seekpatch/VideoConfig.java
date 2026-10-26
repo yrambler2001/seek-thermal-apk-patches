@@ -15,6 +15,8 @@ public final class VideoConfig {
     public static int maxBitrate;
     /** Bitrate for a 960x1280 frame when the encoder has no quality control, bit/s. */
     public static int bitrate;
+    /** A bitrate chosen in the settings, bit/s (VBR at it); 0: the QP. */
+    public static int target;
 
     private VideoConfig() {
     }

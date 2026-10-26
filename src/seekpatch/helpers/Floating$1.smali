@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 44
+    .line 46
     iput-object p1, p0, Lseekpatch/Floating$1;->val$tip:Ljava/lang/String;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -44,7 +44,7 @@
 .method public onLongClick(Landroid/view/View;)Z
     .locals 2
 
-    .line 47
+    .line 49
     invoke-virtual {p1}, Landroid/view/View;->getContext()Landroid/content/Context;
 
     move-result-object p1

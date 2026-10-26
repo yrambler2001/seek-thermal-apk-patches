@@ -89,7 +89,9 @@ The Image & Video fragment is found by behaviour: the one `PreferenceFragment` t
 after its `addPreferencesFromResource`, `seekpatch.Settings.screen` hides the old switch and appends
 the new ones.  The old switch is the last item of the screen in every release, so they take its
 place.  They are instances of the app's own switch class, the old switch's class, so they look like
-the rest of the screen.  The screen's list runs on under the navigation bar, which the stock screen,
+the rest of the screen.  That class colors only its title (white); a switch's summary takes the
+theme's color, which on Android 7 (a Redmi 4X) is dark on the screen's black, so `Settings` colors
+our summaries itself, in the light grey (`#cccccc`) of the app's own list summaries.  The screen's list runs on under the navigation bar, which the stock screen,
 with five items, never reached; `Settings` pads the list's end by the bar's height, so the last item
 scrolls clear of it.  The settings screens have no theme, so on Android 15+ (the app targets SDK 35
 and is drawn edge to edge) the system gives them a light navigation bar, with the white text running

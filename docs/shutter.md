@@ -4,7 +4,7 @@
 few seconds: the Compact about every 5 s, more often just after connecting.  Each time it clicks,
 the picture freezes for 0.44 s and comes back slightly different, and the readings jump a little.
 There is no setting for it.
-**Patched:** a **Shutter auto** button floats below the top bar, on the right (below *Lock range*).
+**Patched:** a **Shutter auto** button floats below the top bar, on the left (after *k·x+b*).
 Tap it and it reads **Shutter off**: no more clicks, freezes or jumps.  Tap again and the automatic
 shutter is back; the camera shutters right away, its next calibration being overdue.
 

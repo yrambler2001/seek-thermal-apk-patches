@@ -18,45 +18,438 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 32
+    .line 34
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
+    return-void
+.end method
+
+.method static synthetic access$000(Landroid/widget/FrameLayout;Landroid/view/View;)V
+    .locals 0
+
+    .line 28
+    invoke-static {p0, p1}, Lseekpatch/Floating;->arrange(Landroid/widget/FrameLayout;Landroid/view/View;)V
+
+    return-void
+.end method
+
+.method static synthetic access$100(Landroid/view/View;)I
+    .locals 0
+
+    .line 28
+    invoke-static {p0}, Lseekpatch/Floating;->order(Landroid/view/View;)I
+
+    move-result p0
+
+    return p0
+.end method
+
+.method static synthetic access$200(Landroid/view/View;)Z
+    .locals 0
+
+    .line 28
+    invoke-static {p0}, Lseekpatch/Floating;->right(Landroid/view/View;)Z
+
+    move-result p0
+
+    return p0
+.end method
+
+.method private static arrange(Landroid/widget/FrameLayout;Landroid/view/View;)V
+    .locals 16
+
+    .line 100
+    invoke-virtual/range {p0 .. p0}, Landroid/widget/FrameLayout;->getContext()Landroid/content/Context;
+
+    move-result-object v0
+
+    .line 101
+    new-instance v1, Ljava/util/ArrayList;
+
+    invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
+
+    const/4 v2, 0x0
+
+    move v3, v2
+
+    .line 102
+    :goto_0
+    invoke-virtual/range {p0 .. p0}, Landroid/widget/FrameLayout;->getChildCount()I
+
+    move-result v4
+
+    if-ge v3, v4, :cond_1
+
+    move-object/from16 v4, p0
+
+    .line 103
+    invoke-virtual {v4, v3}, Landroid/widget/FrameLayout;->getChildAt(I)Landroid/view/View;
+
+    move-result-object v5
+
+    .line 104
+    invoke-virtual {v5}, Landroid/view/View;->getTag()Ljava/lang/Object;
+
+    move-result-object v6
+
+    instance-of v6, v6, Ljava/lang/String;
+
+    if-eqz v6, :cond_0
+
+    invoke-virtual {v5}, Landroid/view/View;->getTag()Ljava/lang/Object;
+
+    move-result-object v6
+
+    check-cast v6, Ljava/lang/String;
+
+    const-string v7, "seekpatch.floating:"
+
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v6
+
+    if-eqz v6, :cond_0
+
+    .line 105
+    invoke-interface {v1, v5}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+
+    :cond_0
+    add-int/lit8 v3, v3, 0x1
+
+    goto :goto_0
+
+    :cond_1
+    move-object/from16 v4, p0
+
+    .line 108
+    new-instance v3, Lseekpatch/Floating$3;
+
+    invoke-direct {v3}, Lseekpatch/Floating$3;-><init>()V
+
+    invoke-static {v1, v3}, Ljava/util/Collections;->sort(Ljava/util/List;Ljava/util/Comparator;)V
+
+    .line 115
+    invoke-virtual/range {p0 .. p0}, Landroid/widget/FrameLayout;->getWidth()I
+
+    move-result v3
+
+    if-lez v3, :cond_2
+
+    invoke-virtual/range {p0 .. p0}, Landroid/widget/FrameLayout;->getWidth()I
+
+    move-result v3
+
+    goto :goto_1
+
+    :cond_2
+    invoke-virtual {v0}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
+
+    move-result-object v3
+
+    invoke-virtual {v3}, Landroid/content/res/Resources;->getDisplayMetrics()Landroid/util/DisplayMetrics;
+
+    move-result-object v3
+
+    iget v3, v3, Landroid/util/DisplayMetrics;->widthPixels:I
+
+    :goto_1
+    const/16 v4, 0xc
+
+    .line 116
+    invoke-static {v0, v4}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+
+    move-result v4
+
+    const/16 v5, 0x8
+
+    .line 117
+    invoke-static {v0, v5}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+
+    move-result v5
+
+    .line 118
+    invoke-virtual/range {p1 .. p1}, Landroid/view/View;->getLayoutParams()Landroid/view/ViewGroup$LayoutParams;
+
+    move-result-object v6
+
+    if-eqz v6, :cond_3
+
+    .line 119
+    iget v7, v6, Landroid/view/ViewGroup$LayoutParams;->height:I
+
+    if-lez v7, :cond_3
+
+    iget v6, v6, Landroid/view/ViewGroup$LayoutParams;->height:I
+
+    goto :goto_2
+
+    :cond_3
+    const/16 v6, 0x28
+
+    invoke-static {v0, v6}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+
+    move-result v6
+
+    :goto_2
+    add-int/2addr v6, v5
+
+    .line 120
+    new-instance v7, Ljava/util/ArrayList;
+
+    invoke-direct {v7}, Ljava/util/ArrayList;-><init>()V
+
+    .line 121
+    invoke-interface {v1}, Ljava/util/List;->iterator()Ljava/util/Iterator;
+
+    move-result-object v1
+
+    :cond_4
+    :goto_3
+    invoke-interface {v1}, Ljava/util/Iterator;->hasNext()Z
+
+    move-result v8
+
+    if-eqz v8, :cond_9
+
+    invoke-interface {v1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+
+    move-result-object v8
+
+    check-cast v8, Landroid/view/View;
+
+    .line 122
+    invoke-static {v2, v2}, Landroid/view/View$MeasureSpec;->makeMeasureSpec(II)I
+
+    move-result v9
+
+    const/16 v10, 0x1c
+
+    .line 123
+    invoke-static {v0, v10}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+
+    move-result v10
+
+    const/high16 v11, 0x40000000    # 2.0f
+
+    invoke-static {v10, v11}, Landroid/view/View$MeasureSpec;->makeMeasureSpec(II)I
+
+    move-result v10
+
+    .line 122
+    invoke-virtual {v8, v9, v10}, Landroid/view/View;->measure(II)V
+
+    .line 124
+    invoke-virtual {v8}, Landroid/view/View;->getMeasuredWidth()I
+
+    move-result v9
+
+    move v10, v2
+
+    .line 126
+    :goto_4
+    invoke-interface {v7}, Ljava/util/List;->size()I
+
+    move-result v11
+
+    const/4 v12, 0x1
+
+    if-ge v10, v11, :cond_5
+
+    invoke-interface {v7, v10}, Ljava/util/List;->get(I)Ljava/lang/Object;
+
+    move-result-object v11
+
+    check-cast v11, [I
+
+    aget v11, v11, v12
+
+    invoke-interface {v7, v10}, Ljava/util/List;->get(I)Ljava/lang/Object;
+
+    move-result-object v13
+
+    check-cast v13, [I
+
+    aget v13, v13, v2
+
+    sub-int/2addr v11, v13
+
+    if-ge v11, v9, :cond_5
+
+    add-int/lit8 v10, v10, 0x1
+
+    goto :goto_4
+
+    .line 129
+    :cond_5
+    invoke-interface {v7}, Ljava/util/List;->size()I
+
+    move-result v11
+
+    if-ne v10, v11, :cond_6
+
+    sub-int v11, v3, v4
+
+    .line 130
+    filled-new-array {v4, v11}, [I
+
+    move-result-object v11
+
+    invoke-interface {v7, v11}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+
+    .line 132
+    :cond_6
+    invoke-interface {v7, v10}, Ljava/util/List;->get(I)Ljava/lang/Object;
+
+    move-result-object v11
+
+    check-cast v11, [I
+
+    .line 133
+    invoke-virtual {v8}, Landroid/view/View;->getLayoutParams()Landroid/view/ViewGroup$LayoutParams;
+
+    move-result-object v13
+
+    check-cast v13, Landroid/widget/FrameLayout$LayoutParams;
+
+    .line 134
+    iget v14, v13, Landroid/widget/FrameLayout$LayoutParams;->leftMargin:I
+
+    iget v15, v13, Landroid/widget/FrameLayout$LayoutParams;->rightMargin:I
+
+    iget v12, v13, Landroid/widget/FrameLayout$LayoutParams;->topMargin:I
+
+    filled-new-array {v14, v15, v12}, [I
+
+    move-result-object v12
+
+    const/16 v14, 0x24
+
+    .line 135
+    invoke-static {v0, v14}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+
+    move-result v14
+
+    mul-int/2addr v10, v14
+
+    add-int/2addr v10, v6
+
+    iput v10, v13, Landroid/widget/FrameLayout$LayoutParams;->topMargin:I
+
+    .line 136
+    invoke-static {v8}, Lseekpatch/Floating;->right(Landroid/view/View;)Z
+
+    move-result v10
+
+    if-eqz v10, :cond_7
+
+    .line 137
+    iput v2, v13, Landroid/widget/FrameLayout$LayoutParams;->leftMargin:I
+
+    const/4 v10, 0x1
+
+    .line 138
+    aget v14, v11, v10
+
+    sub-int v14, v3, v14
+
+    iput v14, v13, Landroid/widget/FrameLayout$LayoutParams;->rightMargin:I
+
+    .line 139
+    aget v14, v11, v10
+
+    add-int/2addr v9, v5
+
+    sub-int/2addr v14, v9
+
+    aput v14, v11, v10
+
+    goto :goto_5
+
+    .line 141
+    :cond_7
+    aget v10, v11, v2
+
+    iput v10, v13, Landroid/widget/FrameLayout$LayoutParams;->leftMargin:I
+
+    .line 142
+    iput v2, v13, Landroid/widget/FrameLayout$LayoutParams;->rightMargin:I
+
+    .line 143
+    aget v10, v11, v2
+
+    add-int/2addr v9, v5
+
+    add-int/2addr v10, v9
+
+    aput v10, v11, v2
+
+    .line 145
+    :goto_5
+    aget v9, v12, v2
+
+    iget v10, v13, Landroid/widget/FrameLayout$LayoutParams;->leftMargin:I
+
+    if-ne v9, v10, :cond_8
+
+    const/4 v9, 0x1
+
+    aget v9, v12, v9
+
+    iget v10, v13, Landroid/widget/FrameLayout$LayoutParams;->rightMargin:I
+
+    if-ne v9, v10, :cond_8
+
+    const/4 v9, 0x2
+
+    aget v9, v12, v9
+
+    iget v10, v13, Landroid/widget/FrameLayout$LayoutParams;->topMargin:I
+
+    if-eq v9, v10, :cond_4
+
+    .line 146
+    :cond_8
+    invoke-virtual {v8}, Landroid/view/View;->requestLayout()V
+
+    goto/16 :goto_3
+
+    :cond_9
     return-void
 .end method
 
 .method public static button(Landroid/app/Activity;Ljava/lang/String;Landroid/view/View$OnClickListener;)Landroid/widget/TextView;
     .locals 3
 
-    .line 37
+    .line 39
     new-instance v0, Landroid/widget/TextView;
 
     invoke-direct {v0, p0}, Landroid/widget/TextView;-><init>(Landroid/content/Context;)V
 
     const/4 v1, -0x1
 
-    .line 38
+    .line 40
     invoke-virtual {v0, v1}, Landroid/widget/TextView;->setTextColor(I)V
 
     const/4 v1, 0x2
 
     const/high16 v2, 0x41400000    # 12.0f
 
-    .line 39
+    .line 41
     invoke-virtual {v0, v1, v2}, Landroid/widget/TextView;->setTextSize(IF)V
 
     const/16 v1, 0x11
 
-    .line 40
+    .line 42
     invoke-virtual {v0, v1}, Landroid/widget/TextView;->setGravity(I)V
 
     const/4 v1, 0x1
 
-    .line 41
+    .line 43
     invoke-virtual {v0, v1}, Landroid/widget/TextView;->setSingleLine(Z)V
 
     const/16 v1, 0xc
 
-    .line 42
+    .line 44
     invoke-static {p0, v1}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
 
     move-result v2
@@ -69,17 +462,17 @@
 
     invoke-virtual {v0, v2, v1, p0, v1}, Landroid/widget/TextView;->setPadding(IIII)V
 
-    .line 43
+    .line 45
     invoke-virtual {v0, p2}, Landroid/widget/TextView;->setOnClickListener(Landroid/view/View$OnClickListener;)V
 
-    .line 44
+    .line 46
     new-instance p0, Lseekpatch/Floating$1;
 
     invoke-direct {p0, p1}, Lseekpatch/Floating$1;-><init>(Ljava/lang/String;)V
 
     invoke-virtual {v0, p0}, Landroid/widget/TextView;->setOnLongClickListener(Landroid/view/View$OnLongClickListener;)V
 
-    .line 51
+    .line 53
     invoke-static {v0, v1}, Lseekpatch/Floating;->style(Landroid/widget/TextView;Z)V
 
     return-object v0
@@ -90,7 +483,7 @@
 
     int-to-float p1, p1
 
-    .line 146
+    .line 195
     invoke-virtual {p0}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
 
     move-result-object p0
@@ -115,7 +508,7 @@
 
     const/4 v0, 0x0
 
-    .line 132
+    .line 181
     :try_start_0
     invoke-virtual {p0}, Landroid/app/Activity;->getResources()Landroid/content/res/Resources;
 
@@ -138,7 +531,7 @@
     :catch_0
     move-object v1, v0
 
-    .line 136
+    .line 185
     :goto_0
     invoke-virtual {p0}, Landroid/app/Activity;->getPackageName()Ljava/lang/String;
 
@@ -165,7 +558,7 @@
 
     goto :goto_2
 
-    .line 137
+    .line 186
     :cond_0
     invoke-virtual {p0}, Landroid/app/Activity;->getResources()Landroid/content/res/Resources;
 
@@ -180,7 +573,7 @@
     :goto_2
     if-eqz v4, :cond_1
 
-    .line 139
+    .line 188
     invoke-virtual {p0, v4}, Landroid/app/Activity;->findViewById(I)Landroid/view/View;
 
     move-result-object p0
@@ -196,42 +589,76 @@
     return-object v0
 .end method
 
-.method public static place(Landroid/app/Activity;Landroid/view/View;ZI)Z
-    .locals 7
+.method private static order(Landroid/view/View;)I
+    .locals 1
 
-    .line 69
+    .line 152
+    invoke-virtual {p0}, Landroid/view/View;->getTag()Ljava/lang/Object;
+
+    move-result-object p0
+
+    check-cast p0, Ljava/lang/String;
+
+    const/16 v0, 0x3a
+
+    .line 153
+    invoke-virtual {p0, v0}, Ljava/lang/String;->lastIndexOf(I)I
+
+    move-result v0
+
+    add-int/lit8 v0, v0, 0x1
+
+    invoke-virtual {p0, v0}, Ljava/lang/String;->substring(I)Ljava/lang/String;
+
+    move-result-object p0
+
+    invoke-static {p0}, Ljava/lang/Integer;->parseInt(Ljava/lang/String;)I
+
+    move-result p0
+
+    return p0
+.end method
+
+.method public static place(Landroid/app/Activity;Landroid/view/View;ZI)Z
+    .locals 4
+
+    .line 71
     const-string v0, "main_view_top_panel"
 
     invoke-static {p0, v0}, Lseekpatch/Floating;->find(Landroid/app/Activity;Ljava/lang/String;)Landroid/view/View;
 
     move-result-object v0
 
-    const/4 v1, 0x0
+    if-eqz v0, :cond_3
 
-    if-eqz v0, :cond_8
-
-    .line 70
+    .line 72
     invoke-virtual {v0}, Landroid/view/View;->getParent()Landroid/view/ViewParent;
 
-    move-result-object v2
+    move-result-object v1
 
-    instance-of v2, v2, Landroid/widget/FrameLayout;
+    instance-of v1, v1, Landroid/widget/FrameLayout;
 
-    if-nez v2, :cond_0
+    if-nez v1, :cond_0
 
-    goto/16 :goto_6
+    goto :goto_2
 
-    .line 74
+    .line 76
     :cond_0
     invoke-virtual {v0}, Landroid/view/View;->getParent()Landroid/view/ViewParent;
 
-    move-result-object v2
+    move-result-object v1
 
-    check-cast v2, Landroid/widget/FrameLayout;
+    check-cast v1, Landroid/widget/FrameLayout;
+
+    .line 77
+    new-instance v2, Ljava/lang/StringBuilder;
+
+    const-string v3, "seekpatch.floating:"
+
+    invoke-direct {v2, v3}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
 
     if-eqz p2, :cond_1
 
-    .line 75
     const-string v3, "right:"
 
     goto :goto_0
@@ -240,225 +667,68 @@
     const-string v3, "left:"
 
     :goto_0
-    const-string v4, "seekpatch.floating:"
+    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    invoke-virtual {v4, v3}, Ljava/lang/String;->concat(Ljava/lang/String;)Ljava/lang/String;
+    invoke-virtual {v2, p3}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
 
-    move-result-object v3
-
-    .line 76
-    new-instance v4, Ljava/lang/StringBuilder;
-
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v4, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v4, p3}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v4}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object p3
 
     invoke-virtual {p1, p3}, Landroid/view/View;->setTag(Ljava/lang/Object;)V
 
-    .line 77
+    .line 78
     new-instance p3, Landroid/widget/FrameLayout$LayoutParams;
 
-    const/16 v4, 0x1c
+    const/16 v2, 0x1c
 
-    invoke-static {p0, v4}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+    invoke-static {p0, v2}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
 
-    move-result v4
+    move-result p0
 
     if-eqz p2, :cond_2
 
-    const/4 v5, 0x5
+    const/4 p2, 0x5
 
     goto :goto_1
 
     :cond_2
-    const/4 v5, 0x3
+    const/4 p2, 0x3
 
     :goto_1
-    or-int/lit8 v5, v5, 0x30
+    or-int/lit8 p2, p2, 0x30
 
-    const/4 v6, -0x2
+    const/4 v2, -0x2
 
-    .line 78
-    invoke-direct {p3, v6, v4, v5}, Landroid/widget/FrameLayout$LayoutParams;-><init>(III)V
-
-    const/16 v4, 0xc
-
-    if-eqz p2, :cond_3
+    .line 79
+    invoke-direct {p3, v2, p0, p2}, Landroid/widget/FrameLayout$LayoutParams;-><init>(III)V
 
     .line 80
-    invoke-static {p0, v4}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+    invoke-virtual {v1, v0}, Landroid/widget/FrameLayout;->indexOfChild(Landroid/view/View;)I
 
-    move-result p2
+    move-result p0
 
-    iput p2, p3, Landroid/widget/FrameLayout$LayoutParams;->rightMargin:I
+    const/4 p2, 0x1
 
-    goto :goto_2
+    add-int/2addr p0, p2
 
-    .line 82
-    :cond_3
-    invoke-static {p0, v4}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+    invoke-virtual {v1, p1, p0, p3}, Landroid/widget/FrameLayout;->addView(Landroid/view/View;ILandroid/view/ViewGroup$LayoutParams;)V
 
-    move-result p2
+    .line 81
+    new-instance p0, Lseekpatch/Floating$2;
 
-    iput p2, p3, Landroid/widget/FrameLayout$LayoutParams;->leftMargin:I
+    invoke-direct {p0, v1, v0}, Lseekpatch/Floating$2;-><init>(Landroid/widget/FrameLayout;Landroid/view/View;)V
 
-    .line 84
-    :goto_2
-    invoke-virtual {v2, v0}, Landroid/widget/FrameLayout;->indexOfChild(Landroid/view/View;)I
-
-    move-result p2
-
-    const/4 v4, 0x1
-
-    add-int/2addr p2, v4
-
-    invoke-virtual {v2, p1, p2, p3}, Landroid/widget/FrameLayout;->addView(Landroid/view/View;ILandroid/view/ViewGroup$LayoutParams;)V
-
-    .line 86
-    new-instance p1, Ljava/util/ArrayList;
-
-    invoke-direct {p1}, Ljava/util/ArrayList;-><init>()V
-
-    .line 87
-    :goto_3
-    invoke-virtual {v2}, Landroid/widget/FrameLayout;->getChildCount()I
-
-    move-result p2
-
-    if-ge v1, p2, :cond_5
-
-    .line 88
-    invoke-virtual {v2, v1}, Landroid/widget/FrameLayout;->getChildAt(I)Landroid/view/View;
-
-    move-result-object p2
-
-    .line 89
-    invoke-virtual {p2}, Landroid/view/View;->getTag()Ljava/lang/Object;
-
-    move-result-object p3
-
-    instance-of p3, p3, Ljava/lang/String;
-
-    if-eqz p3, :cond_4
-
-    invoke-virtual {p2}, Landroid/view/View;->getTag()Ljava/lang/Object;
-
-    move-result-object p3
-
-    check-cast p3, Ljava/lang/String;
-
-    invoke-virtual {p3, v3}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result p3
-
-    if-eqz p3, :cond_4
-
-    .line 90
-    invoke-interface {p1, p2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
-
-    :cond_4
-    add-int/lit8 v1, v1, 0x1
-
-    goto :goto_3
-
-    .line 93
-    :cond_5
-    invoke-virtual {v3}, Ljava/lang/String;->length()I
-
-    move-result p2
+    invoke-virtual {p1, p0}, Landroid/view/View;->addOnLayoutChangeListener(Landroid/view/View$OnLayoutChangeListener;)V
 
     .line 94
-    new-instance p3, Lseekpatch/Floating$2;
+    invoke-static {v1, v0}, Lseekpatch/Floating;->arrange(Landroid/widget/FrameLayout;Landroid/view/View;)V
 
-    invoke-direct {p3, p2}, Lseekpatch/Floating$2;-><init>(I)V
+    return p2
 
-    invoke-static {p1, p3}, Ljava/util/Collections;->sort(Ljava/util/List;Ljava/util/Comparator;)V
-
-    .line 101
-    invoke-virtual {v0}, Landroid/view/View;->getLayoutParams()Landroid/view/ViewGroup$LayoutParams;
-
-    move-result-object p2
-
-    if-eqz p2, :cond_6
-
-    .line 102
-    iget p3, p2, Landroid/view/ViewGroup$LayoutParams;->height:I
-
-    if-lez p3, :cond_6
-
-    iget p2, p2, Landroid/view/ViewGroup$LayoutParams;->height:I
-
-    goto :goto_4
-
-    :cond_6
-    const/16 p2, 0x28
-
-    invoke-static {p0, p2}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
-
-    move-result p2
-
-    :goto_4
-    const/16 p3, 0x8
-
-    invoke-static {p0, p3}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
-
-    move-result p3
-
-    add-int/2addr p2, p3
-
-    .line 103
-    invoke-interface {p1}, Ljava/util/List;->iterator()Ljava/util/Iterator;
-
-    move-result-object p1
-
-    :goto_5
-    invoke-interface {p1}, Ljava/util/Iterator;->hasNext()Z
-
-    move-result p3
-
-    if-eqz p3, :cond_7
-
-    invoke-interface {p1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-
-    move-result-object p3
-
-    check-cast p3, Landroid/view/View;
-
-    .line 104
-    invoke-virtual {p3}, Landroid/view/View;->getLayoutParams()Landroid/view/ViewGroup$LayoutParams;
-
-    move-result-object v0
-
-    check-cast v0, Landroid/widget/FrameLayout$LayoutParams;
-
-    iput p2, v0, Landroid/widget/FrameLayout$LayoutParams;->topMargin:I
-
-    .line 105
-    invoke-virtual {p3}, Landroid/view/View;->requestLayout()V
-
-    const/16 p3, 0x24
-
-    .line 106
-    invoke-static {p0, p3}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
-
-    move-result p3
-
-    add-int/2addr p2, p3
-
-    goto :goto_5
-
-    :cond_7
-    return v4
-
-    .line 71
-    :cond_8
-    :goto_6
+    .line 73
+    :cond_3
+    :goto_2
     new-instance p0, Ljava/lang/StringBuilder;
 
     const-string p1, "no top bar to put a button under ("
@@ -479,18 +749,39 @@
 
     invoke-static {p1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    return v1
+    const/4 p0, 0x0
+
+    return p0
+.end method
+
+.method private static right(Landroid/view/View;)Z
+    .locals 1
+
+    .line 157
+    invoke-virtual {p0}, Landroid/view/View;->getTag()Ljava/lang/Object;
+
+    move-result-object p0
+
+    check-cast p0, Ljava/lang/String;
+
+    const-string v0, "seekpatch.floating:right:"
+
+    invoke-virtual {p0, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result p0
+
+    return p0
 .end method
 
 .method public static style(Landroid/widget/TextView;Z)V
     .locals 3
 
-    .line 57
+    .line 59
     new-instance v0, Landroid/graphics/drawable/GradientDrawable;
 
     invoke-direct {v0}, Landroid/graphics/drawable/GradientDrawable;-><init>()V
 
-    .line 58
+    .line 60
     invoke-virtual {p0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object v1
@@ -514,11 +805,11 @@
     :cond_0
     const p1, 0x33ffffff
 
-    .line 59
+    .line 61
     :goto_0
     invoke-virtual {v0, p1}, Landroid/graphics/drawable/GradientDrawable;->setColor(I)V
 
-    .line 60
+    .line 62
     invoke-virtual {p0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object p1
@@ -533,7 +824,7 @@
 
     invoke-virtual {v0, p1, v1}, Landroid/graphics/drawable/GradientDrawable;->setStroke(II)V
 
-    .line 61
+    .line 63
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setBackground(Landroid/graphics/drawable/Drawable;)V
 
     return-void
@@ -546,7 +837,7 @@
 
     if-ne p0, v0, :cond_0
 
-    .line 125
+    .line 174
     const-string p0, " K"
 
     goto :goto_0
@@ -598,7 +889,7 @@
 .method public static unit(Landroid/content/Context;)I
     .locals 2
 
-    .line 114
+    .line 163
     :try_start_0
     invoke-static {p0}, Landroid/preference/PreferenceManager;->getDefaultSharedPreferences(Landroid/content/Context;)Landroid/content/SharedPreferences;
 

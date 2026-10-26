@@ -35,7 +35,7 @@
         }
     .end annotation
 
-    .line 204
+    .line 209
     iput-object p1, p0, Lseekpatch/Settings$4;->val$p:Landroid/content/SharedPreferences;
 
     iput-object p2, p0, Lseekpatch/Settings$4;->val$key:Ljava/lang/String;
@@ -52,7 +52,7 @@
 .method public onPreferenceChange(Landroid/preference/Preference;Ljava/lang/Object;)Z
     .locals 1
 
-    .line 207
+    .line 212
     iget-object p1, p0, Lseekpatch/Settings$4;->val$p:Landroid/content/SharedPreferences;
 
     invoke-interface {p1}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
@@ -71,12 +71,12 @@
 
     invoke-interface {p1}, Landroid/content/SharedPreferences$Editor;->apply()V
 
-    .line 208
+    .line 213
     iget-object p1, p0, Lseekpatch/Settings$4;->val$then:Ljava/lang/Runnable;
 
     if-eqz p1, :cond_0
 
-    .line 209
+    .line 214
     invoke-interface {p1}, Ljava/lang/Runnable;->run()V
 
     :cond_0

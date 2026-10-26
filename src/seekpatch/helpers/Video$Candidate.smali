@@ -10,7 +10,7 @@
 .end annotation
 
 .annotation system Ldalvik/annotation/InnerClass;
-    accessFlags = 0x1a
+    accessFlags = 0x18
     name = "Candidate"
 .end annotation
 
@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/media/MediaCodecInfo;Ljava/lang/String;)V
     .locals 0
 
-    .line 82
+    .line 84
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 83
+    .line 85
     iput-object p1, p0, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
 
-    .line 84
+    .line 86
     iput-object p2, p0, Lseekpatch/Video$Candidate;->mime:Ljava/lang/String;
 
     return-void

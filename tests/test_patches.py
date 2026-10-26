@@ -14,6 +14,7 @@ from seekpatch.patches import (
     calibration,
     debug_log,
     default_palette,
+    default_unit,
     flat_field,
     fps_readout,
     full_fps,
@@ -33,6 +34,7 @@ from seekpatch.patches import (
     smart_smoothing,
     smoothing_settings,
     steady_fps,
+    usb_prompt,
     video_quality,
 )
 from seekpatch.patches.settings import ATTACH, SCREEN
@@ -86,6 +88,44 @@ def test_default_palette_needs_the_palette_list(make_project):
     with pytest.raises(PatchError, match='palette list with "Tyrian"'):
         default_palette.apply(tree, Options())
     assert "seek-patch" not in text(tree, "Lfix/Prefs;")
+
+
+# default_unit -----------------------------------------------------------------------------------
+
+UNITS_CALL = "Lseekpatch/Units;->celsius(Landroid/content/res/Resources;I)I"
+
+
+def test_default_unit(make_project):
+    tree = tree_of(make_project, "lambda")
+    assert default_unit.apply(tree, Options()) == [
+        "default_unit resource Lfix/Ids;->c:I: Celsius at smali/fix/Prefs.smali (2)"]
+    prefs = text(tree, "Lfix/Prefs;")
+    for name in ("t", "u"):
+        body = next(m for m in methods(prefs) if m.name == name).body
+        assert re.search(r"sget v1, Lfix/Ids;->c:I\n\n\s+# seek-patch default_unit: [^\n]*\n\s+invoke-static \{v0, v1\}, "
+                         + re.escape(UNITS_CALL), body)
+    other = next(m for m in methods(prefs) if m.name == "w").body
+    assert "Landroid/content/res/Resources;->getInteger(I)I" in other and UNITS_CALL not in other
+    assert "const/4 v0, 0x1" in text(tree, "Lseekpatch/Units;")
+    with pytest.raises(AlreadyApplied):
+        default_unit.apply(tree, Options())
+
+
+def test_default_unit_with_a_constant_id(make_project):
+    root = make_project("lambda")  # up to 2.3.0 the id is a constant, not an R field
+    path = root / "smali" / "fix" / "Prefs.smali"
+    path.write_text(path.read_text().replace("sget v1, Lfix/Ids;->c:I", "const v1, 0x7f090002"))
+    tree = SmaliTree(str(root))
+    assert default_unit.apply(tree, Options()) == [
+        "default_unit resource 0x7f090002: Celsius at smali/fix/Prefs.smali (2)"]
+
+
+def test_default_unit_needs_the_units_default(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "Prefs.smali"
+    path.write_text(path.read_text().replace('"units"', '"unit_names"'))
+    with pytest.raises(PatchError, match='"units" preference defaults to'):
+        default_unit.apply(SmaliTree(str(root)), Options())
 
 
 # full_fps ---------------------------------------------------------------------------------------
@@ -307,6 +347,14 @@ def test_video_quality(make_project, shape):
     assert re.search(r"Audio;->rate\(\)I\n\s+move-result v4\n\s+invoke-static \{\}, Lseekpatch/Audio;->channelMask\(\)I\n"
                      r"\s+move-result v5\n\s+invoke-direct/range \{v2 \.\. v7\}, Landroid/media/AudioRecord;-><init>", sound)
     assert "invoke-static {v1, v0, v3, v3, v2}, Lseekpatch/Audio;->configure(" in sound
+    # the sound's timestamps: the microphone's block and the AAC frames, not the end-of-stream block
+    assert re.search(r"# seek-patch video_quality: [^\n]*\n\s+invoke-static/range \{v2 \.\. v8\}, "
+                     r"Lseekpatch/Audio;->queue\(Landroid/media/MediaCodec;IIIJI\)V", sound)
+    assert sound.count("Landroid/media/MediaCodec;->queueInputBuffer(IIIJI)V") == 1  # f(): the end, as it was
+    assert ("invoke-static {v0, v1, v2, v3}, Lseekpatch/Audio;->dequeue(Landroid/media/MediaCodec;"
+            "Landroid/media/MediaCodec$BufferInfo;J)I") in sound and "dequeueOutputBuffer" not in sound
+    assert report[0].endswith("timestamps by sample count, blocks copied from their first byte (g(), a())")
+    assert "invoke-static {v1}, Lseekpatch/Audio;->samples(Ljava/nio/ByteBuffer;)[B" in sound and "array()" not in sound
     render = text(tree, "Lfix/Render;")
     frame = next(m for m in methods(render) if m.name == "seekpatchVideoFrame")
     assert "public" in frame.header.split() and "glFinish" in frame.body
@@ -537,7 +585,11 @@ def test_reconnect_fix(make_project, shape):
         "smali/fix/Camera.smali: cameras left open by the last camera screen (list b) are closed "
         "(Lfix/CameraDevice;->C0), released (Lfix/UsbLink;->a) and opened again when the next one registers",
         "smali/fix/Camera.smali: the permission answer is addressed to this app, and on Android 13+ the receiver hears "
-        "no other app (PendingIntents: 1, registrations: 2)"]
+        "no other app (PendingIntents: 1, registrations: 2)",
+        "smali/fix/Main.smali onRestart(): stays open without a camera (Lfix/Devices;->g() no longer finishes it)"]
+    restart = next(m for m in methods(text(tree, "Lfix/Main;")) if m.name == "onRestart")
+    assert "finish()V" not in restart.body
+    assert re.search(r"if-nez v0, :cond_0\n\n\s+# seek-patch reconnect_fix: [^\n]*\n\s+nop\n\n\s+:cond_0", restart.body)
     cls = text(tree, "Lfix/Camera;")
     init = next(m for m in methods(cls) if m.name == "<init>")  # the answer is addressed to this app
     assert re.search(r"invoke-static \{v0, p1\}, Lfix/Camera;->seekpatch_own\(Landroid/content/Intent;Landroid/content/"
@@ -571,6 +623,20 @@ def test_reconnect_fix(make_project, shape):
     assert "seek-patch" not in unplug.body  # unplugging is Seek's own
     with pytest.raises(AlreadyApplied):
         reconnect_fix.apply(tree, Options())
+
+
+def test_reconnect_fix_leaves_a_screen_that_finishes_after_the_reminder(make_project):
+    root = make_project("lambda")  # up to 2.2.3 onRestart() finishes only after Back on the reminder screen
+    path = root / "smali" / "fix" / "Main.smali"
+    path.write_text(path.read_text().replace(
+        "    if-nez v0, :cond_0\n\n    invoke-virtual {p0}, Landroid/app/Activity;->finish()V",
+        "    if-nez v0, :cond_0\n\n    sget-boolean v0, Lfix/Devices;->r:Z\n\n    if-eqz v0, :cond_0\n\n"
+        "    invoke-virtual {p0}, Landroid/app/Activity;->finish()V"))
+    tree = SmaliTree(str(root))
+    assert reconnect_fix.apply(tree, Options())[3] == (
+        "no camera screen that closes itself without a camera: up to 2.2.3 it does so only after Back on the "
+        "reminder screen")
+    assert "finish()V" in next(m for m in methods(text(tree, "Lfix/Main;")) if m.name == "onRestart").body
 
 
 def test_reconnect_fix_on_an_older_library(make_project):
@@ -662,6 +728,81 @@ def test_reconnect_fix_needs_the_listener_registration(make_project):
     with pytest.raises(PatchError, match="one listener registration"):
         reconnect_fix.apply(SmaliTree(str(root)), Options())
 
+
+
+# usb_prompt -------------------------------------------------------------------------------------
+
+REQUEST_HELPER = ("Lseekpatch/UsbPrompt;->requestPermission(Landroid/hardware/usb/UsbManager;"
+                  "Landroid/hardware/usb/UsbDevice;Landroid/app/PendingIntent;)V")
+
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_usb_prompt(make_project, shape):
+    tree = tree_of(make_project, shape)
+    assert usb_prompt.apply(tree, Options()) == [
+        "smali/fix/Camera.smali: 1 permission request through seekpatch.UsbPrompt, one dialog at a time per camera; "
+        "onReceive() ends the wait"]
+    cls = text(tree, "Lfix/Camera;")
+    search = next(m for m in methods(cls) if m.name == "G")
+    assert f"invoke-static {{v0, v1, v2}}, {REQUEST_HELPER}" in search.body
+    assert "UsbManager;->requestPermission" not in cls
+    receiver = next(m for m in methods(cls) if m.name == "onReceive")
+    assert re.search(r"\.locals 0\n\n\s+# seek-patch usb_prompt: [^\n]*\n\s+invoke-static \{p2\}, "
+                     r"Lseekpatch/UsbPrompt;->heard\(Landroid/content/Intent;\)V\n\n\s+invoke-virtual \{p0, p2\}, "
+                     r"Lfix/Camera;->t\(", receiver.body)
+    assert tree.path_of("Lseekpatch/UsbPrompt;")
+    with pytest.raises(AlreadyApplied):
+        usb_prompt.apply(tree, Options())
+
+
+def test_usb_prompt_after_reconnect_fix(make_project):
+    tree = tree_of(make_project, "lambda")  # reconnect_fix empties the unregister: the library is still found
+    reconnect_fix.apply(tree, Options())
+    assert usb_prompt.apply(tree, Options())[0].startswith("smali/fix/Camera.smali: 1 permission request")
+
+
+def test_usb_prompt_takes_an_inner_class_request(make_project):
+    root = make_project("lambda")  # up to 2.1.7 a thread of the library asks too (1.9.3 - 2.0.3: not an inner class)
+    (root / "smali" / "fix" / "Camera$8.smali").write_text(""".class Lfix/Camera$8;
+.super Ljava/lang/Thread;
+
+.field final synthetic a:Lfix/Camera;
+
+.method public run()V
+    .locals 3
+
+    iget-object v0, p0, Lfix/Camera$8;->a:Lfix/Camera;
+
+    iget-object v1, v0, Lfix/Camera;->a:Landroid/hardware/usb/UsbDevice;
+
+    iget-object v0, v0, Lfix/Camera;->m:Landroid/hardware/usb/UsbManager;
+
+    sget-object v2, Lfix/Camera;->p:Landroid/app/PendingIntent;
+
+    invoke-virtual {v0, v1, v2}, Landroid/hardware/usb/UsbManager;->requestPermission(Landroid/hardware/usb/UsbDevice;Landroid/app/PendingIntent;)V
+
+    return-void
+.end method
+""")
+    tree = SmaliTree(str(root))
+    assert usb_prompt.apply(tree, Options())[0].startswith("smali/fix/Camera.smali: 2 permission requests")
+    assert f"invoke-static {{v0, v1, v2}}, {REQUEST_HELPER}" in text(tree, "Lfix/Camera$8;")
+
+
+def test_usb_prompt_refuses_another_class_asking(make_project):
+    root = make_project("lambda")
+    path = root / "smali" / "fix" / "Main.smali"
+    path.write_text(path.read_text() + """
+.method public seekpatchTestAsk(Landroid/hardware/usb/UsbManager;Landroid/hardware/usb/UsbDevice;Landroid/app/PendingIntent;)V
+    .locals 0
+
+    invoke-virtual {p1, p2, p3}, Landroid/hardware/usb/UsbManager;->requestPermission(Landroid/hardware/usb/UsbDevice;Landroid/app/PendingIntent;)V
+
+    return-void
+.end method
+""")
+    with pytest.raises(PatchError, match="Lfix/Main; asks for USB permission with an answer not addressed to Lfix/Camera;"):
+        usb_prompt.apply(SmaliTree(str(root)), Options())
 
 # no_analytics -----------------------------------------------------------------------------------
 

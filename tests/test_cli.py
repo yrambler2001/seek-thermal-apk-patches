@@ -12,8 +12,8 @@ def test_list(capsys):
     out = capsys.readouterr().out
     for p in ALL:
         assert p.NAME in out and p.VERSIONS in out
-    assert RECOMMENDED == ["full_fps", "steady_fps", "default_palette", "sharp_scaling", "smoothing_settings", "png_photos",
-                           "hidden_settings", "fps_readout", "photo_1x", "video_quality", "phone_camera", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt", "flat_field", "lock_range",
+    assert RECOMMENDED == ["full_fps", "steady_fps", "default_palette", "default_unit", "sharp_scaling", "smoothing_settings", "png_photos",
+                           "hidden_settings", "fps_readout", "photo_1x", "video_quality", "phone_camera", "resume_fix", "reconnect_fix", "usb_prompt", "no_analytics", "http_legacy", "mic_prompt", "flat_field", "lock_range",
                            "shutter", "calibration", "smart_smoothing"]
 
 

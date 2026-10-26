@@ -13,6 +13,8 @@
 
 .field private static final SECTIONS:[Ljava/lang/String;
 
+.field private static final SUMMARY_COLOR:I = -0x333334
+
 .field static final TAG:Ljava/lang/String; = "seek-patch"
 
 .field private static listType:Ljava/lang/reflect/Constructor;
@@ -44,7 +46,7 @@
 .method static constructor <clinit>()V
     .locals 5
 
-    .line 50
+    .line 55
     const-string v0, "seekpatch.PhotoSettings"
 
     const-string v1, "seekpatch.VideoSettings"
@@ -61,7 +63,7 @@
 
     sput-object v0, Lseekpatch/Settings;->SECTIONS:[Ljava/lang/String;
 
-    .line 58
+    .line 63
     new-instance v0, Lseekpatch/Settings$1;
 
     invoke-direct {v0}, Lseekpatch/Settings$1;-><init>()V
@@ -74,7 +76,7 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 66
+    .line 71
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -83,7 +85,7 @@
 .method static synthetic access$000(Landroid/content/SharedPreferences;)V
     .locals 0
 
-    .line 45
+    .line 48
     invoke-static {p0}, Lseekpatch/Settings;->load(Landroid/content/SharedPreferences;)V
 
     return-void
@@ -92,7 +94,7 @@
 .method static synthetic access$100(Landroid/preference/PreferenceFragment;)V
     .locals 0
 
-    .line 45
+    .line 48
     invoke-static {p0}, Lseekpatch/Settings;->padEnd(Landroid/preference/PreferenceFragment;)V
 
     return-void
@@ -101,7 +103,7 @@
 .method public static addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
     .locals 3
 
-    .line 197
+    .line 202
     invoke-virtual {p0}, Landroid/preference/PreferenceGroup;->getContext()Landroid/content/Context;
 
     move-result-object v0
@@ -116,34 +118,34 @@
 
     check-cast v0, Landroid/preference/ListPreference;
 
-    .line 198
+    .line 203
     invoke-static {v0, p2, p3}, Lseekpatch/Settings;->prepare(Landroid/preference/Preference;Ljava/lang/String;Ljava/lang/String;)V
 
-    .line 199
+    .line 204
     invoke-virtual {v0, p3}, Landroid/preference/ListPreference;->setDialogTitle(Ljava/lang/CharSequence;)V
 
-    .line 200
+    .line 205
     invoke-virtual {v0, p4}, Landroid/preference/ListPreference;->setEntries([Ljava/lang/CharSequence;)V
 
-    .line 201
+    .line 206
     invoke-virtual {v0, p5}, Landroid/preference/ListPreference;->setEntryValues([Ljava/lang/CharSequence;)V
 
-    .line 202
+    .line 207
     invoke-virtual {v0, p6}, Landroid/preference/ListPreference;->setValue(Ljava/lang/String;)V
 
-    .line 203
+    .line 208
     const-string p3, "%s"
 
     invoke-virtual {v0, p3}, Landroid/preference/ListPreference;->setSummary(Ljava/lang/CharSequence;)V
 
-    .line 204
+    .line 209
     new-instance p3, Lseekpatch/Settings$4;
 
     invoke-direct {p3, p1, p2, p7}, Lseekpatch/Settings$4;-><init>(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/Runnable;)V
 
     invoke-virtual {v0, p3}, Landroid/preference/ListPreference;->setOnPreferenceChangeListener(Landroid/preference/Preference$OnPreferenceChangeListener;)V
 
-    .line 214
+    .line 219
     invoke-virtual {p0, v0}, Landroid/preference/PreferenceGroup;->addPreference(Landroid/preference/Preference;)Z
 
     return-object v0
@@ -152,7 +154,7 @@
 .method public static addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
     .locals 3
 
-    .line 173
+    .line 178
     invoke-virtual {p0}, Landroid/preference/PreferenceGroup;->getContext()Landroid/content/Context;
 
     move-result-object v0
@@ -167,15 +169,19 @@
 
     check-cast v0, Landroid/preference/SwitchPreference;
 
-    .line 174
+    .line 179
     invoke-static {v0, p2, p3}, Lseekpatch/Settings;->prepare(Landroid/preference/Preference;Ljava/lang/String;Ljava/lang/String;)V
 
     if-eqz p4, :cond_0
 
-    .line 176
-    invoke-virtual {v0, p4}, Landroid/preference/SwitchPreference;->setSummary(Ljava/lang/CharSequence;)V
+    .line 181
+    invoke-static {p4}, Lseekpatch/Settings;->grey(Ljava/lang/String;)Ljava/lang/CharSequence;
 
-    .line 178
+    move-result-object p3
+
+    invoke-virtual {v0, p3}, Landroid/preference/SwitchPreference;->setSummary(Ljava/lang/CharSequence;)V
+
+    .line 183
     :cond_0
     invoke-interface {p1, p2, p5}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
 
@@ -183,14 +189,14 @@
 
     invoke-virtual {v0, p3}, Landroid/preference/SwitchPreference;->setChecked(Z)V
 
-    .line 179
+    .line 184
     new-instance p3, Lseekpatch/Settings$3;
 
     invoke-direct {p3, p1, p2, p6}, Lseekpatch/Settings$3;-><init>(Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/Runnable;)V
 
     invoke-virtual {v0, p3}, Landroid/preference/SwitchPreference;->setOnPreferenceChangeListener(Landroid/preference/Preference$OnPreferenceChangeListener;)V
 
-    .line 189
+    .line 194
     invoke-virtual {p0, v0}, Landroid/preference/PreferenceGroup;->addPreference(Landroid/preference/Preference;)Z
 
     return-object v0
@@ -199,7 +205,7 @@
 .method public static attach(Landroid/app/Activity;)V
     .locals 3
 
-    .line 72
+    .line 77
     :try_start_0
     invoke-static {p0}, Lseekpatch/Settings;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
     :try_end_0
@@ -210,14 +216,14 @@
     :catchall_0
     move-exception v0
 
-    .line 74
+    .line 79
     const-string v1, "seek-patch"
 
     const-string v2, "settings: not loaded"
 
     invoke-static {v1, v2, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 76
+    .line 81
     :goto_0
     invoke-static {p0}, Lseekpatch/Screens;->attach(Landroid/app/Activity;)V
 
@@ -240,7 +246,7 @@
 
     if-eqz p0, :cond_0
 
-    .line 241
+    .line 254
     :try_start_0
     invoke-virtual {p1, p0}, Ljava/lang/Class;->isAssignableFrom(Ljava/lang/Class;)Z
 
@@ -250,7 +256,7 @@
 
     const/4 p1, 0x2
 
-    .line 242
+    .line 255
     new-array p1, p1, [Ljava/lang/Class;
 
     const-class v0, Landroid/content/Context;
@@ -304,7 +310,7 @@
 
     const/4 v2, 0x2
 
-    .line 227
+    .line 240
     :try_start_0
     new-array v2, v2, [Ljava/lang/Object;
 
@@ -327,7 +333,7 @@
     :catchall_0
     move-exception v2
 
-    .line 229
+    .line 242
     new-instance v3, Ljava/lang/StringBuilder;
 
     const-string v4, "settings: "
@@ -352,7 +358,7 @@
 
     invoke-static {v3, p1, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 233
+    .line 246
     :cond_0
     :try_start_1
     new-array p1, v1, [Ljava/lang/Class;
@@ -382,12 +388,40 @@
     :catch_0
     move-exception p0
 
-    .line 235
+    .line 248
     new-instance p1, Ljava/lang/IllegalStateException;
 
     invoke-direct {p1, p0}, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/Throwable;)V
 
     throw p1
+.end method
+
+.method private static grey(Ljava/lang/String;)Ljava/lang/CharSequence;
+    .locals 4
+
+    .line 226
+    new-instance v0, Landroid/text/SpannableString;
+
+    invoke-direct {v0, p0}, Landroid/text/SpannableString;-><init>(Ljava/lang/CharSequence;)V
+
+    .line 227
+    new-instance p0, Landroid/text/style/ForegroundColorSpan;
+
+    const v1, -0x333334
+
+    invoke-direct {p0, v1}, Landroid/text/style/ForegroundColorSpan;-><init>(I)V
+
+    invoke-virtual {v0}, Landroid/text/SpannableString;->length()I
+
+    move-result v1
+
+    const/16 v2, 0x12
+
+    const/4 v3, 0x0
+
+    invoke-virtual {v0, p0, v3, v1, v2}, Landroid/text/SpannableString;->setSpan(Ljava/lang/Object;III)V
+
+    return-object v0
 .end method
 
 .method private static listClass(Ljava/lang/Class;)Ljava/lang/Class;
@@ -402,12 +436,12 @@
         }
     .end annotation
 
-    .line 252
+    .line 265
     invoke-virtual {p0}, Ljava/lang/Class;->getName()Ljava/lang/String;
 
     move-result-object v0
 
-    .line 253
+    .line 266
     const-string v1, "SwitchPreference"
 
     invoke-virtual {v0, v1}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
@@ -424,7 +458,7 @@
 
     if-nez v1, :cond_0
 
-    .line 255
+    .line 268
     :try_start_0
     new-instance v1, Ljava/lang/StringBuilder;
 
@@ -452,12 +486,12 @@
 
     move-result-object v0
 
-    .line 256
+    .line 269
     invoke-virtual {p0}, Ljava/lang/Class;->getClassLoader()Ljava/lang/ClassLoader;
 
     move-result-object p0
 
-    .line 255
+    .line 268
     invoke-static {v0, v3, p0}, Ljava/lang/Class;->forName(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;
 
     move-result-object p0
@@ -466,7 +500,7 @@
 
     return-object p0
 
-    .line 261
+    .line 274
     :catch_0
     :cond_0
     const-class p0, Landroid/preference/ListPreference;
@@ -481,7 +515,7 @@
 
     move v1, v0
 
-    .line 149
+    .line 154
     :goto_0
     sget-object v2, Lseekpatch/Settings;->SECTIONS:[Ljava/lang/String;
 
@@ -489,7 +523,7 @@
 
     if-ge v1, v2, :cond_1
 
-    .line 150
+    .line 155
     sget-object v2, Lseekpatch/Settings;->loads:[Ljava/lang/reflect/Method;
 
     aget-object v2, v2, v1
@@ -498,7 +532,7 @@
 
     const/4 v3, 0x1
 
-    .line 152
+    .line 157
     :try_start_0
     new-array v3, v3, [Ljava/lang/Object;
 
@@ -515,7 +549,7 @@
     :catchall_0
     move-exception v2
 
-    .line 154
+    .line 159
     new-instance v3, Ljava/lang/StringBuilder;
 
     const-string v4, "settings: "
@@ -553,7 +587,7 @@
 .method private static padEnd(Landroid/preference/PreferenceFragment;)V
     .locals 5
 
-    .line 112
+    .line 117
     :try_start_0
     invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getView()Landroid/view/View;
 
@@ -565,7 +599,7 @@
 
     const v1, 0x102000a
 
-    .line 113
+    .line 118
     invoke-virtual {p0, v1}, Landroid/view/View;->findViewById(I)Landroid/view/View;
 
     move-result-object p0
@@ -578,7 +612,7 @@
     :goto_0
     if-eqz p0, :cond_1
 
-    .line 114
+    .line 119
     invoke-virtual {p0}, Landroid/view/View;->getRootWindowInsets()Landroid/view/WindowInsets;
 
     move-result-object v0
@@ -588,7 +622,7 @@
 
     if-eqz v0, :cond_2
 
-    .line 115
+    .line 120
     invoke-virtual {v0}, Landroid/view/WindowInsets;->getSystemWindowInsetBottom()I
 
     move-result v0
@@ -598,7 +632,7 @@
     :cond_2
     move v0, v1
 
-    .line 116
+    .line 121
     :goto_1
     instance-of v2, p0, Landroid/widget/ListView;
 
@@ -606,13 +640,13 @@
 
     if-lez v0, :cond_3
 
-    .line 117
+    .line 122
     check-cast p0, Landroid/widget/ListView;
 
-    .line 118
+    .line 123
     invoke-virtual {p0, v1}, Landroid/widget/ListView;->setClipToPadding(Z)V
 
-    .line 119
+    .line 124
     invoke-virtual {p0}, Landroid/widget/ListView;->getPaddingLeft()I
 
     move-result v1
@@ -640,7 +674,7 @@
     :catchall_0
     move-exception p0
 
-    .line 122
+    .line 127
     const-string v0, "seek-patch"
 
     const-string v1, "settings: list not padded"
@@ -659,13 +693,13 @@
 
     monitor-enter v0
 
-    .line 127
+    .line 132
     :try_start_0
     sget-object v1, Lseekpatch/Settings;->prefs:Landroid/content/SharedPreferences;
 
     if-nez v1, :cond_1
 
-    .line 128
+    .line 133
     sget-object v1, Lseekpatch/Settings;->SECTIONS:[Ljava/lang/String;
 
     array-length v2, v1
@@ -674,7 +708,7 @@
 
     sput-object v2, Lseekpatch/Settings;->loads:[Ljava/lang/reflect/Method;
 
-    .line 129
+    .line 134
     array-length v1, v1
 
     new-array v1, v1, [Ljava/lang/reflect/Method;
@@ -685,7 +719,7 @@
 
     move v2, v1
 
-    .line 130
+    .line 135
     :goto_0
     sget-object v3, Lseekpatch/Settings;->SECTIONS:[Ljava/lang/String;
 
@@ -695,7 +729,7 @@
 
     if-ge v2, v4, :cond_0
 
-    .line 132
+    .line 137
     :try_start_1
     aget-object v3, v3, v2
 
@@ -703,7 +737,7 @@
 
     move-result-object v3
 
-    .line 133
+    .line 138
     sget-object v4, Lseekpatch/Settings;->loads:[Ljava/lang/reflect/Method;
 
     const-string v5, "load"
@@ -722,7 +756,7 @@
 
     aput-object v5, v4, v2
 
-    .line 134
+    .line 139
     sget-object v4, Lseekpatch/Settings;->screens:[Ljava/lang/reflect/Method;
 
     const-string v5, "screen"
@@ -753,7 +787,7 @@
     :catchall_0
     move-exception v3
 
-    .line 138
+    .line 143
     :try_start_2
     const-string v4, "seek-patch"
 
@@ -787,7 +821,7 @@
 
     goto :goto_0
 
-    .line 141
+    .line 146
     :cond_0
     invoke-virtual {p0}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
 
@@ -801,17 +835,17 @@
 
     sput-object p0, Lseekpatch/Settings;->prefs:Landroid/content/SharedPreferences;
 
-    .line 142
+    .line 147
     sget-object v1, Lseekpatch/Settings;->LISTENER:Landroid/content/SharedPreferences$OnSharedPreferenceChangeListener;
 
     invoke-interface {p0, v1}, Landroid/content/SharedPreferences;->registerOnSharedPreferenceChangeListener(Landroid/content/SharedPreferences$OnSharedPreferenceChangeListener;)V
 
-    .line 143
+    .line 148
     sget-object p0, Lseekpatch/Settings;->prefs:Landroid/content/SharedPreferences;
 
     invoke-static {p0}, Lseekpatch/Settings;->load(Landroid/content/SharedPreferences;)V
 
-    .line 145
+    .line 150
     :cond_1
     sget-object p0, Lseekpatch/Settings;->prefs:Landroid/content/SharedPreferences;
     :try_end_2
@@ -832,7 +866,7 @@
 .method private static prepare(Landroid/preference/Preference;Ljava/lang/String;Ljava/lang/String;)V
     .locals 2
 
-    .line 219
+    .line 232
     new-instance v0, Ljava/lang/StringBuilder;
 
     const-string v1, "seekpatch_"
@@ -849,10 +883,10 @@
 
     const/4 p1, 0x0
 
-    .line 220
+    .line 233
     invoke-virtual {p0, p1}, Landroid/preference/Preference;->setPersistent(Z)V
 
-    .line 221
+    .line 234
     invoke-virtual {p0, p2}, Landroid/preference/Preference;->setTitle(Ljava/lang/CharSequence;)V
 
     return-void
@@ -863,7 +897,7 @@
 
     const/4 v0, 0x0
 
-    .line 163
+    .line 168
     :try_start_0
     const-class v1, Lseekpatch/Settings;
 
@@ -886,7 +920,7 @@
 .method public static screen(Landroid/preference/PreferenceFragment;)V
     .locals 7
 
-    .line 82
+    .line 87
     const-string v0, "seek-patch"
 
     :try_start_0
@@ -898,14 +932,14 @@
 
     move-result-object v1
 
-    .line 83
+    .line 88
     const-string v2, "use_smoothing"
 
     invoke-virtual {p0, v2}, Landroid/preference/PreferenceFragment;->findPreference(Ljava/lang/CharSequence;)Landroid/preference/Preference;
 
     move-result-object v2
 
-    .line 84
+    .line 89
     instance-of v3, v2, Landroid/preference/SwitchPreference;
 
     if-eqz v3, :cond_0
@@ -919,7 +953,7 @@
     :cond_0
     const-class v2, Landroid/preference/SwitchPreference;
 
-    .line 85
+    .line 90
     :goto_0
     const-class v3, Landroid/preference/SwitchPreference;
 
@@ -929,7 +963,7 @@
 
     sput-object v3, Lseekpatch/Settings;->switchType:Ljava/lang/reflect/Constructor;
 
-    .line 86
+    .line 91
     invoke-static {v2}, Lseekpatch/Settings;->listClass(Ljava/lang/Class;)Ljava/lang/Class;
 
     move-result-object v2
@@ -946,7 +980,7 @@
 
     move v3, v2
 
-    .line 87
+    .line 92
     :goto_1
     sget-object v4, Lseekpatch/Settings;->SECTIONS:[Ljava/lang/String;
 
@@ -954,7 +988,7 @@
 
     if-ge v3, v4, :cond_2
 
-    .line 88
+    .line 93
     sget-object v4, Lseekpatch/Settings;->screens:[Ljava/lang/reflect/Method;
 
     aget-object v4, v4, v3
@@ -965,7 +999,7 @@
 
     const/4 v5, 0x2
 
-    .line 90
+    .line 95
     :try_start_1
     new-array v5, v5, [Ljava/lang/Object;
 
@@ -986,7 +1020,7 @@
     :catchall_0
     move-exception v4
 
-    .line 92
+    .line 97
     :try_start_2
     new-instance v5, Ljava/lang/StringBuilder;
 
@@ -1018,7 +1052,7 @@
 
     goto :goto_1
 
-    .line 97
+    .line 102
     :cond_2
     new-instance v1, Landroid/os/Handler;
 
@@ -1041,7 +1075,7 @@
     :catchall_1
     move-exception p0
 
-    .line 104
+    .line 109
     const-string v1, "settings: none on this screen"
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I

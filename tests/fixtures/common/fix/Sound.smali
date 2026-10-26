@@ -6,9 +6,13 @@
 # instance fields
 .field private a:Landroid/media/MediaCodec;
 
+.field private b:Landroid/media/MediaCodec$BufferInfo;
+
 .field private c:Landroid/media/AudioRecord;
 
 .field private d:I
+
+.field private e:Ljava/nio/ByteBuffer;
 
 
 # direct methods
@@ -67,6 +71,98 @@
     const/4 v3, 0x0
 
     invoke-virtual {v1, v0, v3, v3, v2}, Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
+
+    return-void
+.end method
+
+# the end of the recording: an empty block flagged end of stream (no microphone read)
+.method private f(J)V
+    .locals 8
+
+    iget-object v1, p0, Lfix/Sound;->a:Landroid/media/MediaCodec;
+
+    const/4 v2, 0x0
+
+    move v3, v2
+
+    move v4, v2
+
+    move-wide v5, p1
+
+    const/4 v7, 0x4
+
+    invoke-virtual/range {v1 .. v7}, Landroid/media/MediaCodec;->queueInputBuffer(IIIJI)V
+
+    return-void
+.end method
+
+
+# virtual methods
+# the writer's thread: the next AAC frame
+.method a()Z
+    .locals 4
+
+    iget-object v0, p0, Lfix/Sound;->a:Landroid/media/MediaCodec;
+
+    iget-object v1, p0, Lfix/Sound;->b:Landroid/media/MediaCodec$BufferInfo;
+
+    const-wide/16 v2, 0x2710
+
+    invoke-virtual {v0, v1, v2, v3}, Landroid/media/MediaCodec;->dequeueOutputBuffer(Landroid/media/MediaCodec$BufferInfo;J)I
+
+    move-result v0
+
+    if-ltz v0, :cond_0
+
+    const/4 v0, 0x1
+
+    return v0
+
+    :cond_0
+    const/4 v0, 0x0
+
+    return v0
+.end method
+
+# the microphone's thread: a block read into the encoder, stamped with the time its read started
+.method g(J)V
+    .locals 9
+
+    iget-object v2, p0, Lfix/Sound;->a:Landroid/media/MediaCodec;
+
+    iget-object v0, p0, Lfix/Sound;->c:Landroid/media/AudioRecord;
+
+    iget-object v1, p0, Lfix/Sound;->e:Ljava/nio/ByteBuffer;
+
+    const/16 v3, 0x400
+
+    invoke-virtual {v0, v1, v3}, Landroid/media/AudioRecord;->read(Ljava/nio/ByteBuffer;I)I
+
+    move-result v5
+
+    invoke-virtual {v2}, Landroid/media/MediaCodec;->getInputBuffers()[Ljava/nio/ByteBuffer;
+
+    move-result-object v0
+
+    const/4 v3, 0x0
+
+    aget-object v0, v0, v3
+
+    invoke-virtual {v1}, Ljava/nio/ByteBuffer;->array()[B
+
+    move-result-object v1
+
+    invoke-virtual {v0, v1, v3, v5}, Ljava/nio/ByteBuffer;->put([BII)Ljava/nio/ByteBuffer;
+
+    move v4, v3
+
+    invoke-static {}, Ljava/lang/System;->nanoTime()J
+
+    move-result-wide v6
+
+    const/4 v8, 0x0
+
+    invoke-virtual/range {v2 .. v8}, Landroid/media/MediaCodec;->queueInputBuffer(IIIJI)V
 
     return-void
 .end method

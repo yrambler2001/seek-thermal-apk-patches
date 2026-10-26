@@ -4,7 +4,7 @@
 .source "Floating.java"
 
 # interfaces
-.implements Ljava/util/Comparator;
+.implements Landroid/view/View$OnLayoutChangeListener;
 
 
 # annotations
@@ -17,22 +17,15 @@
     name = null
 .end annotation
 
-.annotation system Ldalvik/annotation/Signature;
-    value = {
-        "Ljava/lang/Object;",
-        "Ljava/util/Comparator<",
-        "Landroid/view/View;",
-        ">;"
-    }
-.end annotation
-
 
 # instance fields
-.field final synthetic val$skip:I
+.field final synthetic val$bar:Landroid/view/View;
+
+.field final synthetic val$parent:Landroid/widget/FrameLayout;
 
 
 # direct methods
-.method constructor <init>(I)V
+.method constructor <init>(Landroid/widget/FrameLayout;Landroid/view/View;)V
     .locals 0
     .annotation system Ldalvik/annotation/Signature;
         value = {
@@ -40,8 +33,10 @@
         }
     .end annotation
 
-    .line 94
-    iput p1, p0, Lseekpatch/Floating$2;->val$skip:I
+    .line 81
+    iput-object p1, p0, Lseekpatch/Floating$2;->val$parent:Landroid/widget/FrameLayout;
+
+    iput-object p2, p0, Lseekpatch/Floating$2;->val$bar:Landroid/view/View;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
@@ -50,69 +45,26 @@
 
 
 # virtual methods
-.method public compare(Landroid/view/View;Landroid/view/View;)I
-    .locals 1
-
-    .line 97
-    invoke-virtual {p1}, Landroid/view/View;->getTag()Ljava/lang/Object;
-
-    move-result-object p1
-
-    check-cast p1, Ljava/lang/String;
-
-    iget v0, p0, Lseekpatch/Floating$2;->val$skip:I
-
-    invoke-virtual {p1, v0}, Ljava/lang/String;->substring(I)Ljava/lang/String;
-
-    move-result-object p1
-
-    invoke-static {p1}, Ljava/lang/Integer;->parseInt(Ljava/lang/String;)I
-
-    move-result p1
-
-    .line 98
-    invoke-virtual {p2}, Landroid/view/View;->getTag()Ljava/lang/Object;
-
-    move-result-object p2
-
-    check-cast p2, Ljava/lang/String;
-
-    iget v0, p0, Lseekpatch/Floating$2;->val$skip:I
-
-    invoke-virtual {p2, v0}, Ljava/lang/String;->substring(I)Ljava/lang/String;
-
-    move-result-object p2
-
-    invoke-static {p2}, Ljava/lang/Integer;->parseInt(Ljava/lang/String;)I
-
-    move-result p2
-
-    sub-int/2addr p1, p2
-
-    return p1
-.end method
-
-.method public bridge synthetic compare(Ljava/lang/Object;Ljava/lang/Object;)I
+.method public onLayoutChange(Landroid/view/View;IIIIIIII)V
     .locals 0
-    .annotation system Ldalvik/annotation/MethodParameters;
-        accessFlags = {
-            0x1000,
-            0x1000
-        }
-        names = {
-            null,
-            null
-        }
-    .end annotation
 
-    .line 94
-    check-cast p1, Landroid/view/View;
+    sub-int/2addr p4, p2
 
-    check-cast p2, Landroid/view/View;
+    sub-int/2addr p8, p6
 
-    invoke-virtual {p0, p1, p2}, Lseekpatch/Floating$2;->compare(Landroid/view/View;Landroid/view/View;)I
+    if-eq p4, p8, :cond_0
 
-    move-result p1
+    .line 85
+    new-instance p2, Lseekpatch/Floating$2$1;
 
-    return p1
+    iget-object p3, p0, Lseekpatch/Floating$2;->val$parent:Landroid/widget/FrameLayout;
+
+    iget-object p4, p0, Lseekpatch/Floating$2;->val$bar:Landroid/view/View;
+
+    invoke-direct {p2, p0, p3, p4}, Lseekpatch/Floating$2$1;-><init>(Lseekpatch/Floating$2;Landroid/widget/FrameLayout;Landroid/view/View;)V
+
+    invoke-virtual {p1, p2}, Landroid/view/View;->post(Ljava/lang/Runnable;)Z
+
+    :cond_0
+    return-void
 .end method

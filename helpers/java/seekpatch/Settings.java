@@ -10,6 +10,9 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -47,6 +50,8 @@ public final class Settings {
     public static final String PREFS = "seekpatch";
     /** The app's "Image smoothing" switch: the class our switches copy (and smoothing_settings hides it). */
     public static final String OLD_SWITCH = "use_smoothing";
+    /** CustomFontListPreference's summary color. */
+    private static final int SUMMARY_COLOR = 0xffcccccc;
     private static final String[] SECTIONS = {"seekpatch.Filters", "seekpatch.FlatSettings", "seekpatch.Upscale",
         "seekpatch.PhotoSettings", "seekpatch.VideoSettings"};
 
@@ -173,7 +178,7 @@ public final class Settings {
         SwitchPreference s = (SwitchPreference) create(g.getContext(), switchType, SwitchPreference.class);
         prepare(s, key, title);
         if (summary != null) {
-            s.setSummary(summary);
+            s.setSummary(grey(summary));
         }
         s.setChecked(p.getBoolean(key, byDefault));
         s.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -213,6 +218,14 @@ public final class Settings {
         });
         g.addPreference(l);
         return l;
+    }
+
+    /** The app's switch colors its title only, and the theme's summary color is dark on some phones (Android 7):
+     * the summary in the grey of the app's own list summaries, on the screen's black. */
+    private static CharSequence grey(String summary) {
+        SpannableString s = new SpannableString(summary);
+        s.setSpan(new ForegroundColorSpan(SUMMARY_COLOR), 0, s.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        return s;
     }
 
     private static void prepare(Preference pref, String key, String title) {

@@ -2,13 +2,14 @@
 good sound.
 
 The stock recording is H.264 at 480x640 and a fixed 1.5 Mbit/s, 15 fps, keyframes every 5 s, and
-mono 44.1 kHz AAC at 64 kbit/s.  The patch changes four places:
+mono 44.1 kHz AAC at 64 kbit/s.  The patch changes six places:
 
     the video encoder       MediaCodec.createEncoderByType + configure in the recorder's
                             constructor become seekpatch.Video.encoder(format): HEVC (or H.264,
                             --video-codec), hardware first, 960x1280 (the photo's pixels), constant QP
                             (--video-qp) where the encoder takes QP bounds, else constant-quality
-                            mode, else a high bitrate; keyframe every second; BT.709 colour tags.
+                            mode, else 12 Mbit/s -- or VBR at a bitrate chosen in the settings;
+                            keyframe every second; BT.709 colour tags.
                             Falls back to the app's own format if no encoder takes these.
     the frame clock         the GL thread handed a frame to the encoder on every *phone-camera*
                             frame (15 fps); the patch hands one over after every thermal upload
@@ -16,10 +17,22 @@ mono 44.1 kHz AAC at 64 kbit/s.  The patch changes four places:
     the microphone          getMinBufferSize / the AudioRecord's rate and channels: 48 kHz stereo,
                             else 48 kHz mono, else the app's own (seekpatch.Audio)
     the sound encoder       AAC-LC at 256 kbit/s stereo / 160 kbit/s mono
+    the sound's bytes       the block's ByteBuffer.array() in the read: the app copies a direct
+                            buffer's array from index 0, where Android keeps its bytes a few in
+                            (a click every block, 50 a second); seekpatch.Audio.samples gives
+                            them from the first
+    the sound's timestamps  queueInputBuffer / dequeueOutputBuffer: each block and each AAC frame
+                            stamped with the time of its first sample, counted in samples (the app
+                            stamps blocks with the time their read started, and Android 7's
+                            encoder gives frames the stamp of the block they start in: the sound
+                            stuttered three times a second); the encoder's 2-byte configuration no
+                            longer goes into the file as a sound frame
 
 Where the release has the settings screen (settings.py), Settings -> Image & Video gets a "Video
-quality" list (seekpatch.VideoSettings): the QP, starting from --video-qp, read again by
-seekpatch.Video at the start of each recording.
+codec" list (H.265 / H.264, starting from --video-codec) and a "Video quality" list
+(seekpatch.VideoSettings): the QP, starting from --video-qp, or a bitrate, 2 - 40 Mbit/s; where the
+encoder takes no QP, only the bitrates, 12 Mbit/s by default.  seekpatch.Video reads them at the
+start of each recording.
 
 The picture is drawn by the same GL code as the live view (the encoder thread calls the render
 thread's draw), so sharp_scaling and the overlays apply to it exactly as on screen.  Sources of the
@@ -45,7 +58,7 @@ CODECS = {"hevc": "video/hevc", "avc": "video/avc"}
 QP_RANGE = (10, 40)
 LONG_SIDE = 1280             # the photo is 1280x960 (16:9: 1280x720)
 MAX_BITRATE = 40_000_000     # ceiling for the constant-QP encoder: keeps the signalled level at 5.1 (HEVC)
-FALLBACK_BITRATE = 24_000_000  # 960x1280 when the encoder has no quality control
+FALLBACK_BITRATE = 12_000_000  # 960x1280 when the encoder has no quality control (the owner's choice)
 
 CREATE_ENCODER = "Landroid/media/MediaCodec;->createEncoderByType(Ljava/lang/String;)Landroid/media/MediaCodec;"
 CONFIGURE = "Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V"
@@ -53,6 +66,10 @@ VIDEO_FORMAT = "Landroid/media/MediaFormat;->createVideoFormat(Ljava/lang/String
 AUDIO_FORMAT = "Landroid/media/MediaFormat;->createAudioFormat(Ljava/lang/String;II)Landroid/media/MediaFormat;"
 MIN_BUFFER = "Landroid/media/AudioRecord;->getMinBufferSize(III)I"
 AUDIO_RECORD = "Landroid/media/AudioRecord;-><init>(IIIII)V"
+AUDIO_READ = "Landroid/media/AudioRecord;->read("
+BUFFER_ARRAY = "Ljava/nio/ByteBuffer;->array()[B"
+QUEUE_INPUT = "Landroid/media/MediaCodec;->queueInputBuffer(IIIJI)V"
+DEQUEUE_OUTPUT = "Landroid/media/MediaCodec;->dequeueOutputBuffer(Landroid/media/MediaCodec$BufferInfo;J)I"
 UPDATE_TEX_IMAGE = "Landroid/graphics/SurfaceTexture;->updateTexImage()V"
 SURFACE_TEXTURE = "Landroid/graphics/SurfaceTexture;"
 VIDEO_FRAME = "seekpatchVideoFrame()V"
@@ -74,6 +91,8 @@ CONFIG_SMALI = """.class public final Lseekpatch/VideoConfig;
 .field public static mime:Ljava/lang/String; = "{mime}"
 
 .field public static qp:I = {qp}
+
+.field public static target:I = 0x0
 """
 
 FRAME_METHOD = """
@@ -196,7 +215,39 @@ def _audio(tree: SmaliTree) -> str:
              "Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V"
            + body[conf.end():])
     tree.replace_method_body(path, m, new)
-    return f"{tree.rel(path)} {m.name}()"
+    return f"{tree.rel(path)} {m.name}()", path
+
+
+def _static_call(body: str, ref: str, helper: str, what: str, note: str) -> str:
+    """The one invoke-virtual of ref in body, as an invoke-static of the helper with the same registers."""
+    call = _one(r"^([ \t]*)invoke-virtual(/range)? (\{[^}]*\}), " + re.escape(ref) + "$", body, what)
+    ind = call.group(1)
+    return (body[:call.start()] + f"{ind}{MARK}: {note}\n"
+            + f"{ind}invoke-static{call.group(2) or ''} {call.group(3)}, {helper}" + body[call.end():])
+
+
+def _sound_clock(tree: SmaliTree, path: str) -> str:
+    """The microphone's blocks and the AAC frames stamped by their samples (seekpatch.Audio.queue / .dequeue)."""
+    text = tree.get(path)
+    reads = [m for m in methods(text) if AUDIO_READ in m.body]
+    if len(reads) != 1 or reads[0].body.count(QUEUE_INPUT) != 1:
+        raise PatchError(f"{NAME}: expected one method that reads the microphone into the AAC encoder, found "
+                         f"{[(m.name, m.body.count(QUEUE_INPUT)) for m in reads]}")
+    body = _static_call(reads[0].body, QUEUE_INPUT, "Lseekpatch/Audio;->queue(Landroid/media/MediaCodec;IIIJI)V",
+                        "queueInputBuffer of the microphone's block", "the block stamped with its first sample's time")
+    body = _static_call(body, BUFFER_ARRAY, "Lseekpatch/Audio;->samples(Ljava/nio/ByteBuffer;)[B",
+                        "array() of the microphone's block", "the block's bytes from its first (a direct buffer's "
+                        "array holds them a few bytes in)")
+    tree.replace_method_body(path, reads[0], body)
+    text = tree.get(path)
+    drains = [m for m in methods(text) if DEQUEUE_OUTPUT in m.body]
+    if len(drains) != 1:
+        raise PatchError(f"{NAME}: expected one method that takes the AAC frames, found {len(drains)}")
+    tree.replace_method_body(path, drains[0], _static_call(
+        drains[0].body, DEQUEUE_OUTPUT,
+        "Lseekpatch/Audio;->dequeue(Landroid/media/MediaCodec;Landroid/media/MediaCodec$BufferInfo;J)I",
+        "dequeueOutputBuffer of the AAC frames", "frames stamped by their samples, no configuration frame"))
+    return f"timestamps by sample count, blocks copied from their first byte ({reads[0].name}(), {drains[0].name}())"
 
 
 def _frame_clock(tree: SmaliTree) -> str:
@@ -247,11 +298,13 @@ def apply(tree: SmaliTree, opts: Options) -> list[str]:
     if not QP_RANGE[0] <= opts.video_qp <= QP_RANGE[1]:
         raise PatchError(f"{NAME}: video QP {opts.video_qp}, expected {QP_RANGE[0]} - {QP_RANGE[1]} (lower = better)")
     encoder = _encoder(tree)
-    audio = _audio(tree)
+    audio, sound_path = _audio(tree)
+    stamps = _sound_clock(tree, sound_path)
     clock = _frame_clock(tree)
     tree.add_class("Lseekpatch/VideoConfig;", CONFIG_SMALI.format(
         mark=MARK, bitrate=hex(FALLBACK_BITRATE), long_side=hex(LONG_SIDE), max_bitrate=hex(MAX_BITRATE),
         mime=smali_escape(CODECS[opts.video_codec]), qp=hex(opts.video_qp)))
     add_helpers(tree, "Video", "Audio")
-    return [f"{opts.video_codec.upper()} QP {opts.video_qp}, long side {LONG_SIDE}: encoder {encoder}, sound {audio}",
+    return [f"{opts.video_codec.upper()} QP {opts.video_qp}, long side {LONG_SIDE}: encoder {encoder}, sound {audio}, "
+            f"{stamps}",
             clock, *optional_settings(tree, NAME, "VideoSettings", "Video quality")]

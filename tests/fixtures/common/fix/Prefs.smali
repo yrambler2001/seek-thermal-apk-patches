@@ -159,3 +159,75 @@
 
     return-void
 .end method
+
+# the temperature unit (default_unit): until one is stored, the default_unit integer resource
+.method public static t(Landroid/content/Context;)Ljava/lang/String;
+    .locals 3
+
+    invoke-virtual {p0}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
+
+    move-result-object v0
+
+    sget v1, Lfix/Ids;->c:I
+
+    invoke-virtual {v0, v1}, Landroid/content/res/Resources;->getInteger(I)I
+
+    move-result v0
+
+    invoke-static {v0}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
+
+    move-result-object v0
+
+    sget-object v1, Lfix/Prefs;->a:Landroid/content/SharedPreferences;
+
+    const-string v2, "units"
+
+    invoke-interface {v1, v2, v0}, Landroid/content/SharedPreferences;->getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method
+
+# a default derived from the unit (default_unit): a threshold of 80 (Fahrenheit) or 27 (Celsius)
+.method public static u(Landroid/content/Context;)I
+    .locals 2
+
+    invoke-virtual {p0}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
+
+    move-result-object v0
+
+    sget v1, Lfix/Ids;->c:I
+
+    invoke-virtual {v0, v1}, Landroid/content/res/Resources;->getInteger(I)I
+
+    move-result v0
+
+    if-nez v0, :cond_0
+
+    const/16 v0, 0x50
+
+    return v0
+
+    :cond_0
+    const/16 v0, 0x1b
+
+    return v0
+.end method
+
+# another integer resource (default_unit leaves it)
+.method public static w(Landroid/content/Context;)I
+    .locals 2
+
+    invoke-virtual {p0}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
+
+    move-result-object v0
+
+    sget v1, Lfix/Ids;->a:I
+
+    invoke-virtual {v0, v1}, Landroid/content/res/Resources;->getInteger(I)I
+
+    move-result v0
+
+    return v0
+.end method

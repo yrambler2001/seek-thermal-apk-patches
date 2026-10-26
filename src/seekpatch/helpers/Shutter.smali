@@ -177,12 +177,10 @@
 
     move-result-object v0
 
-    const/4 v1, 0x1
-
-    const/16 v2, 0x14
+    const/16 v1, 0x14
 
     .line 73
-    invoke-static {p0, v0, v1, v2}, Lseekpatch/Floating;->place(Landroid/app/Activity;Landroid/view/View;ZI)Z
+    invoke-static {p0, v0, v2, v1}, Lseekpatch/Floating;->place(Landroid/app/Activity;Landroid/view/View;ZI)Z
 
     move-result p0
 

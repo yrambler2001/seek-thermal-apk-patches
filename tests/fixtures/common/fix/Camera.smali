@@ -10,9 +10,13 @@
 
 
 # instance fields
+.field protected a:Landroid/hardware/usb/UsbDevice;
+
 .field protected b:Ljava/util/ArrayList;
 
 .field protected d:Ljava/lang/Runnable;
+
+.field protected m:Landroid/hardware/usb/UsbManager;
 
 .field protected n:Lfix/UsbLink;
 
@@ -123,7 +127,15 @@
 
 # the search: permission asked for each camera
 .method private G()V
-    .locals 0
+    .locals 3
+
+    iget-object v0, p0, Lfix/Camera;->m:Landroid/hardware/usb/UsbManager;
+
+    iget-object v1, p0, Lfix/Camera;->a:Landroid/hardware/usb/UsbDevice;
+
+    sget-object v2, Lfix/Camera;->p:Landroid/app/PendingIntent;
+
+    invoke-virtual {v0, v1, v2}, Landroid/hardware/usb/UsbManager;->requestPermission(Landroid/hardware/usb/UsbDevice;Landroid/app/PendingIntent;)V
 
     return-void
 .end method

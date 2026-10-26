@@ -175,3 +175,21 @@
 
     return-void
 .end method
+
+# the camera screen coming back (reconnect_fix, 2.3.0+): it finishes when the DeviceManager has no camera
+.method protected onRestart()V
+    .locals 1
+
+    invoke-static {}, Lfix/Devices;->g()Z
+
+    move-result v0
+
+    if-nez v0, :cond_0
+
+    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+
+    :cond_0
+    invoke-super {p0}, Landroid/app/Activity;->onRestart()V
+
+    return-void
+.end method

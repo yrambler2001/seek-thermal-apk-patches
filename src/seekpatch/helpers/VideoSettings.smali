@@ -5,9 +5,21 @@
 
 
 # static fields
+.field private static final AVC:Ljava/lang/String; = "video/avc"
+
+.field private static final BITRATES:[I
+
 .field private static final CHOICES:[I
 
+.field private static final CODEC:Ljava/lang/String; = "video_codec"
+
 .field private static final DEFAULT:I
+
+.field private static final DEFAULT_MIME:Ljava/lang/String;
+
+.field private static final HEVC:Ljava/lang/String; = "video/hevc"
+
+.field private static final MBPS:Ljava/lang/String; = "m"
 
 .field private static final MB_PER_MIN:[I
 
@@ -15,7 +27,11 @@
 
 .field private static final TAG:Ljava/lang/String; = "seek-patch"
 
-.field private static loaded:I
+.field private static loadedMime:Ljava/lang/String;
+
+.field private static loadedQp:I
+
+.field private static loadedTarget:I
 
 
 # direct methods
@@ -24,29 +40,60 @@
 
     const/16 v0, 0x8
 
-    .line 19
+    .line 34
     new-array v1, v0, [I
 
     fill-array-data v1, :array_0
 
     sput-object v1, Lseekpatch/VideoSettings;->CHOICES:[I
 
-    .line 20
+    .line 35
     new-array v0, v0, [I
 
     fill-array-data v0, :array_1
 
     sput-object v0, Lseekpatch/VideoSettings;->MB_PER_MIN:[I
 
-    .line 22
+    const/16 v0, 0x9
+
+    .line 36
+    new-array v0, v0, [I
+
+    fill-array-data v0, :array_2
+
+    sput-object v0, Lseekpatch/VideoSettings;->BITRATES:[I
+
+    .line 38
     sget v0, Lseekpatch/VideoConfig;->qp:I
 
     sput v0, Lseekpatch/VideoSettings;->DEFAULT:I
 
+    .line 39
+    sget-object v0, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
+
+    const-string v1, "video/avc"
+
+    invoke-virtual {v1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_0
+
+    goto :goto_0
+
+    :cond_0
+    const-string v1, "video/hevc"
+
+    :goto_0
+    sput-object v1, Lseekpatch/VideoSettings;->DEFAULT_MIME:Ljava/lang/String;
+
     const/4 v0, -0x1
 
-    .line 24
-    sput v0, Lseekpatch/VideoSettings;->loaded:I
+    .line 41
+    sput v0, Lseekpatch/VideoSettings;->loadedQp:I
+
+    .line 42
+    sput v0, Lseekpatch/VideoSettings;->loadedTarget:I
 
     return-void
 
@@ -73,19 +120,41 @@
         0x17
         0x10
     .end array-data
+
+    :array_2
+    .array-data 4
+        0x2
+        0x4
+        0x6
+        0x8
+        0xc
+        0x10
+        0x14
+        0x1e
+        0x28
+    .end array-data
 .end method
 
 .method private constructor <init>()V
     .locals 0
 
-    .line 26
+    .line 45
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
 .end method
 
-.method private static add(Ljava/util/List;Ljava/util/List;II)V
-    .locals 3
+.method static synthetic access$000(Landroid/preference/ListPreference;Landroid/content/SharedPreferences;)V
+    .locals 0
+
+    .line 27
+    invoke-static {p0, p1}, Lseekpatch/VideoSettings;->entries(Landroid/preference/ListPreference;Landroid/content/SharedPreferences;)V
+
+    return-void
+.end method
+
+.method private static addMbps(Ljava/util/List;Ljava/util/List;IZ)V
+    .locals 5
     .annotation system Ldalvik/annotation/Signature;
         value = {
             "(",
@@ -94,147 +163,215 @@
             ">;",
             "Ljava/util/List<",
             "Ljava/lang/String;",
-            ">;II)V"
+            ">;IZ)V"
         }
     .end annotation
 
-    .line 60
-    const-string v0, "video/avc"
+    .line 144
+    new-instance v0, Ljava/lang/StringBuilder;
 
-    sget-object v1, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
+    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
 
-    invoke-virtual {v0, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    invoke-virtual {v0, p2}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
 
-    move-result v0
+    const-string v1, " Mbit/s: about "
 
-    .line 61
-    new-instance v1, Ljava/lang/StringBuilder;
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v2, "QP "
+    int-to-double v1, p2
 
-    invoke-direct {v1, v2}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+    const-wide/high16 v3, 0x401e000000000000L    # 7.5
 
-    invoke-virtual {v1, p2}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    mul-double/2addr v1, v3
 
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-static {v1, v2}, Ljava/lang/Math;->round(D)J
 
-    move-result-object v1
+    move-result-wide v1
+
+    invoke-virtual {v0, v1, v2}, Ljava/lang/StringBuilder;->append(J)Ljava/lang/StringBuilder;
+
+    const-string v1, " MB a minute"
+
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    if-eqz p3, :cond_0
+
+    const-string p3, " (default)"
+
+    goto :goto_0
+
+    :cond_0
+    const-string p3, ""
+
+    :goto_0
+    invoke-virtual {v0, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p3
+
+    invoke-interface {p0, p3}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+
+    .line 145
+    new-instance p0, Ljava/lang/StringBuilder;
+
+    const-string p3, "m"
+
+    invoke-direct {p0, p3}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    invoke-virtual {p0, p2}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    invoke-virtual {p0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p0
+
+    invoke-interface {p1, p0}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+
+    return-void
+.end method
+
+.method private static addQp(Ljava/util/List;Ljava/util/List;IIZ)V
+    .locals 2
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Ljava/util/List<",
+            "Ljava/lang/String;",
+            ">;",
+            "Ljava/util/List<",
+            "Ljava/lang/String;",
+            ">;IIZ)V"
+        }
+    .end annotation
+
+    .line 149
+    new-instance v0, Ljava/lang/StringBuilder;
+
+    const-string v1, "QP "
+
+    invoke-direct {v0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    invoke-virtual {v0, p2}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v0
 
     if-lez p3, :cond_1
 
-    .line 63
-    new-instance v2, Ljava/lang/StringBuilder;
+    .line 151
+    new-instance v1, Ljava/lang/StringBuilder;
 
-    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
 
-    invoke-virtual {v2, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v1, ": about "
+    const-string v0, ": about "
 
-    invoke-virtual {v2, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     int-to-float p3, p3
 
-    if-eqz v0, :cond_0
+    if-eqz p4, :cond_0
 
-    const v0, 0x3f99999a    # 1.2f
+    const p4, 0x3f99999a    # 1.2f
 
-    mul-float/2addr p3, v0
+    mul-float/2addr p3, p4
 
     :cond_0
     invoke-static {p3}, Ljava/lang/Math;->round(F)I
 
     move-result p3
 
-    invoke-virtual {v2, p3}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    invoke-virtual {v1, p3}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
 
     const-string p3, " MB a minute"
 
-    invoke-virtual {v2, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v1, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v1
+    move-result-object v0
 
-    .line 65
+    .line 153
     :cond_1
     sget-object p3, Lseekpatch/VideoSettings;->CHOICES:[I
 
-    const/4 v0, 0x0
+    const/4 p4, 0x0
 
-    aget v0, p3, v0
+    aget p4, p3, p4
 
-    if-ne p2, v0, :cond_2
+    if-ne p2, p4, :cond_2
 
-    .line 66
+    .line 154
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
 
-    invoke-virtual {p3, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v0, ", best"
-
     invoke-virtual {p3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string p4, ", best"
+
+    invoke-virtual {p3, p4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     invoke-virtual {p3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v1
+    move-result-object v0
 
     goto :goto_0
 
-    .line 67
+    .line 155
     :cond_2
-    array-length v0, p3
+    array-length p4, p3
 
-    add-int/lit8 v0, v0, -0x1
+    add-int/lit8 p4, p4, -0x1
 
-    aget p3, p3, v0
+    aget p3, p3, p4
 
     if-ne p2, p3, :cond_3
 
-    .line 68
+    .line 156
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
 
-    invoke-virtual {p3, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v0, ", smallest"
-
     invoke-virtual {p3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string p4, ", smallest"
+
+    invoke-virtual {p3, p4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     invoke-virtual {p3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v1
+    move-result-object v0
 
-    .line 70
+    .line 158
     :cond_3
     :goto_0
     sget p3, Lseekpatch/VideoSettings;->DEFAULT:I
 
     if-ne p2, p3, :cond_4
 
-    .line 71
+    .line 159
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
 
-    invoke-virtual {p3, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v0, " (default)"
-
     invoke-virtual {p3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string p4, " (default)"
+
+    invoke-virtual {p3, p4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     invoke-virtual {p3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v1
+    move-result-object v0
 
-    .line 73
+    .line 161
     :cond_4
-    invoke-interface {p0, v1}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    invoke-interface {p0, v0}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
-    .line 74
+    .line 162
     invoke-static {p2}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
 
     move-result-object p0
@@ -244,38 +381,579 @@
     return-void
 .end method
 
-.method public static load(Landroid/content/SharedPreferences;)V
-    .locals 1
+.method private static encoder(Ljava/lang/String;)Lseekpatch/Video$Candidate;
+    .locals 4
 
-    .line 31
+    const/16 v0, 0x1e0
+
+    const/16 v1, 0x280
+
+    .line 168
+    :try_start_0
+    invoke-static {v0, v1}, Lseekpatch/Video;->photoSize(II)[I
+
+    move-result-object v0
+
+    const/4 v1, 0x0
+
+    .line 169
+    aget v2, v0, v1
+
+    const/4 v3, 0x1
+
+    aget v0, v0, v3
+
+    invoke-static {p0, v2, v0}, Lseekpatch/Video;->candidates(Ljava/lang/String;II)Ljava/util/List;
+
+    move-result-object p0
+
+    .line 170
+    invoke-interface {p0}, Ljava/util/List;->isEmpty()Z
+
+    move-result v0
+
+    if-nez v0, :cond_0
+
+    .line 171
+    invoke-interface {p0, v1}, Ljava/util/List;->get(I)Ljava/lang/Object;
+
+    move-result-object p0
+
+    check-cast p0, Lseekpatch/Video$Candidate;
+    :try_end_0
+    .catch Ljava/lang/RuntimeException; {:try_start_0 .. :try_end_0} :catch_0
+
+    return-object p0
+
+    :catch_0
+    move-exception p0
+
+    .line 174
+    const-string v0, "seek-patch"
+
+    const-string v1, "video_quality: encoders not listed"
+
+    invoke-static {v0, v1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+
+    .line 176
+    :cond_0
+    new-instance p0, Lseekpatch/Video$Candidate;
+
+    const/4 v0, 0x0
+
+    const-string v1, "video/avc"
+
+    invoke-direct {p0, v0, v1}, Lseekpatch/Video$Candidate;-><init>(Landroid/media/MediaCodecInfo;Ljava/lang/String;)V
+
+    return-object p0
+.end method
+
+.method private static entries(Landroid/preference/ListPreference;Landroid/content/SharedPreferences;)V
+    .locals 19
+
+    move-object/from16 v0, p0
+
+    .line 91
+    invoke-static/range {p1 .. p1}, Lseekpatch/VideoSettings;->mime(Landroid/content/SharedPreferences;)Ljava/lang/String;
+
+    move-result-object v1
+
+    invoke-static {v1}, Lseekpatch/VideoSettings;->encoder(Ljava/lang/String;)Lseekpatch/Video$Candidate;
+
+    move-result-object v1
+
+    .line 92
+    const-string v2, "video/hevc"
+
+    iget-object v3, v1, Lseekpatch/Video$Candidate;->mime:Ljava/lang/String;
+
+    invoke-virtual {v2, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v2
+
+    const/4 v3, 0x1
+
+    xor-int/2addr v2, v3
+
+    .line 95
+    sget v4, Lseekpatch/VideoConfig;->bitrate:I
+
+    .line 96
+    iget-object v5, v1, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
+
+    const/4 v6, 0x0
+
+    if-eqz v5, :cond_2
+
+    .line 97
+    iget-object v4, v1, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
+
+    iget-object v1, v1, Lseekpatch/Video$Candidate;->mime:Ljava/lang/String;
+
+    invoke-virtual {v4, v1}, Landroid/media/MediaCodecInfo;->getCapabilitiesForType(Ljava/lang/String;)Landroid/media/MediaCodecInfo$CodecCapabilities;
+
+    move-result-object v1
+
+    .line 98
+    invoke-virtual {v1}, Landroid/media/MediaCodecInfo$CodecCapabilities;->getVideoCapabilities()Landroid/media/MediaCodecInfo$VideoCapabilities;
+
+    move-result-object v4
+
+    invoke-virtual {v4}, Landroid/media/MediaCodecInfo$VideoCapabilities;->getBitrateRange()Landroid/util/Range;
+
+    move-result-object v4
+
+    invoke-virtual {v4}, Landroid/util/Range;->getUpper()Ljava/lang/Comparable;
+
+    move-result-object v4
+
+    check-cast v4, Ljava/lang/Integer;
+
+    invoke-virtual {v4}, Ljava/lang/Integer;->intValue()I
+
+    move-result v4
+
+    .line 99
+    invoke-static {v1}, Lseekpatch/Video;->takesQp(Landroid/media/MediaCodecInfo$CodecCapabilities;)Z
+
+    move-result v5
+
+    if-nez v5, :cond_1
+
+    .line 100
+    invoke-virtual {v1}, Landroid/media/MediaCodecInfo$CodecCapabilities;->getEncoderCapabilities()Landroid/media/MediaCodecInfo$EncoderCapabilities;
+
+    move-result-object v1
+
+    invoke-virtual {v1, v6}, Landroid/media/MediaCodecInfo$EncoderCapabilities;->isBitrateModeSupported(I)Z
+
+    move-result v1
+
+    if-eqz v1, :cond_0
+
+    goto :goto_0
+
+    :cond_0
+    move v1, v6
+
+    goto :goto_1
+
+    :cond_1
+    :goto_0
+    move v1, v3
+
+    :goto_1
+    const/16 v5, 0x1e0
+
+    const/16 v7, 0x280
+
+    .line 101
+    invoke-static {v5, v7}, Lseekpatch/Video;->photoSize(II)[I
+
+    move-result-object v5
+
+    .line 102
+    aget v7, v5, v6
+
+    aget v5, v5, v3
+
+    invoke-static {v7, v5}, Lseekpatch/Video;->fallbackBitrate(II)I
+
+    move-result v5
+
+    invoke-static {v4, v5}, Ljava/lang/Math;->min(II)I
+
+    move-result v5
+
+    move/from16 v18, v5
+
+    move v5, v4
+
+    move/from16 v4, v18
+
+    goto :goto_2
+
+    :cond_2
+    const v1, 0x7fffffff
+
+    move v5, v1
+
+    move v1, v3
+
+    .line 104
+    :goto_2
+    new-instance v7, Ljava/util/ArrayList;
+
+    invoke-direct {v7}, Ljava/util/ArrayList;-><init>()V
+
+    .line 105
+    new-instance v8, Ljava/util/ArrayList;
+
+    invoke-direct {v8}, Ljava/util/ArrayList;-><init>()V
+
+    int-to-double v9, v4
+
+    const-wide v11, 0x412e848000000000L    # 1000000.0
+
+    div-double/2addr v9, v11
+
+    .line 106
+    invoke-static {v9, v10}, Ljava/lang/Math;->round(D)J
+
+    move-result-wide v9
+
+    long-to-int v4, v9
+
+    .line 107
+    invoke-static/range {p1 .. p1}, Lseekpatch/VideoSettings;->value(Landroid/content/SharedPreferences;)Ljava/lang/String;
+
+    move-result-object v9
+
+    if-eqz v1, :cond_6
+
+    move v10, v6
+
+    move v11, v10
+
+    .line 110
+    :goto_3
+    sget-object v12, Lseekpatch/VideoSettings;->CHOICES:[I
+
+    array-length v13, v12
+
+    if-ge v10, v13, :cond_5
+
+    if-nez v11, :cond_3
+
+    .line 111
+    sget v13, Lseekpatch/VideoSettings;->DEFAULT:I
+
+    aget v14, v12, v10
+
+    if-ge v13, v14, :cond_3
+
+    .line 112
+    invoke-static {v7, v8, v13, v6, v2}, Lseekpatch/VideoSettings;->addQp(Ljava/util/List;Ljava/util/List;IIZ)V
+
+    move v11, v3
+
+    .line 115
+    :cond_3
+    aget v12, v12, v10
+
+    sget v13, Lseekpatch/VideoSettings;->DEFAULT:I
+
+    if-ne v12, v13, :cond_4
+
+    move v13, v3
+
+    goto :goto_4
+
+    :cond_4
+    move v13, v6
+
+    :goto_4
+    or-int/2addr v11, v13
+
+    .line 116
+    sget-object v13, Lseekpatch/VideoSettings;->MB_PER_MIN:[I
+
+    aget v13, v13, v10
+
+    invoke-static {v7, v8, v12, v13, v2}, Lseekpatch/VideoSettings;->addQp(Ljava/util/List;Ljava/util/List;IIZ)V
+
+    add-int/lit8 v10, v10, 0x1
+
+    goto :goto_3
+
+    :cond_5
+    if-nez v11, :cond_7
+
+    .line 119
+    sget v10, Lseekpatch/VideoSettings;->DEFAULT:I
+
+    invoke-static {v7, v8, v10, v6, v2}, Lseekpatch/VideoSettings;->addQp(Ljava/util/List;Ljava/util/List;IIZ)V
+
+    goto :goto_5
+
+    .line 121
+    :cond_6
+    invoke-static/range {p1 .. p1}, Lseekpatch/VideoSettings;->target(Landroid/content/SharedPreferences;)I
+
+    move-result v2
+
+    if-nez v2, :cond_7
+
+    .line 122
+    new-instance v2, Ljava/lang/StringBuilder;
+
+    const-string v9, "m"
+
+    invoke-direct {v2, v9}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    invoke-virtual {v2, v4}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v9
+
+    .line 125
+    :cond_7
+    :goto_5
+    sget-object v2, Lseekpatch/VideoSettings;->BITRATES:[I
+
+    array-length v10, v2
+
+    move v11, v6
+
+    move v12, v11
+
+    :goto_6
+    if-ge v11, v10, :cond_c
+
+    aget v13, v2, v11
+
+    if-nez v1, :cond_9
+
+    if-nez v12, :cond_9
+
+    if-gt v4, v13, :cond_9
+
+    if-ge v4, v13, :cond_8
+
+    .line 128
+    invoke-static {v7, v8, v4, v3}, Lseekpatch/VideoSettings;->addMbps(Ljava/util/List;Ljava/util/List;IZ)V
+
+    :cond_8
+    move v12, v3
+
+    :cond_9
+    int-to-long v14, v13
+
+    const-wide/32 v16, 0xf4240
+
+    mul-long v14, v14, v16
+
+    move-object/from16 v17, v7
+
+    int-to-long v6, v5
+
+    cmp-long v6, v14, v6
+
+    if-gtz v6, :cond_b
+
+    if-nez v1, :cond_a
+
+    if-ne v13, v4, :cond_a
+
+    move v7, v3
+
+    move-object/from16 v6, v17
+
+    goto :goto_7
+
+    :cond_a
+    move-object/from16 v6, v17
+
+    const/4 v7, 0x0
+
+    .line 133
+    :goto_7
+    invoke-static {v6, v8, v13, v7}, Lseekpatch/VideoSettings;->addMbps(Ljava/util/List;Ljava/util/List;IZ)V
+
+    goto :goto_8
+
+    :cond_b
+    move-object/from16 v6, v17
+
+    :goto_8
+    add-int/lit8 v11, v11, 0x1
+
+    move-object v7, v6
+
+    const/4 v6, 0x0
+
+    goto :goto_6
+
+    :cond_c
+    move-object/from16 v18, v7
+
+    move v7, v6
+
+    move-object/from16 v6, v18
+
+    .line 136
+    new-array v1, v7, [Ljava/lang/String;
+
+    invoke-interface {v6, v1}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
+
+    move-result-object v1
+
+    check-cast v1, [Ljava/lang/CharSequence;
+
+    invoke-virtual {v0, v1}, Landroid/preference/ListPreference;->setEntries([Ljava/lang/CharSequence;)V
+
+    .line 137
+    new-array v1, v7, [Ljava/lang/String;
+
+    invoke-interface {v8, v1}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
+
+    move-result-object v1
+
+    check-cast v1, [Ljava/lang/CharSequence;
+
+    invoke-virtual {v0, v1}, Landroid/preference/ListPreference;->setEntryValues([Ljava/lang/CharSequence;)V
+
+    .line 138
+    invoke-virtual {v0, v9}, Landroid/preference/ListPreference;->setValue(Ljava/lang/String;)V
+
+    const/4 v1, 0x0
+
+    .line 139
+    invoke-virtual {v0, v1}, Landroid/preference/ListPreference;->setSummary(Ljava/lang/CharSequence;)V
+
+    .line 140
+    const-string v1, "%s"
+
+    invoke-virtual {v0, v1}, Landroid/preference/ListPreference;->setSummary(Ljava/lang/CharSequence;)V
+
+    return-void
+.end method
+
+.method public static load(Landroid/content/SharedPreferences;)V
+    .locals 3
+
+    .line 50
     invoke-static {p0}, Lseekpatch/VideoSettings;->qp(Landroid/content/SharedPreferences;)I
+
+    move-result v0
+
+    sput v0, Lseekpatch/VideoConfig;->qp:I
+
+    .line 51
+    invoke-static {p0}, Lseekpatch/VideoSettings;->target(Landroid/content/SharedPreferences;)I
+
+    move-result v0
+
+    sput v0, Lseekpatch/VideoConfig;->target:I
+
+    .line 52
+    invoke-static {p0}, Lseekpatch/VideoSettings;->mime(Landroid/content/SharedPreferences;)Ljava/lang/String;
+
+    move-result-object p0
+
+    sput-object p0, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
+
+    .line 53
+    sget p0, Lseekpatch/VideoConfig;->qp:I
+
+    sget v0, Lseekpatch/VideoSettings;->loadedQp:I
+
+    if-ne p0, v0, :cond_0
+
+    sget p0, Lseekpatch/VideoConfig;->target:I
+
+    sget v0, Lseekpatch/VideoSettings;->loadedTarget:I
+
+    if-ne p0, v0, :cond_0
+
+    sget-object p0, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
+
+    sget-object v0, Lseekpatch/VideoSettings;->loadedMime:Ljava/lang/String;
+
+    invoke-virtual {p0, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
     move-result p0
 
-    sput p0, Lseekpatch/VideoConfig;->qp:I
+    if-nez p0, :cond_3
 
-    .line 32
+    .line 54
+    :cond_0
     sget p0, Lseekpatch/VideoConfig;->qp:I
 
-    sget v0, Lseekpatch/VideoSettings;->loaded:I
+    sput p0, Lseekpatch/VideoSettings;->loadedQp:I
 
-    if-eq p0, v0, :cond_0
+    .line 55
+    sget p0, Lseekpatch/VideoConfig;->target:I
 
-    .line 33
-    sget p0, Lseekpatch/VideoConfig;->qp:I
+    sput p0, Lseekpatch/VideoSettings;->loadedTarget:I
 
-    sput p0, Lseekpatch/VideoSettings;->loaded:I
+    .line 56
+    sget-object p0, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
 
-    .line 34
+    sput-object p0, Lseekpatch/VideoSettings;->loadedMime:Ljava/lang/String;
+
+    .line 57
     new-instance p0, Ljava/lang/StringBuilder;
 
-    const-string v0, "video_quality: QP "
+    const-string v0, "video_quality: "
 
     invoke-direct {p0, v0}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
 
-    sget v0, Lseekpatch/VideoSettings;->loaded:I
+    const-string v0, "video/hevc"
 
-    invoke-virtual {p0, v0}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    sget-object v1, Lseekpatch/VideoSettings;->loadedMime:Ljava/lang/String;
+
+    invoke-virtual {v0, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_1
+
+    const-string v0, "H.265"
+
+    goto :goto_0
+
+    :cond_1
+    const-string v0, "H.264"
+
+    :goto_0
+    invoke-virtual {p0, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string v0, " "
+
+    invoke-virtual {p0, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 58
+    sget v0, Lseekpatch/VideoSettings;->loadedTarget:I
+
+    if-lez v0, :cond_2
+
+    new-instance v0, Ljava/lang/StringBuilder;
+
+    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+
+    sget v1, Lseekpatch/VideoSettings;->loadedTarget:I
+
+    const v2, 0xf4240
+
+    div-int/2addr v1, v2
+
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    const-string v1, " Mbit/s"
+
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    goto :goto_1
+
+    :cond_2
+    new-instance v0, Ljava/lang/StringBuilder;
+
+    const-string v1, "QP "
+
+    invoke-direct {v0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    sget v1, Lseekpatch/VideoSettings;->loadedQp:I
+
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    :goto_1
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v0
+
+    invoke-virtual {p0, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     const-string v0, " from the next recording"
 
@@ -285,18 +963,96 @@
 
     move-result-object p0
 
+    .line 57
     const-string v0, "seek-patch"
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    :cond_0
+    :cond_3
     return-void
+.end method
+
+.method private static mark(Ljava/lang/String;)Ljava/lang/String;
+    .locals 1
+
+    .line 86
+    sget-object v0, Lseekpatch/VideoSettings;->DEFAULT_MIME:Ljava/lang/String;
+
+    invoke-virtual {p0, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result p0
+
+    if-eqz p0, :cond_0
+
+    const-string p0, " (default)"
+
+    goto :goto_0
+
+    :cond_0
+    const-string p0, ""
+
+    :goto_0
+    return-object p0
+.end method
+
+.method private static mime(Landroid/content/SharedPreferences;)Ljava/lang/String;
+    .locals 2
+
+    .line 209
+    :try_start_0
+    const-string v0, "video_codec"
+
+    const/4 v1, 0x0
+
+    invoke-interface {p0, v0, v1}, Landroid/content/SharedPreferences;->getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
+
+    .line 210
+    const-string v0, "avc"
+
+    invoke-virtual {v0, p0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_0
+
+    const-string p0, "video/avc"
+
+    goto :goto_0
+
+    :cond_0
+    const-string v0, "hevc"
+
+    invoke-virtual {v0, p0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result p0
+
+    if-eqz p0, :cond_1
+
+    const-string p0, "video/hevc"
+
+    goto :goto_0
+
+    :cond_1
+    sget-object p0, Lseekpatch/VideoSettings;->DEFAULT_MIME:Ljava/lang/String;
+    :try_end_0
+    .catch Ljava/lang/RuntimeException; {:try_start_0 .. :try_end_0} :catch_0
+
+    :goto_0
+    return-object p0
+
+    .line 212
+    :catch_0
+    sget-object p0, Lseekpatch/VideoSettings;->DEFAULT_MIME:Ljava/lang/String;
+
+    return-object p0
 .end method
 
 .method private static qp(Landroid/content/SharedPreferences;)I
     .locals 3
 
-    .line 79
+    .line 186
     :try_start_0
     const-string v0, "video_qp"
 
@@ -329,7 +1085,7 @@
     :cond_0
     return v1
 
-    .line 82
+    .line 189
     :catch_0
     sget p0, Lseekpatch/VideoSettings;->DEFAULT:I
 
@@ -337,135 +1093,259 @@
 .end method
 
 .method public static screen(Landroid/preference/PreferenceFragment;Landroid/content/SharedPreferences;)V
-    .locals 12
+    .locals 10
 
-    .line 40
-    new-instance v0, Ljava/util/ArrayList;
+    const/4 v0, 0x1
 
-    invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
+    .line 65
+    new-array v8, v0, [Landroid/preference/ListPreference;
 
-    .line 41
-    new-instance v1, Ljava/util/ArrayList;
+    .line 66
+    const-string v0, "video/hevc"
 
-    invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
+    invoke-static {v0}, Lseekpatch/VideoSettings;->encoder(Ljava/lang/String;)Lseekpatch/Video$Candidate;
 
-    const/4 v2, 0x0
+    move-result-object v1
 
-    move v3, v2
+    iget-object v1, v1, Lseekpatch/Video$Candidate;->mime:Ljava/lang/String;
 
-    move v4, v3
+    invoke-virtual {v0, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
-    .line 43
-    :goto_0
-    sget-object v5, Lseekpatch/VideoSettings;->CHOICES:[I
+    move-result v1
 
-    array-length v6, v5
+    if-eqz v1, :cond_0
 
-    if-ge v3, v6, :cond_2
+    .line 67
+    const-string v1, "H.265 (HEVC): smaller files"
 
-    const/4 v6, 0x1
+    goto :goto_0
 
-    if-nez v4, :cond_0
-
-    .line 44
-    sget v7, Lseekpatch/VideoSettings;->DEFAULT:I
-
-    aget v8, v5, v3
-
-    if-ge v7, v8, :cond_0
-
-    .line 45
-    invoke-static {v0, v1, v7, v2}, Lseekpatch/VideoSettings;->add(Ljava/util/List;Ljava/util/List;II)V
-
-    move v4, v6
-
-    .line 48
     :cond_0
-    aget v5, v5, v3
+    const-string v1, "H.265 (HEVC): not on this phone, records H.264"
 
-    sget v7, Lseekpatch/VideoSettings;->DEFAULT:I
+    .line 69
+    :goto_0
+    invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
 
-    if-ne v5, v7, :cond_1
+    move-result-object v2
+
+    new-instance v3, Ljava/lang/StringBuilder;
+
+    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v3, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 70
+    invoke-static {v0}, Lseekpatch/VideoSettings;->mark(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
+    invoke-virtual {v3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v0
+
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    const-string v3, "H.264 (AVC): plays everywhere, about 20 % bigger"
+
+    invoke-direct {v1, v3}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    const-string v3, "video/avc"
+
+    invoke-static {v3}, Lseekpatch/VideoSettings;->mark(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
+    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v1
+
+    filled-new-array {v0, v1}, [Ljava/lang/String;
+
+    move-result-object v4
+
+    const-string v0, "hevc"
+
+    const-string v1, "avc"
+
+    filled-new-array {v0, v1}, [Ljava/lang/String;
+
+    move-result-object v5
+
+    .line 71
+    invoke-static {p1}, Lseekpatch/VideoSettings;->mime(Landroid/content/SharedPreferences;)Ljava/lang/String;
+
+    move-result-object v6
+
+    invoke-virtual {v3, v6}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v3
+
+    if-eqz v3, :cond_1
+
+    move-object v6, v1
 
     goto :goto_1
 
     :cond_1
-    move v6, v2
+    move-object v6, v0
 
     :goto_1
-    or-int/2addr v4, v6
+    new-instance v7, Lseekpatch/VideoSettings$1;
 
-    .line 49
-    sget-object v6, Lseekpatch/VideoSettings;->MB_PER_MIN:[I
+    invoke-direct {v7, v8, p1}, Lseekpatch/VideoSettings$1;-><init>([Landroid/preference/ListPreference;Landroid/content/SharedPreferences;)V
 
-    aget v6, v6, v3
+    .line 69
+    const-string v3, "video_codec"
 
-    invoke-static {v0, v1, v5, v6}, Lseekpatch/VideoSettings;->add(Ljava/util/List;Ljava/util/List;II)V
+    const-string v9, "Video codec"
 
-    add-int/lit8 v3, v3, 0x1
+    move-object v0, v2
+
+    move-object v1, p1
+
+    move-object v2, v3
+
+    move-object v3, v9
+
+    invoke-static/range {v0 .. v7}, Lseekpatch/Settings;->addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
+
+    .line 79
+    invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
+
+    move-result-object v0
+
+    const/4 v9, 0x0
+
+    new-array v4, v9, [Ljava/lang/String;
+
+    new-array v5, v9, [Ljava/lang/String;
+
+    .line 80
+    invoke-static {p1}, Lseekpatch/VideoSettings;->value(Landroid/content/SharedPreferences;)Ljava/lang/String;
+
+    move-result-object v6
+
+    const/4 v7, 0x0
+
+    .line 79
+    const-string v2, "video_qp"
+
+    const-string v3, "Video quality"
+
+    invoke-static/range {v0 .. v7}, Lseekpatch/Settings;->addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
+
+    move-result-object v0
+
+    aput-object v0, v8, v9
+
+    .line 81
+    const-string v1, "QP: steady quality, Mbit/s: steady size"
+
+    invoke-virtual {v0, v1}, Landroid/preference/ListPreference;->setDialogTitle(Ljava/lang/CharSequence;)V
+
+    .line 82
+    aget-object v0, v8, v9
+
+    invoke-static {v0, p1}, Lseekpatch/VideoSettings;->entries(Landroid/preference/ListPreference;Landroid/content/SharedPreferences;)V
+
+    return-void
+.end method
+
+.method private static target(Landroid/content/SharedPreferences;)I
+    .locals 3
+
+    const/4 v0, 0x0
+
+    .line 196
+    :try_start_0
+    const-string v1, "video_qp"
+
+    const-string v2, ""
+
+    invoke-interface {p0, v1, v2}, Landroid/content/SharedPreferences;->getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
+
+    .line 197
+    const-string v1, "m"
+
+    invoke-virtual {p0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v1
+
+    if-eqz v1, :cond_0
+
+    const/4 v1, 0x1
+
+    .line 198
+    invoke-virtual {p0, v1}, Ljava/lang/String;->substring(I)Ljava/lang/String;
+
+    move-result-object p0
+
+    invoke-static {p0}, Ljava/lang/Integer;->parseInt(Ljava/lang/String;)I
+
+    move-result p0
+    :try_end_0
+    .catch Ljava/lang/RuntimeException; {:try_start_0 .. :try_end_0} :catch_0
+
+    if-lt p0, v1, :cond_0
+
+    const/16 v1, 0x64
+
+    if-gt p0, v1, :cond_0
+
+    const v0, 0xf4240
+
+    mul-int/2addr v0, p0
+
+    :catch_0
+    :cond_0
+    return v0
+.end method
+
+.method private static value(Landroid/content/SharedPreferences;)Ljava/lang/String;
+    .locals 2
+
+    .line 180
+    invoke-static {p0}, Lseekpatch/VideoSettings;->target(Landroid/content/SharedPreferences;)I
+
+    move-result v0
+
+    if-lez v0, :cond_0
+
+    .line 181
+    new-instance p0, Ljava/lang/StringBuilder;
+
+    const-string v1, "m"
+
+    invoke-direct {p0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+
+    const v1, 0xf4240
+
+    div-int/2addr v0, v1
+
+    invoke-virtual {p0, v0}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    invoke-virtual {p0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p0
 
     goto :goto_0
 
-    :cond_2
-    if-nez v4, :cond_3
-
-    .line 52
-    sget v3, Lseekpatch/VideoSettings;->DEFAULT:I
-
-    invoke-static {v0, v1, v3, v2}, Lseekpatch/VideoSettings;->add(Ljava/util/List;Ljava/util/List;II)V
-
-    .line 54
-    :cond_3
-    invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
-
-    move-result-object v4
-
-    new-array p0, v2, [Ljava/lang/String;
-
-    invoke-interface {v0, p0}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
-
-    move-result-object p0
-
-    move-object v8, p0
-
-    check-cast v8, [Ljava/lang/String;
-
-    new-array p0, v2, [Ljava/lang/String;
-
-    .line 55
-    invoke-interface {v1, p0}, Ljava/util/List;->toArray([Ljava/lang/Object;)[Ljava/lang/Object;
-
-    move-result-object p0
-
-    move-object v9, p0
-
-    check-cast v9, [Ljava/lang/String;
-
-    invoke-static {p1}, Lseekpatch/VideoSettings;->qp(Landroid/content/SharedPreferences;)I
+    :cond_0
+    invoke-static {p0}, Lseekpatch/VideoSettings;->qp(Landroid/content/SharedPreferences;)I
 
     move-result p0
 
     invoke-static {p0}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
 
-    move-result-object v10
-
-    const/4 v11, 0x0
-
-    .line 54
-    const-string v6, "video_qp"
-
-    const-string v7, "Video quality"
-
-    move-object v5, p1
-
-    invoke-static/range {v4 .. v11}, Lseekpatch/Settings;->addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
-
     move-result-object p0
 
-    const-string p1, "Video quality: lower QP is better and bigger (sizes on a still scene)"
-
-    .line 56
-    invoke-virtual {p0, p1}, Landroid/preference/ListPreference;->setDialogTitle(Ljava/lang/CharSequence;)V
-
-    return-void
+    :goto_0
+    return-object p0
 .end method

@@ -13,11 +13,13 @@
 
 
 # static fields
-.field private static final FULL:I = 0x2
+.field private static final FULL:I = 0x3
 
 .field private static final MINIMAL:I = 0x0
 
 .field private static final PLAIN:I = 0x1
+
+.field private static final RATE:I = 0x2
 
 .field private static final TAG:Ljava/lang/String; = "seek-patch"
 
@@ -26,181 +28,181 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 36
+    .line 38
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
 .end method
 
-.method static candidates(II)Ljava/util/List;
-    .locals 13
+.method static candidates(Ljava/lang/String;II)Ljava/util/List;
+    .locals 12
     .annotation system Ldalvik/annotation/Signature;
         value = {
-            "(II)",
+            "(",
+            "Ljava/lang/String;",
+            "II)",
             "Ljava/util/List<",
             "Lseekpatch/Video$Candidate;",
             ">;"
         }
     .end annotation
 
-    .line 90
-    sget-object v0, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
+    .line 92
+    const-string v0, "video/avc"
 
-    const-string v1, "video/avc"
+    invoke-virtual {p0, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
-    invoke-virtual {v0, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-
-    move-result v0
+    move-result v1
 
     const/4 v2, 0x1
 
     const/4 v3, 0x0
 
-    if-eqz v0, :cond_0
+    if-eqz v1, :cond_0
 
-    .line 91
-    new-array v0, v2, [Ljava/lang/String;
+    .line 93
+    new-array p0, v2, [Ljava/lang/String;
 
-    aput-object v1, v0, v3
+    aput-object v0, p0, v3
 
     goto :goto_0
 
     :cond_0
-    const/4 v0, 0x2
+    const/4 v1, 0x2
 
-    .line 92
-    new-array v0, v0, [Ljava/lang/String;
+    .line 94
+    new-array v1, v1, [Ljava/lang/String;
 
-    sget-object v4, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
+    aput-object p0, v1, v3
 
-    aput-object v4, v0, v3
+    aput-object v0, v1, v2
 
-    aput-object v1, v0, v2
+    move-object p0, v1
 
-    .line 93
+    .line 95
     :goto_0
+    new-instance v0, Ljava/util/ArrayList;
+
+    invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
+
+    .line 96
     new-instance v1, Ljava/util/ArrayList;
 
     invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
 
-    .line 94
-    new-instance v2, Ljava/util/ArrayList;
-
-    invoke-direct {v2}, Ljava/util/ArrayList;-><init>()V
-
-    .line 95
-    new-instance v4, Landroid/media/MediaCodecList;
-
-    invoke-direct {v4, v3}, Landroid/media/MediaCodecList;-><init>(I)V
-
-    invoke-virtual {v4}, Landroid/media/MediaCodecList;->getCodecInfos()[Landroid/media/MediaCodecInfo;
-
-    move-result-object v4
-
-    .line 96
-    array-length v5, v0
-
-    move v6, v3
-
-    :goto_1
-    if-ge v6, v5, :cond_6
-
-    aget-object v7, v0, v6
-
     .line 97
-    array-length v8, v4
+    new-instance v2, Landroid/media/MediaCodecList;
 
-    move v9, v3
+    invoke-direct {v2, v3}, Landroid/media/MediaCodecList;-><init>(I)V
 
-    :goto_2
-    if-ge v9, v8, :cond_5
+    invoke-virtual {v2}, Landroid/media/MediaCodecList;->getCodecInfos()[Landroid/media/MediaCodecInfo;
 
-    aget-object v10, v4, v9
+    move-result-object v2
 
     .line 98
-    invoke-virtual {v10}, Landroid/media/MediaCodecInfo;->isEncoder()Z
+    array-length v4, p0
 
-    move-result v11
+    move v5, v3
 
-    if-eqz v11, :cond_4
+    :goto_1
+    if-ge v5, v4, :cond_6
 
-    sget v11, Landroid/os/Build$VERSION;->SDK_INT:I
+    aget-object v6, p0, v5
 
-    const/16 v12, 0x1d
+    .line 99
+    array-length v7, v2
 
-    if-lt v11, v12, :cond_1
+    move v8, v3
 
-    invoke-virtual {v10}, Landroid/media/MediaCodecInfo;->isAlias()Z
+    :goto_2
+    if-ge v8, v7, :cond_5
 
-    move-result v11
+    aget-object v9, v2, v8
 
-    if-nez v11, :cond_4
+    .line 100
+    invoke-virtual {v9}, Landroid/media/MediaCodecInfo;->isEncoder()Z
+
+    move-result v10
+
+    if-eqz v10, :cond_4
+
+    sget v10, Landroid/os/Build$VERSION;->SDK_INT:I
+
+    const/16 v11, 0x1d
+
+    if-lt v10, v11, :cond_1
+
+    invoke-virtual {v9}, Landroid/media/MediaCodecInfo;->isAlias()Z
+
+    move-result v10
+
+    if-nez v10, :cond_4
 
     :cond_1
-    invoke-static {v10, v7}, Lseekpatch/Video;->supports(Landroid/media/MediaCodecInfo;Ljava/lang/String;)Z
+    invoke-static {v9, v6}, Lseekpatch/Video;->supports(Landroid/media/MediaCodecInfo;Ljava/lang/String;)Z
 
-    move-result v11
+    move-result v10
 
-    if-nez v11, :cond_2
+    if-nez v10, :cond_2
 
     goto :goto_4
 
-    .line 101
-    :cond_2
-    invoke-virtual {v10, v7}, Landroid/media/MediaCodecInfo;->getCapabilitiesForType(Ljava/lang/String;)Landroid/media/MediaCodecInfo$CodecCapabilities;
-
-    move-result-object v11
-
-    invoke-virtual {v11}, Landroid/media/MediaCodecInfo$CodecCapabilities;->getVideoCapabilities()Landroid/media/MediaCodecInfo$VideoCapabilities;
-
-    move-result-object v11
-
-    if-eqz v11, :cond_4
-
-    .line 102
-    invoke-virtual {v11, p0, p1}, Landroid/media/MediaCodecInfo$VideoCapabilities;->isSizeSupported(II)Z
-
-    move-result v11
-
-    if-eqz v11, :cond_4
-
     .line 103
-    invoke-static {v10}, Lseekpatch/Video;->isHardware(Landroid/media/MediaCodecInfo;)Z
+    :cond_2
+    invoke-virtual {v9, v6}, Landroid/media/MediaCodecInfo;->getCapabilitiesForType(Ljava/lang/String;)Landroid/media/MediaCodecInfo$CodecCapabilities;
 
-    move-result v11
+    move-result-object v10
 
-    if-eqz v11, :cond_3
+    invoke-virtual {v10}, Landroid/media/MediaCodecInfo$CodecCapabilities;->getVideoCapabilities()Landroid/media/MediaCodecInfo$VideoCapabilities;
 
-    move-object v11, v1
+    move-result-object v10
+
+    if-eqz v10, :cond_4
+
+    .line 104
+    invoke-virtual {v10, p1, p2}, Landroid/media/MediaCodecInfo$VideoCapabilities;->isSizeSupported(II)Z
+
+    move-result v10
+
+    if-eqz v10, :cond_4
+
+    .line 105
+    invoke-static {v9}, Lseekpatch/Video;->isHardware(Landroid/media/MediaCodecInfo;)Z
+
+    move-result v10
+
+    if-eqz v10, :cond_3
+
+    move-object v10, v0
 
     goto :goto_3
 
     :cond_3
-    move-object v11, v2
+    move-object v10, v1
 
     :goto_3
-    new-instance v12, Lseekpatch/Video$Candidate;
+    new-instance v11, Lseekpatch/Video$Candidate;
 
-    invoke-direct {v12, v10, v7}, Lseekpatch/Video$Candidate;-><init>(Landroid/media/MediaCodecInfo;Ljava/lang/String;)V
+    invoke-direct {v11, v9, v6}, Lseekpatch/Video$Candidate;-><init>(Landroid/media/MediaCodecInfo;Ljava/lang/String;)V
 
-    invoke-interface {v11, v12}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    invoke-interface {v10, v11}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
     :cond_4
     :goto_4
-    add-int/lit8 v9, v9, 0x1
+    add-int/lit8 v8, v8, 0x1
 
     goto :goto_2
 
     :cond_5
-    add-int/lit8 v6, v6, 0x1
+    add-int/lit8 v5, v5, 0x1
 
     goto :goto_1
 
-    .line 107
+    .line 109
     :cond_6
-    invoke-interface {v1, v2}, Ljava/util/List;->addAll(Ljava/util/Collection;)Z
+    invoke-interface {v0, v1}, Ljava/util/List;->addAll(Ljava/util/Collection;)Z
 
-    return-object v1
+    return-object v0
 .end method
 
 .method public static encoder(Landroid/media/MediaFormat;)Landroid/media/MediaCodec;
@@ -211,7 +213,7 @@
         }
     .end annotation
 
-    .line 40
+    .line 42
     const-string v0, "video: "
 
     const-string v1, "width"
@@ -230,61 +232,63 @@
 
     move-result-object v1
 
-    const/4 v2, 0x0
+    .line 43
+    sget-object v2, Lseekpatch/VideoConfig;->mime:Ljava/lang/String;
 
-    .line 41
-    aget v3, v1, v2
+    const/4 v3, 0x0
 
-    const/4 v4, 0x1
+    aget v4, v1, v3
 
-    aget v5, v1, v4
+    const/4 v5, 0x1
 
-    invoke-static {v3, v5}, Lseekpatch/Video;->candidates(II)Ljava/util/List;
+    aget v6, v1, v5
 
-    move-result-object v3
+    invoke-static {v2, v4, v6}, Lseekpatch/Video;->candidates(Ljava/lang/String;II)Ljava/util/List;
 
-    invoke-interface {v3}, Ljava/util/List;->iterator()Ljava/util/Iterator;
+    move-result-object v2
 
-    move-result-object v3
+    invoke-interface {v2}, Ljava/util/List;->iterator()Ljava/util/Iterator;
+
+    move-result-object v2
 
     :cond_0
-    invoke-interface {v3}, Ljava/util/Iterator;->hasNext()Z
+    invoke-interface {v2}, Ljava/util/Iterator;->hasNext()Z
 
-    move-result v5
+    move-result v4
 
     const-string v6, "seek-patch"
 
     const/4 v7, 0x0
 
-    if-eqz v5, :cond_2
+    if-eqz v4, :cond_2
 
-    invoke-interface {v3}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
 
-    move-result-object v5
+    move-result-object v4
 
-    check-cast v5, Lseekpatch/Video$Candidate;
+    check-cast v4, Lseekpatch/Video$Candidate;
 
-    const/4 v8, 0x2
+    const/4 v8, 0x3
 
     :goto_0
     if-ltz v8, :cond_0
 
-    .line 45
+    .line 47
     :try_start_0
-    iget-object v9, v5, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
+    iget-object v9, v4, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
 
-    iget-object v10, v5, Lseekpatch/Video$Candidate;->mime:Ljava/lang/String;
+    iget-object v10, v4, Lseekpatch/Video$Candidate;->mime:Ljava/lang/String;
 
-    aget v11, v1, v2
+    aget v11, v1, v3
 
-    aget v12, v1, v4
+    aget v12, v1, v5
 
     invoke-static {v9, v10, v11, v12, v8}, Lseekpatch/Video;->format(Landroid/media/MediaCodecInfo;Ljava/lang/String;III)Landroid/media/MediaFormat;
 
     move-result-object v9
 
-    .line 46
-    iget-object v10, v5, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
+    .line 48
+    iget-object v10, v4, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
 
     invoke-virtual {v10}, Landroid/media/MediaCodecInfo;->getName()Ljava/lang/String;
 
@@ -296,18 +300,18 @@
     :try_end_0
     .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_1
 
-    .line 47
+    .line 49
     :try_start_1
-    invoke-virtual {v10, v9, v7, v7, v4}, Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
+    invoke-virtual {v10, v9, v7, v7, v5}, Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
 
-    .line 48
+    .line 50
     new-instance v11, Ljava/lang/StringBuilder;
 
     invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
 
     invoke-virtual {v11, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    iget-object v12, v5, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
+    iget-object v12, v4, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
 
     invoke-virtual {v12}, Landroid/media/MediaCodecInfo;->getName()Ljava/lang/String;
 
@@ -341,13 +345,13 @@
 
     move-object v10, v7
 
-    .line 51
+    .line 53
     :goto_1
     new-instance v11, Ljava/lang/StringBuilder;
 
     invoke-direct {v11, v0}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
 
-    iget-object v12, v5, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
+    iget-object v12, v4, Lseekpatch/Video$Candidate;->info:Landroid/media/MediaCodecInfo;
 
     invoke-virtual {v12}, Landroid/media/MediaCodecInfo;->getName()Ljava/lang/String;
 
@@ -375,7 +379,7 @@
 
     if-eqz v10, :cond_1
 
-    .line 53
+    .line 55
     invoke-virtual {v10}, Landroid/media/MediaCodec;->release()V
 
     :cond_1
@@ -383,13 +387,13 @@
 
     goto :goto_0
 
-    .line 58
+    .line 60
     :cond_2
     const-string v0, "video: no encoder took the quality setup; recording with the app\'s own"
 
     invoke-static {v6, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 59
+    .line 61
     const-string v0, "mime"
 
     invoke-virtual {p0, v0}, Landroid/media/MediaFormat;->getString(Ljava/lang/String;)Ljava/lang/String;
@@ -400,8 +404,8 @@
 
     move-result-object v0
 
-    .line 60
-    invoke-virtual {v0, p0, v7, v7, v4}, Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
+    .line 62
+    invoke-virtual {v0, p0, v7, v7, v5}, Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
 
     return-object v0
 .end method
@@ -413,7 +417,7 @@
 
     div-double/2addr p0, v0
 
-    .line 75
+    .line 77
     invoke-static {p0, p1}, Ljava/lang/Math;->round(D)J
 
     move-result-wide p0
@@ -428,7 +432,7 @@
 .method static fallbackBitrate(II)I
     .locals 4
 
-    .line 174
+    .line 184
     sget v0, Lseekpatch/VideoConfig;->bitrate:I
 
     int-to-long v0, v0
@@ -457,14 +461,14 @@
 .end method
 
 .method static format(Landroid/media/MediaCodecInfo;Ljava/lang/String;III)Landroid/media/MediaFormat;
-    .locals 7
+    .locals 8
 
-    .line 129
+    .line 131
     invoke-virtual {p0, p1}, Landroid/media/MediaCodecInfo;->getCapabilitiesForType(Ljava/lang/String;)Landroid/media/MediaCodecInfo$CodecCapabilities;
 
     move-result-object p0
 
-    .line 130
+    .line 132
     invoke-virtual {p0}, Landroid/media/MediaCodecInfo$CodecCapabilities;->getVideoCapabilities()Landroid/media/MediaCodecInfo$VideoCapabilities;
 
     move-result-object v0
@@ -473,37 +477,49 @@
 
     move-result-object v0
 
-    .line 131
+    .line 133
     invoke-static {p1, p2, p3}, Landroid/media/MediaFormat;->createVideoFormat(Ljava/lang/String;II)Landroid/media/MediaFormat;
 
     move-result-object v1
 
-    .line 132
+    .line 134
     const-string v2, "color-format"
 
     const v3, 0x7f000789
 
     invoke-virtual {v1, v2, v3}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 133
+    .line 135
     const-string v2, "frame-rate"
 
     const/16 v3, 0x1e
 
     invoke-virtual {v1, v2, v3}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 134
+    .line 136
     const-string v2, "i-frame-interval"
 
     const/4 v3, 0x1
 
     invoke-virtual {v1, v2, v3}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 135
+    .line 137
+    sget v2, Lseekpatch/VideoConfig;->target:I
+
+    if-lez v2, :cond_0
+
+    sget p2, Lseekpatch/VideoConfig;->target:I
+
+    goto :goto_0
+
+    .line 138
+    :cond_0
     invoke-static {p2, p3}, Lseekpatch/Video;->fallbackBitrate(II)I
 
     move-result p2
 
+    .line 137
+    :goto_0
     invoke-static {p2}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
 
     move-result-object p2
@@ -522,89 +538,89 @@
 
     invoke-virtual {v1, p3, p2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 136
+    .line 139
     const-string p2, "bitrate-mode"
 
-    const/4 v2, 0x0
+    const/4 v2, 0x3
 
-    const/4 v4, 0x2
+    const/4 v4, 0x0
 
-    if-lt p4, v3, :cond_1
+    const/4 v5, 0x2
 
-    .line 137
-    sget v5, Landroid/os/Build$VERSION;->SDK_INT:I
-
-    const/16 v6, 0x18
-
-    if-lt v5, v6, :cond_0
-
-    .line 138
-    const-string v5, "color-standard"
-
-    invoke-virtual {v1, v5, v3}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
-
-    .line 139
-    const-string v5, "color-range"
-
-    invoke-virtual {v1, v5, v4}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
+    if-lt p4, v3, :cond_2
 
     .line 140
-    const-string v5, "color-transfer"
+    sget v6, Landroid/os/Build$VERSION;->SDK_INT:I
 
-    const/4 v6, 0x3
+    const/16 v7, 0x18
 
-    invoke-virtual {v1, v5, v6}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
+    if-lt v6, v7, :cond_1
+
+    .line 141
+    const-string v6, "color-standard"
+
+    invoke-virtual {v1, v6, v3}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
     .line 142
-    :cond_0
-    const-string v5, "priority"
+    const-string v6, "color-range"
 
-    invoke-virtual {v1, v5, v2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
+    invoke-virtual {v1, v6, v5}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
     .line 143
+    const-string v6, "color-transfer"
+
+    invoke-virtual {v1, v6, v2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
+
+    .line 145
+    :cond_1
+    const-string v6, "priority"
+
+    invoke-virtual {v1, v6, v4}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
+
+    .line 146
     invoke-virtual {p0}, Landroid/media/MediaCodecInfo$CodecCapabilities;->getEncoderCapabilities()Landroid/media/MediaCodecInfo$EncoderCapabilities;
 
-    move-result-object v5
+    move-result-object v6
 
-    invoke-virtual {v5, v3}, Landroid/media/MediaCodecInfo$EncoderCapabilities;->isBitrateModeSupported(I)Z
+    invoke-virtual {v6, v3}, Landroid/media/MediaCodecInfo$EncoderCapabilities;->isBitrateModeSupported(I)Z
 
-    move-result v5
+    move-result v6
 
-    if-eqz v5, :cond_1
+    if-eqz v6, :cond_2
 
-    .line 144
+    .line 147
     invoke-virtual {v1, p2, v3}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    :cond_1
-    if-lt p4, v4, :cond_3
+    :cond_2
+    if-lt p4, v2, :cond_3
 
-    .line 148
+    .line 151
     invoke-static {v1, p0, p1}, Lseekpatch/Video;->profile(Landroid/media/MediaFormat;Landroid/media/MediaCodecInfo$CodecCapabilities;Ljava/lang/String;)V
 
-    .line 149
+    :cond_3
+    if-lt p4, v5, :cond_5
+
+    .line 153
+    sget p1, Lseekpatch/VideoConfig;->target:I
+
+    if-gtz p1, :cond_5
+
+    .line 154
     invoke-virtual {p0}, Landroid/media/MediaCodecInfo$CodecCapabilities;->getEncoderCapabilities()Landroid/media/MediaCodecInfo$EncoderCapabilities;
 
     move-result-object p1
 
-    .line 150
-    sget p4, Landroid/os/Build$VERSION;->SDK_INT:I
-
-    const/16 v3, 0x1f
-
-    if-lt p4, v3, :cond_2
-
-    const-string p4, "qp-bounds"
-
-    invoke-virtual {p0, p4}, Landroid/media/MediaCodecInfo$CodecCapabilities;->isFeatureSupported(Ljava/lang/String;)Z
+    .line 155
+    invoke-static {p0}, Lseekpatch/Video;->takesQp(Landroid/media/MediaCodecInfo$CodecCapabilities;)Z
 
     move-result p0
 
-    if-eqz p0, :cond_2
+    if-eqz p0, :cond_4
 
-    .line 151
+    .line 156
     sget p0, Lseekpatch/VideoConfig;->qp:I
 
-    .line 153
+    .line 158
     sget p1, Lseekpatch/VideoConfig;->maxBitrate:I
 
     invoke-static {p1}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
@@ -625,67 +641,67 @@
 
     add-int/lit8 p1, p0, -0x2
 
-    .line 154
+    .line 159
     const-string p2, "video-qp-min"
 
     invoke-virtual {v1, p2, p1}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
     add-int/lit8 p2, p0, 0x2
 
-    .line 155
+    .line 160
     const-string p3, "video-qp-max"
 
     invoke-virtual {v1, p3, p2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 156
+    .line 161
     const-string p3, "video-qp-i-min"
 
     invoke-virtual {v1, p3, p1}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 157
+    .line 162
     const-string p3, "video-qp-i-max"
 
     invoke-virtual {v1, p3, p1}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 158
+    .line 163
     const-string p1, "video-qp-p-min"
 
     invoke-virtual {v1, p1, p0}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 159
+    .line 164
     const-string p1, "video-qp-p-max"
 
     invoke-virtual {v1, p1, p0}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 160
+    .line 165
     const-string p0, "video-qp-b-min"
 
     invoke-virtual {v1, p0, p2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 161
+    .line 166
     const-string p0, "video-qp-b-max"
 
     invoke-virtual {v1, p0, p2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    goto :goto_0
+    goto :goto_1
 
-    .line 162
-    :cond_2
-    invoke-virtual {p1, v2}, Landroid/media/MediaCodecInfo$EncoderCapabilities;->isBitrateModeSupported(I)Z
+    .line 167
+    :cond_4
+    invoke-virtual {p1, v4}, Landroid/media/MediaCodecInfo$EncoderCapabilities;->isBitrateModeSupported(I)Z
 
     move-result p0
 
-    if-eqz p0, :cond_3
+    if-eqz p0, :cond_5
 
-    .line 163
+    .line 168
     invoke-virtual {p1}, Landroid/media/MediaCodecInfo$EncoderCapabilities;->getQualityRange()Landroid/util/Range;
 
     move-result-object p0
 
-    .line 164
-    invoke-virtual {v1, p2, v2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
+    .line 169
+    invoke-virtual {v1, p2, v4}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    .line 165
+    .line 170
     invoke-virtual {p0}, Landroid/util/Range;->getLower()Ljava/lang/Comparable;
 
     move-result-object p1
@@ -696,7 +712,7 @@
 
     move-result p1
 
-    .line 166
+    .line 171
     invoke-virtual {p0}, Landroid/util/Range;->getUpper()Ljava/lang/Comparable;
 
     move-result-object p2
@@ -737,34 +753,34 @@
 
     add-int/2addr p1, p0
 
-    .line 165
+    .line 170
     const-string p0, "quality"
 
     invoke-virtual {v1, p0, p1}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
 
-    :cond_3
-    :goto_0
+    :cond_5
+    :goto_1
     return-object v1
 .end method
 
 .method private static isHardware(Landroid/media/MediaCodecInfo;)Z
     .locals 2
 
-    .line 121
+    .line 123
     sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
 
     const/16 v1, 0x1d
 
     if-lt v0, v1, :cond_0
 
-    .line 122
+    .line 124
     invoke-virtual {p0}, Landroid/media/MediaCodecInfo;->isHardwareAccelerated()Z
 
     move-result p0
 
     return p0
 
-    .line 124
+    .line 126
     :cond_0
     invoke-virtual {p0}, Landroid/media/MediaCodecInfo;->getName()Ljava/lang/String;
 
@@ -776,7 +792,7 @@
 
     move-result-object p0
 
-    .line 125
+    .line 127
     const-string v0, "omx.google."
 
     invoke-virtual {p0, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
@@ -815,24 +831,24 @@
 .method static photoSize(II)[I
     .locals 5
 
-    .line 66
+    .line 68
     invoke-static {p0, p1}, Ljava/lang/Math;->max(II)I
 
     move-result v0
 
-    .line 67
+    .line 69
     sget v1, Lseekpatch/VideoConfig;->longSide:I
 
     if-gt v1, v0, :cond_0
 
-    .line 68
+    .line 70
     filled-new-array {p0, p1}, [I
 
     move-result-object p0
 
     return-object p0
 
-    .line 70
+    .line 72
     :cond_0
     sget v1, Lseekpatch/VideoConfig;->longSide:I
 
@@ -846,7 +862,7 @@
 
     mul-double/2addr v3, v1
 
-    .line 71
+    .line 73
     invoke-static {v3, v4}, Lseekpatch/Video;->even(D)I
 
     move-result p0
@@ -869,7 +885,7 @@
 .method private static profile(Landroid/media/MediaFormat;Landroid/media/MediaCodecInfo$CodecCapabilities;Ljava/lang/String;)V
     .locals 3
 
-    .line 179
+    .line 189
     const-string v0, "video/hevc"
 
     invoke-virtual {p2, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -882,7 +898,7 @@
 
     goto :goto_0
 
-    .line 180
+    .line 190
     :cond_0
     const-string v0, "video/avc"
 
@@ -899,7 +915,7 @@
     :cond_1
     const/4 p2, -0x1
 
-    .line 181
+    .line 191
     :goto_0
     iget-object p1, p1, Landroid/media/MediaCodecInfo$CodecCapabilities;->profileLevels:[Landroid/media/MediaCodecInfo$CodecProfileLevel;
 
@@ -912,12 +928,12 @@
 
     aget-object v2, p1, v1
 
-    .line 182
+    .line 192
     iget v2, v2, Landroid/media/MediaCodecInfo$CodecProfileLevel;->profile:I
 
     if-ne v2, p2, :cond_2
 
-    .line 183
+    .line 193
     const-string p1, "profile"
 
     invoke-virtual {p0, p1, p2}, Landroid/media/MediaFormat;->setInteger(Ljava/lang/String;I)V
@@ -936,7 +952,7 @@
 .method private static supports(Landroid/media/MediaCodecInfo;Ljava/lang/String;)Z
     .locals 4
 
-    .line 112
+    .line 114
     invoke-virtual {p0}, Landroid/media/MediaCodecInfo;->getSupportedTypes()[Ljava/lang/String;
 
     move-result-object p0
@@ -952,7 +968,7 @@
 
     aget-object v3, p0, v2
 
-    .line 113
+    .line 115
     invoke-virtual {v3, p1}, Ljava/lang/String;->equalsIgnoreCase(Ljava/lang/String;)Z
 
     move-result v3
@@ -970,4 +986,33 @@
 
     :cond_1
     return v1
+.end method
+
+.method static takesQp(Landroid/media/MediaCodecInfo$CodecCapabilities;)Z
+    .locals 2
+
+    .line 179
+    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
+
+    const/16 v1, 0x1f
+
+    if-lt v0, v1, :cond_0
+
+    const-string v0, "qp-bounds"
+
+    invoke-virtual {p0, v0}, Landroid/media/MediaCodecInfo$CodecCapabilities;->isFeatureSupported(Ljava/lang/String;)Z
+
+    move-result p0
+
+    if-eqz p0, :cond_0
+
+    const/4 p0, 0x1
+
+    goto :goto_0
+
+    :cond_0
+    const/4 p0, 0x0
+
+    :goto_0
+    return p0
 .end method
