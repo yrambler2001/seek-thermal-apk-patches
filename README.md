@@ -73,8 +73,8 @@ in a loop.</sub>
 - **Shutter.**  The camera recalibrates by itself every few seconds (the Compact: every 5 s): a
   click, a 0.44 s freeze, a jump in the picture and the readings.  Tap to stop the automatic
   shutter (the picture then slowly drifts), tap again to start it.  [`shutter`](docs/shutter.md)
-- **k·x+b.**  Enter a gain and an offset, from a reference thermometer say, and every temperature
-  the app shows and saves is corrected: *shown = k × measured + b*.  [`calibration`](docs/calibration.md)
+- **k·x+b.**  Your own correction of every temperature the app shows and saves, from a reference
+  thermometer say: see [Temperature calibration](#temperature-calibration) below.
 - **Smart smoothing**, above.
 
 <br clear="right">
@@ -91,6 +91,38 @@ hotter than 28 °C is white.</sub>
 | Flat field: before | after |
 |:---:|:---:|
 | <img src="docs/images/flat-field-before.avif" width="200" alt="A uniform wall with a warm camera's gradient, 52 to 66 °F"> | <img src="docs/images/flat-field-after.avif" width="200" alt="The same wall after one tap, 65 °F everywhere"> |
+
+### Temperature calibration
+
+<img src="docs/images/calibration.avif" width="300" align="right" alt="The k·x+b dialog: shown = k × measured + b, with k, the gain (1: none), and b, the offset in °C (0: none); Cancel, Reset, Apply">
+
+The stock app's readings are the camera's factory calibration, with emissivity as the only
+setting.  If a reference thermometer disagrees, tap **k·x+b** and enter a gain and an offset:
+**shown = k × measured + b**.  [`calibration`](docs/calibration.md), 2.2.3 – 2.3.4.
+
+- **Every temperature follows:** the spot, the minimum and maximum and their markers, the
+  temperature bar, the radiometric data saved with *Store All Thermal Data*, and the colouring
+  modes that work in degrees (Span & Level, the isotherms).
+- **The picture does not change:** the automatic colouring spreads the palette over the sensor's
+  raw values, and Lock range is not affected.
+- **It stays set** across restarts and reconnects, and the button shows it: *1.02x − 0.5°C*.
+  *Reset* goes back to k = 1, b = 0.
+- **Any unit:** k is the same in °C, °F and K.  b is entered in the app's unit and kept in °C, so
+  the correction holds when the unit is switched.
+
+**Finding k and b.**  With the correction reset, measure two surfaces of known temperature far
+apart: ice water and hot water in a matt cup, or a reference thermometer's probe on a matt,
+high-emissivity surface.  For readings m₁, m₂ of true temperatures t₁, t₂:
+
+```
+k = (t₂ − t₁) / (m₂ − m₁)        b = t₁ − k × m₁
+```
+
+For example, ice water (0.0 °C) reads 1.2 °C and hot water a kitchen thermometer puts at 60.0 °C
+reads 58.1 °C: k = (60.0 − 0.0) / (58.1 − 1.2) = 1.054 and b = 0.0 − 1.054 × 1.2 = −1.27.  With
+one reference only, keep k = 1 and set b to the true temperature minus the reading.
+
+<br clear="right">
 
 ### Photos and video
 
