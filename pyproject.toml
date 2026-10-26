@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "seek-thermal-apk-patches"
 dynamic = ["version"]
-description = "Unofficial patches for the Seek Thermal Android app: full frame rate, iOS-like sharp scaling, a working smoothing switch, lossless photos, photo-quality video"
+description = "Unofficial patches for the Seek Thermal Android app: full frame rate, iOS-like sharp scaling, a switch per image filter, lossless photos, photo-quality video, buttons for flat field, lock range, shutter and calibration, and crash and USB fixes"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -13,7 +13,7 @@ authors = [{ name = "Yurii Synyshyn" }]
 requires-python = ">=3.9"
 keywords = ["seek thermal", "thermal camera", "android", "apktool", "smali", "patch"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "Operating System :: OS Independent",
