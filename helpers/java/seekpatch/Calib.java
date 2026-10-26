@@ -19,7 +19,7 @@ import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 /**
- * seek-patch calibration: a button below the camera screen's top bar that sets a linear correction of
+ * seek-thermal-apk-patches calibration: a button below the camera screen's top bar that sets a linear correction of
  * every temperature, shown = k × measured + b (from a reference thermometer, say).
  *
  * <p>The native library libseekpatch_calib.so hooks libseekip's thermography stage, where each frame is
@@ -29,7 +29,7 @@ import java.util.Locale;
  * changed; with k = 1, b = 0 nothing is hooked.  See docs/calibration.md.
  */
 public final class Calib {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String LIBRARY = "seekpatch_calib";
     private static final String PREFS = "seekpatch";
     private static final String KEY_K = "calibration_k";

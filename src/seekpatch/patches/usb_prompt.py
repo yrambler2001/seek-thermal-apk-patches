@@ -19,7 +19,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, class_descriptor, code_start, method_at, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "usb_prompt"
 SUMMARY = "one USB permission dialog for the camera, not a second one that does nothing"
@@ -91,7 +91,7 @@ def _receiver(tree: SmaliTree, path: str, cls: str) -> None:
                              + m.body[at:])
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     path = _library(tree)
     cls = class_descriptor(tree.get(path))

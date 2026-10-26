@@ -1,4 +1,4 @@
-/* smooth.h -- seek-patch smart_smoothing: the hook around libseekip's first filter (see smooth.c). */
+/* smooth.h -- seek-thermal-apk-patches smart_smoothing: the hook around libseekip's first filter (see smooth.c). */
 #ifndef SEEKPATCH_SMOOTH_H
 #define SEEKPATCH_SMOOTH_H
 

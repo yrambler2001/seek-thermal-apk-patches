@@ -5,13 +5,13 @@ import android.preference.PreferenceFragment;
 import android.util.Log;
 
 /**
- * seek-patch flat_field: its setting, <i>Flat field frames</i>, how many frames one tap of the Flat
+ * seek-thermal-apk-patches flat_field: its setting, <i>Flat field frames</i>, how many frames one tap of the Flat
  * field button learns from ({@link Flat#updates}).  The map moves 1/8 of the way per frame, so N
  * frames learn 1 - (7/8)^N of the gradient: a short run is quicker and forgives a moving hand, a
  * long one is complete.  A second tap goes on from where the first stopped.
  */
 public final class FlatSettings {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String KEY = "flat_field_frames";
     private static final int[] CHOICES = {5, 10, 15, 20, 30, 40, 60};
     private static final int DEFAULT = 40;

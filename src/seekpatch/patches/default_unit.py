@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 
 from ..smali import REG, PatchError, SmaliTree, method_at, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "default_unit"
 SUMMARY = "a new install shows Celsius, also on a phone set to English (US), until another unit is picked"
@@ -30,7 +30,7 @@ NOT_WRITES = r"(?:if-|[ias]put|monitor-|fill-array-data|packed-switch|sparse-swi
 
 UNITS_SMALI = """.class public final Lseekpatch/Units;
 .super Ljava/lang/Object;
-.source "seek-patch default_unit"
+.source "seek-thermal-apk-patches default_unit"
 
 {mark}: the app's default temperature unit, in place of getInteger() of its default_unit resource
 
@@ -74,7 +74,7 @@ def _unit_resource(tree: SmaliTree) -> str:
     return found.pop()
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     rid = _unit_resource(tree)
     sites = []

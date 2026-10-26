@@ -1,4 +1,4 @@
-"""seek-patch's settings in the app's Settings -> Image & Video screen, shared by the patches that have
+"""seek-thermal-apk-patches' settings in the app's Settings -> Image & Video screen, shared by the patches that have
 any (smoothing_settings, flat_field, sharp_scaling, photo_1x, video_quality).
 
 Two hooks, added once by whichever of those patches comes first, call the Java helper
@@ -18,7 +18,7 @@ VideoSettings); Settings finds them by name at run time.
 seekpatch.Screens comes with Settings: from Settings.attach it makes the settings screens'
 navigation bar dark (they have no theme, so Android 15+ draws them a light one) and puts a divider
 and "Patched by yrambler2001 v<version>" below Send Feedback in the side menu.  The version is
-seek-patch's, in a class written here (seekpatch.About).
+seek-thermal-apk-patches', in a class written here (seekpatch.About).
 """
 from __future__ import annotations
 
@@ -37,9 +37,9 @@ SCREEN = f"{HELPER}->screen({FRAGMENT})V"
 ATTACH = f"{HELPER}->attach(Landroid/app/Activity;)V"
 ABOUT = """.class public final Lseekpatch/About;
 .super Ljava/lang/Object;
-.source "seek-patch"
+.source "seek-thermal-apk-patches"
 
-{mark}: the version of seek-patch that patched this app, shown in the side menu
+{mark}: the version of seek-thermal-apk-patches that patched this app, shown in the side menu
 .field public static version:Ljava/lang/String; = "{version}"
 """
 
@@ -73,13 +73,13 @@ def install(tree: SmaliTree, patch: str) -> list[str]:
     fragment_path, after_add, indent = image_video_fragment(tree, patch)
     activity_path, after_layout = camera_activity(tree, patch)
     text = tree.get(fragment_path)
-    hook = (f"\n{indent}{mark(patch)}: seek-patch's settings, after the screen's own\n"
+    hook = (f"\n{indent}{mark(patch)}: seek-thermal-apk-patches' settings, after the screen's own\n"
             f"{indent}invoke-static/range {{p0 .. p0}}, {SCREEN}\n")
     tree.set(fragment_path, text[:after_add] + hook + text[after_add:])
     text = tree.get(activity_path)
     line_start = text.rfind("\n", 0, after_layout - 1) + 1
     indent = re.match(r"[ \t]*", text[line_start:]).group(0)
-    hook = (f"\n{indent}{mark(patch)}: load seek-patch's settings before the first frame\n"
+    hook = (f"\n{indent}{mark(patch)}: load seek-thermal-apk-patches' settings before the first frame\n"
             f"{indent}invoke-static/range {{p0 .. p0}}, {ATTACH}\n")
     tree.set(activity_path, text[:after_layout] + hook + text[after_layout:])
     add_helpers(tree, "Settings", "Screens")

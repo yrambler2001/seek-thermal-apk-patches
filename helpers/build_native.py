@@ -57,7 +57,7 @@ def build(ndk: str, out: str) -> list[str]:
     """Build every ABI into out/<abi>/; returns the relative paths written."""
     cc = clang(ndk)
     written = []
-    with tempfile.TemporaryDirectory(prefix="seek-patch-native-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-native-") as tmp:
         for abi, triple in TARGETS.items():
             os.makedirs(os.path.join(out, abi), exist_ok=True)
             for library, sources in LIBRARIES.items():
@@ -88,7 +88,7 @@ def main() -> None:
         names = build(ndk, OUT)
         print(f"wrote {', '.join(names)} in {os.path.relpath(OUT, REPO)}")
         return
-    with tempfile.TemporaryDirectory(prefix="seek-patch-native-check-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-native-check-") as tmp:
         names = build(ndk, tmp)
         stale = [n for n in names if not os.path.exists(os.path.join(OUT, n))
                  or not filecmp.cmp(os.path.join(tmp, n), os.path.join(OUT, n), False)]

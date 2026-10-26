@@ -6,10 +6,10 @@ about: A patch fails, or the patched app misbehaves
 **What happened**
 
 
-**`seek-patch check` output**
+**`seek-thermal-apk-patches check` output**
 
 ```
-(paste the output of: seek-patch check YOUR.apk)
+(paste the output of: seek-thermal-apk-patches check YOUR.apk)
 ```
 
 **Phone / Android version / camera** (for problems on the phone)

@@ -37,7 +37,7 @@ also saves the camera's last frame; in the plain view the photo code does not as
 the stock recorder takes its frames from the phone's camera, but with
 [`video_quality`](video-quality.md) it takes every thermal frame.  The live view is redrawn per
 thermal frame only with [`full_fps`](full-fps.md); without it, per phone-camera frame.  So
-`phone_camera` needs both: `seek-patch` refuses it without them.
+`phone_camera` needs both: `seek-thermal-apk-patches` refuses it without them.
 
 ## The patch
 

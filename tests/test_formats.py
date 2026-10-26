@@ -90,8 +90,8 @@ def test_adds_a_uses_library_to_a_binary_manifest():
     before = axml.Document(buf)
     assert axml.REQUIRED not in before.resmap  # the fixture has no android:required: the name is mapped in
     assert axml.uses_libraries(buf) == [] and axml.target_sdk(buf) == 35
-    out = axml.add_uses_library(buf, "org.apache.http.legacy", False, "seek-patch test")
-    assert axml.uses_libraries(out) == [("org.apache.http.legacy", "seek-patch test")]
+    out = axml.add_uses_library(buf, "org.apache.http.legacy", False, "seek-thermal-apk-patches test")
+    assert axml.uses_libraries(out) == [("org.apache.http.legacy", "seek-thermal-apk-patches test")]
     assert axml.manifest_attributes(out) == axml.manifest_attributes(buf)  # the strings it moved still resolve
     assert axml.target_sdk(out) == 35
     doc = axml.Document(out)
@@ -105,7 +105,7 @@ def test_adds_a_uses_library_to_a_binary_manifest():
     assert doc.nodes[doc.elements("uses-library")[0] + 1].type == 0x0103  # and its end
     again = axml.add_uses_library(out, "other.library", True)  # "required" is mapped now: nothing moves
     assert len(axml.Document(again).resmap) == len(doc.resmap)
-    assert axml.uses_libraries(again) == [("other.library", None), ("org.apache.http.legacy", "seek-patch test")]
+    assert axml.uses_libraries(again) == [("other.library", None), ("org.apache.http.legacy", "seek-thermal-apk-patches test")]
 
 
 # manifest (--side-by-side) ----------------------------------------------------------------------
@@ -151,9 +151,9 @@ def test_side_by_side_needs_a_new_name():
 
 def test_adds_a_uses_library_to_a_text_manifest():
     assert manifest.uses_libraries(MANIFEST) == []
-    xml = manifest.add_uses_library(MANIFEST, "org.apache.http.legacy", False, "seek-patch test")
+    xml = manifest.add_uses_library(MANIFEST, "org.apache.http.legacy", False, "seek-thermal-apk-patches test")
     assert ('    <application android:label="@string/app_name" android:name=".App">\n'
-            "        <!-- seek-patch test -->\n"
+            "        <!-- seek-thermal-apk-patches test -->\n"
             '        <uses-library android:name="org.apache.http.legacy" android:required="false"/>\n'
             '        <activity android:name=".Splash"') in xml
     assert manifest.uses_libraries(xml) == ["org.apache.http.legacy"]

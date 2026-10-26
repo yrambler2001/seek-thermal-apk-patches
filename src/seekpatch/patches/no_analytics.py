@@ -27,7 +27,7 @@ from __future__ import annotations
 import re
 
 from ..smali import GAP, REG, PatchError, SmaliTree, class_descriptor, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "no_analytics"
 SUMMARY = "Google Analytics never starts: nothing is sent (2.1.6 - 2.3.1 no longer crash 15 s after launch)"
@@ -73,7 +73,7 @@ BODY = """    .locals 1
 """
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     threads = [p for p in tree.containing(FAILED, '"GAThread"')
                if re.search(r"^\.super Ljava/lang/Thread;$", tree.get(p), re.M)]

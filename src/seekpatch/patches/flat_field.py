@@ -20,7 +20,7 @@ The patch adds:
                                                   default
 
 Versions: the gradient features are verified in libseekip 2.10.5.0 (app 2.2.2) and 2.11.3.2
-(2.2.3 - 2.3.4); the patch keeps to the apps no_smoothing is verified on.  Source of the helper:
+(2.2.3 - 2.3.4); the patch keeps to the apps smoothing_settings is verified on.  Source of the helper:
 helpers/java/seekpatch/Flat.java; see docs/flat-field.md.
 """
 from __future__ import annotations
@@ -29,7 +29,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import PatchError, SmaliTree, class_descriptor
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import camera_activity, feature_900_call, seekip_class
 from .settings import optional_settings
 
@@ -41,7 +41,7 @@ RECOMMENDED = True
 
 MARK = mark(NAME)
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     code = tree.version_code
     if code is None:

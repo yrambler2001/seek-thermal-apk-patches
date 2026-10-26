@@ -5,7 +5,7 @@
 
 
 # static fields
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static context:Landroid/content/Context; = null
 
@@ -311,7 +311,7 @@
 
     .line 70
     :goto_1
-    const-string p1, "seek-patch"
+    const-string p1, "seek-thermal-apk-patches"
 
     new-instance v0, Ljava/lang/StringBuilder;
 

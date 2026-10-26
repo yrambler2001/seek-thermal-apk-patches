@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * seek-patch video_quality: its settings.  <i>Video codec</i>, H.265 or H.264, starts from the
- * patch's --video-codec and sets {@link VideoConfig#mime}.  <i>Video quality</i> is either the
- * encoder's constant quantizer, starting from --video-qp ({@link VideoConfig#qp}), or a bitrate
+ * seek-thermal-apk-patches video_quality: its settings.  <i>Video codec</i>, H.265 or H.264, starts from the
+ * patch's H.265 and sets {@link VideoConfig#mime}.  <i>Video quality</i> is either the
+ * encoder's constant quantizer, starting from QP 18 ({@link VideoConfig#qp}), or a bitrate
  * ({@link VideoConfig#target}, VBR).  seekpatch.Video reads them when a recording starts.
  *
  * <p>The QP sizes shown are the measured HEVC ladder on a still scene (docs/video-quality.md);
@@ -25,7 +25,7 @@ import java.util.List;
  * encoder records H.264 whatever the codec setting, and the list says so.
  */
 public final class VideoSettings {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String QP = "video_qp";  // a QP ("18") or a bitrate ("m8": 8 Mbit/s)
     private static final String CODEC = "video_codec";
     private static final String MBPS = "m";
@@ -34,7 +34,7 @@ public final class VideoSettings {
     private static final int[] CHOICES = {14, 16, 18, 20, 22, 24, 26, 28};
     private static final int[] MB_PER_MIN = {115, 91, 68, 53, 40, 31, 23, 16};
     private static final int[] BITRATES = {2, 4, 6, 8, 12, 16, 20, 30, 40};  // Mbit/s
-    /** --video-qp and --video-codec: the fields' values before any setting is loaded. */
+    /** QP 18 and H.265: the fields' values before any setting is loaded. */
     private static final int DEFAULT = VideoConfig.qp;
     private static final String DEFAULT_MIME = AVC.equals(VideoConfig.mime) ? AVC : HEVC;
 
@@ -109,7 +109,7 @@ public final class VideoSettings {
             boolean listed = false;
             for (int i = 0; i < CHOICES.length; i++) {
                 if (!listed && DEFAULT < CHOICES[i]) {
-                    addQp(entries, values, DEFAULT, 0, avc);  // a --video-qp the list does not have
+                    addQp(entries, values, DEFAULT, 0, avc);  // a start QP the list does not have
                     listed = true;
                 }
                 listed |= CHOICES[i] == DEFAULT;

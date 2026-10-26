@@ -23,7 +23,7 @@
 
 .field private static final STRIPES:Ljava/lang/String; = "smart_stripes"
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static applied:Z
 
@@ -141,7 +141,7 @@
     .locals 7
 
     .line 75
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     .line 0
     const-string v1, "smart_smoothing: no top bar for the button ("
@@ -723,7 +723,7 @@
     move-exception v0
 
     .line 125
-    const-string v1, "seek-patch"
+    const-string v1, "seek-thermal-apk-patches"
 
     const-string v2, "smart_smoothing: choice not saved"
 
@@ -757,7 +757,7 @@
 
     move-result-object p0
 
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     invoke-static {v0, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 

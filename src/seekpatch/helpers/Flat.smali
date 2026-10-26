@@ -25,7 +25,7 @@
 
 .field private static final STEP_LIMIT:I = 0x7596
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static final TIMEOUT_MS:J = 0x1388L
 
@@ -170,7 +170,7 @@
     .locals 7
 
     .line 71
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     .line 0
     const-string v1, "flat_field: no top bar for the button ("
@@ -627,7 +627,7 @@
     sput-boolean v0, Lseekpatch/Flat;->running:Z
 
     .line 166
-    const-string v2, "seek-patch"
+    const-string v2, "seek-thermal-apk-patches"
 
     const-string v3, "flat_field: failed"
 
@@ -791,7 +791,7 @@
 
     const-string v1, ")"
 
-    const-string v2, "seek-patch"
+    const-string v2, "seek-thermal-apk-patches"
 
     .line 0
     const-string v3, "flat_field: learning; detail "
@@ -1005,7 +1005,7 @@
 
     move-result-object p0
 
-    const-string p1, "seek-patch"
+    const-string p1, "seek-thermal-apk-patches"
 
     invoke-static {p1, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 

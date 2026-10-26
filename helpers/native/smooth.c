@@ -1,5 +1,5 @@
 /*
- * smooth.c -- seek-patch smart_smoothing: motion-compensated temporal noise reduction (tnr.c) on the
+ * smooth.c -- seek-thermal-apk-patches smart_smoothing: motion-compensated temporal noise reduction (tnr.c) on the
  * output of libseekip's first filter, in place, before anything downstream reads it.
  *
  * libseekip's seekip_process runs, per frame (facts read from the disassembly of the libraries of

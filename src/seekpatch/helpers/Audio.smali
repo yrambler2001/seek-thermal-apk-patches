@@ -11,7 +11,7 @@
 
 .field private static final STEREO_BITRATE:I = 0x3e800
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static block:[B = null
 
@@ -172,7 +172,7 @@
     invoke-virtual {p0, p1, p2, p3, p4}, Landroid/media/MediaCodec;->configure(Landroid/media/MediaFormat;Landroid/view/Surface;Landroid/media/MediaCrypto;I)V
 
     .line 125
-    const-string p0, "seek-patch"
+    const-string p0, "seek-thermal-apk-patches"
 
     new-instance p2, Ljava/lang/StringBuilder;
 
@@ -384,7 +384,7 @@
     sput v10, Lseekpatch/Audio;->bufferBytes:I
 
     .line 77
-    const-string p0, "seek-patch"
+    const-string p0, "seek-thermal-apk-patches"
 
     new-instance p1, Ljava/lang/StringBuilder;
 
@@ -449,7 +449,7 @@
     sput p1, Lseekpatch/Audio;->bufferBytes:I
 
     .line 85
-    const-string p1, "seek-patch"
+    const-string p1, "seek-thermal-apk-patches"
 
     new-instance p2, Ljava/lang/StringBuilder;
 
@@ -719,7 +719,7 @@
     if-lez v4, :cond_3
 
     .line 166
-    const-string v4, "seek-patch"
+    const-string v4, "seek-thermal-apk-patches"
 
     new-instance v5, Ljava/lang/StringBuilder;
 
@@ -1014,7 +1014,7 @@
     move-exception p0
 
     .line 224
-    const-string p1, "seek-patch"
+    const-string p1, "seek-thermal-apk-patches"
 
     const-string p2, "audio: no silent lead-in"
 

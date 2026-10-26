@@ -5,7 +5,7 @@ import android.os.Process;
 import android.view.Surface;
 
 /**
- * seek-patch steady_fps: keep the live view at the camera's own frame rate.
+ * seek-thermal-apk-patches steady_fps: keep the live view at the camera's own frame rate.
  *
  * <p>Three things made a ~32 fps camera look like 28 - 30 fps with stutter:
  * <ul>

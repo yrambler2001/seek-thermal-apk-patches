@@ -1,6 +1,6 @@
 """The patched fixtures assemble (apktool b) and go through align + sign, and the whole pipeline --
 check, patch, --side-by-side, a split bundle -- runs on an apk built from them.  Needs Java and the
-pinned jars in the cache (`seek-patch doctor`); skipped otherwise, unless SEEK_PATCH_REQUIRE_TOOLS is
+pinned jars in the cache (`seek-thermal-apk-patches doctor`); skipped otherwise, unless SEEK_PATCH_REQUIRE_TOOLS is
 set (CI)."""
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def test_patched_fixture_assembles_and_signs(make_project, toolchain, tmp_path, 
         if "smoothing_settings" in APPLICABLE[shape]:
             assert b"Lseekpatch/Filters;" in z.read("classes.dex") and b"Lseekpatch/Settings;" in z.read("classes.dex")
         # http_legacy: apktool b carries the edited binary manifest over
-        assert axml.uses_libraries(z.read("AndroidManifest.xml")) == [("org.apache.http.legacy", "seek-patch http_legacy")]
+        assert axml.uses_libraries(z.read("AndroidManifest.xml")) == [("org.apache.http.legacy", "seek-thermal-apk-patches http_legacy")]
     assert zipalign.check(signed) == []
     info = apk.app_info(signed)
     assert (info.package, info.version_name, info.version_code) == ("org.example.seekfixture", "2.3.4", 294)
@@ -82,7 +82,7 @@ def fixture_apk(make_project, toolchain, tmp_path):
 def test_check_reports_each_patch(fixture_apk, toolchain):
     results = apk.check(toolchain, fixture_apk("virtual"), log=QUIET)
     assert results["full_fps"] is None and results["sharp_scaling"] is None and results["debug_log"] is None
-    assert "feature-900 call" in results["no_smoothing"]
+    assert "feature-900 call" in results["smoothing_settings"]
     assert "(apk)" not in results
 
 
@@ -93,15 +93,15 @@ def test_check_flags_a_split_base_apk(fixture_apk, toolchain):
 
 def test_patch_default_set_skips_what_does_not_apply(fixture_apk, toolchain, tmp_path):
     out, lines = str(tmp_path / "out.apk"), []
-    plan = apk.Plan(["full_fps", "sharp_scaling", "no_smoothing"], skip_unavailable=True)
+    plan = apk.Plan(["full_fps", "sharp_scaling", "smoothing_settings"], skip_unavailable=True)
     apk.patch_apk(toolchain, fixture_apk("virtual"), out, plan, log=lines.append)
-    assert any(line.startswith("skip   no_smoothing") for line in lines)
+    assert any(line.startswith("skip   smoothing_settings") for line in lines)
     assert zipalign.check(out) == [] and apk.app_info(out).package == "org.example.seekfixture"
 
 
 def test_patch_named_patches_must_apply(fixture_apk, toolchain, tmp_path):
     with pytest.raises(PatchError, match="feature-900"):
-        apk.patch_apk(toolchain, fixture_apk("virtual"), str(tmp_path / "out.apk"), apk.Plan(["no_smoothing"]), log=QUIET)
+        apk.patch_apk(toolchain, fixture_apk("virtual"), str(tmp_path / "out.apk"), apk.Plan(["smoothing_settings"]), log=QUIET)
 
 
 def test_patch_refuses_a_split_base_apk(fixture_apk, toolchain, tmp_path):

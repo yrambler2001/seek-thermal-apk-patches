@@ -22,7 +22,7 @@
 .method constructor <init>()V
     .locals 0
 
-    .line 156
+    .line 157
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -35,10 +35,10 @@
 
     const/4 p1, 0x1
 
-    .line 159
+    .line 160
     invoke-static {p1}, Lseekpatch/Mic;->access$102(Z)Z
 
-    .line 160
+    .line 161
     invoke-static {}, Lseekpatch/Mic;->access$200()V
 
     return-void

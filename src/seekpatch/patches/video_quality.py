@@ -6,8 +6,8 @@ mono 44.1 kHz AAC at 64 kbit/s.  The patch changes six places:
 
     the video encoder       MediaCodec.createEncoderByType + configure in the recorder's
                             constructor become seekpatch.Video.encoder(format): HEVC (or H.264,
-                            --video-codec), hardware first, 960x1280 (the photo's pixels), constant QP
-                            (--video-qp) where the encoder takes QP bounds, else constant-quality
+                            in the settings), hardware first, 960x1280 (the photo's pixels), constant
+                            QP 18 where the encoder takes QP bounds, else constant-quality
                             mode, else 12 Mbit/s -- or VBR at a bitrate chosen in the settings;
                             keyframe every second; BT.709 colour tags.
                             Falls back to the app's own format if no encoder takes these.
@@ -29,8 +29,8 @@ mono 44.1 kHz AAC at 64 kbit/s.  The patch changes six places:
                             longer goes into the file as a sound frame
 
 Where the release has the settings screen (settings.py), Settings -> Image & Video gets a "Video
-codec" list (H.265 / H.264, starting from --video-codec) and a "Video quality" list
-(seekpatch.VideoSettings): the QP, starting from --video-qp, or a bitrate, 2 - 40 Mbit/s; where the
+codec" list (H.265 / H.264, starting from H.265) and a "Video quality" list
+(seekpatch.VideoSettings): the QP, starting from 18, or a bitrate, 2 - 40 Mbit/s; where the
 encoder takes no QP, only the bitrates, 12 Mbit/s by default.  seekpatch.Video reads them at the
 start of each recording.
 
@@ -44,7 +44,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import GAP, REG, PatchError, SmaliTree, methods, smali_escape
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import render_thread, upload_call
 from .settings import optional_settings
 
@@ -54,8 +54,8 @@ VERSIONS = "2.1.2 - 2.3.4"
 RECOMMENDED = True
 
 MARK = mark(NAME)
-CODECS = {"hevc": "video/hevc", "avc": "video/avc"}
-QP_RANGE = (10, 40)
+MIME = "video/hevc"          # the codec at the start, H.265 (Settings: H.264)
+QP = 18                      # the constant quantizer at the start (lower = better and bigger)
 LONG_SIDE = 1280             # the photo is 1280x960 (16:9: 1280x720)
 MAX_BITRATE = 40_000_000     # ceiling for the constant-QP encoder: keeps the signalled level at 5.1 (HEVC)
 FALLBACK_BITRATE = 12_000_000  # 960x1280 when the encoder has no quality control (the owner's choice)
@@ -76,7 +76,7 @@ VIDEO_FRAME = "seekpatchVideoFrame()V"
 
 CONFIG_SMALI = """.class public final Lseekpatch/VideoConfig;
 .super Ljava/lang/Object;
-.source "seek-patch video_quality"
+.source "seek-thermal-apk-patches video_quality"
 
 {mark}: values from the command line, read by seekpatch.Video
 
@@ -291,20 +291,16 @@ def _frame_clock(tree: SmaliTree) -> str:
     return f"{tree.rel(site_path)}: encoder frame after the thermal upload; {tree.rel(cam_path)}: none per camera frame"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
-    if opts.video_codec not in CODECS:
-        raise PatchError(f"{NAME}: video codec {opts.video_codec!r}, expected one of {', '.join(CODECS)}")
-    if not QP_RANGE[0] <= opts.video_qp <= QP_RANGE[1]:
-        raise PatchError(f"{NAME}: video QP {opts.video_qp}, expected {QP_RANGE[0]} - {QP_RANGE[1]} (lower = better)")
     encoder = _encoder(tree)
     audio, sound_path = _audio(tree)
     stamps = _sound_clock(tree, sound_path)
     clock = _frame_clock(tree)
     tree.add_class("Lseekpatch/VideoConfig;", CONFIG_SMALI.format(
         mark=MARK, bitrate=hex(FALLBACK_BITRATE), long_side=hex(LONG_SIDE), max_bitrate=hex(MAX_BITRATE),
-        mime=smali_escape(CODECS[opts.video_codec]), qp=hex(opts.video_qp)))
+        mime=smali_escape(MIME), qp=hex(QP)))
     add_helpers(tree, "Video", "Audio")
-    return [f"{opts.video_codec.upper()} QP {opts.video_qp}, long side {LONG_SIDE}: encoder {encoder}, sound {audio}, "
+    return [f"HEVC QP {QP}, long side {LONG_SIDE}: encoder {encoder}, sound {audio}, "
             f"{stamps}",
             clock, *optional_settings(tree, NAME, "VideoSettings", "Video quality")]

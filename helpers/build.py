@@ -4,7 +4,7 @@
 run this after changing a helper (--check: is the committed smali up to date).
 
     javac (JDK 11+, Java 8 bytecode, against android.jar)  ->  d8 --release --min-api 23
-        ->  classes.dex  ->  apktool d (the pinned jar seek-patch uses)  ->  smali
+        ->  classes.dex  ->  apktool d (the pinned jar seek-thermal-apk-patches uses)  ->  smali
 
 Needs the Android SDK pieces pinned below (ANDROID_HOME, or --sdk):
     sdkmanager "build-tools;35.0.0" "platforms;android-35"
@@ -63,7 +63,7 @@ def build(sdk: str, out: str) -> list[str]:
     sources = sorted(glob.glob(os.path.join(HERE, "java", "seekpatch", "*.java")))
     stubs = sorted(glob.glob(os.path.join(HERE, "stubs", "seekpatch", "*.java")))
     stub_names = {os.path.splitext(os.path.basename(s))[0] for s in stubs}
-    with tempfile.TemporaryDirectory(prefix="seek-patch-helpers-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-helpers-") as tmp:
         classes, dex, decoded = (os.path.join(tmp, d) for d in ("classes", "dex", "decoded"))
         os.makedirs(dex)
         run([javac, "-source", "8", "-target", "8", "-Xlint:-options", "-encoding", "UTF-8",
@@ -100,7 +100,7 @@ def main() -> None:
             names = build(sdk, OUT)
             print(f"wrote {len(names)} files to {os.path.relpath(OUT, REPO)}: {', '.join(names)}")
             return
-        with tempfile.TemporaryDirectory(prefix="seek-patch-helpers-check-") as tmp:
+        with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-helpers-check-") as tmp:
             names = build(sdk, tmp)
             committed = sorted(os.path.basename(p) for p in glob.glob(os.path.join(OUT, "*.smali")))
             stale = sorted(set(names) ^ set(committed))

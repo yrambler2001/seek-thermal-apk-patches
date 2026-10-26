@@ -17,42 +17,42 @@ the same phone, once with `no_analytics` alone and once with `http_legacy` alone
 Installing an older release may run into Google Play Protect, which checks apps installed from
 outside the Play Store.  It can block them with *"Unsafe app blocked — This app was built for an
 older version of Android and doesn't include the latest privacy protections"*.  That refers to the
-app's own targetSdkVersion (30 for 2.2.2), which seek-patch does not change.  The stock APK gets the
+app's own targetSdkVersion (30 for 2.2.2), which seek-thermal-apk-patches does not change.  The stock APK gets the
 same treatment, and Play Protect is not consistent: one 2.2.2 build installed, and the next was
 blocked.  To install anyway, turn off *Scan apps with Play Protect* in the Play Store's Play
 Protect settings for the install, then turn it back on.
 
-| app | versionCode | `full_fps` | `steady_fps` | `default_palette` | `default_unit` | `sharp_scaling` | `smoothing_settings` | `no_smoothing` | `png_photos` | `hidden_settings` | `fps_readout` | `photo_1x` | `video_quality` | `phone_camera` | `resume_fix` | `reconnect_fix` | `usb_prompt` | `relaunch_fix` | `no_analytics` | `http_legacy` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1.9.1 | 103 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.2 | 104 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – | – ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.3 | 106 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.4 | 108 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.5 | 109 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 2.0 | 156 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.1 | 158 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.3 | 160 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.1 | 162 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | – | ✓ | ✓ | ✓ | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.2 | 180 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.4 | 210 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.5 | 217 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.6 | 240 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.1.7 | 250 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| app | versionCode | `full_fps` | `steady_fps` | `default_palette` | `default_unit` | `sharp_scaling` | `smoothing_settings` | `png_photos` | `hidden_settings` | `fps_readout` | `photo_1x` | `video_quality` | `phone_camera` | `resume_fix` | `reconnect_fix` | `usb_prompt` | `relaunch_fix` | `no_analytics` | `http_legacy` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1.9.1 | 103 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.2 | 104 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.3 | 106 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.4 | 108 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.5 | 109 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | ✓ ¹⁰ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 2.0 | 156 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.1 | 158 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.3 | 160 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.1 | 162 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.2 | 180 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.4 | 210 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.5 | 217 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.6 | 240 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.1.7 | 250 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 1. 1.9.x saves photos with a different code path; the live-view part would work, but the patch is
    all or nothing.
 2. 1.9.x has no frame-timing log to switch on.
 3. The image library these versions ship handles feature 900 differently (2.1.6 / 2.1.7) or is not
-   there at all (2.1.5 and older have no `libseekip.so`).  `smoothing_settings`, `no_smoothing` and
-   `flat_field` are verified on the libraries of 2.2.0 and later and refuse these.  (The settings
+   there at all (2.1.5 and older have no `libseekip.so`).  `smoothing_settings` and `flat_field`
+   are verified on the libraries of 2.2.0 and later and refuse these.  (The settings
    screen `smoothing_settings` hooks exists from 2.0 on.)
 4. Before 2.3.1 the app asks for the microphone together with storage and never blocks a photo or
    video on it, so there is nothing for the patch to change.
@@ -89,9 +89,6 @@ The settings in *Settings → Image & Video* come with their patches wherever th
 (`video_quality`) 2.1.2 – 2.3.4, Seek's filters (`smoothing_settings`) and flat-field frames
 (`flat_field`) 2.2.0 – 2.3.4, Smart smoothing 2.2.3 – 2.3.4.  The build test checks each
 section class in the built app.  Only 2.3.4 has shown them on a phone.
-
-`no_smoothing` is opt-in, the alternative to `smoothing_settings`: the build test applies every
-patch but it, and `check` tests each patch alone.
 
 `png_photos`, `photo_1x` and `video_quality` start at 2.1.1 / 2.1.2, where the photo and recording
 code they hook first appears in this shape; `resume_fix` matches the same pause code in every

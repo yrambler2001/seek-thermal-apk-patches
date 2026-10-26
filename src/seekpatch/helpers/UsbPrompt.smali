@@ -5,7 +5,7 @@
 
 
 # static fields
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static final WAIT_MS:J = 0xea60L
 
@@ -186,7 +186,7 @@
     if-gez v5, :cond_0
 
     .line 43
-    const-string p0, "seek-patch"
+    const-string p0, "seek-thermal-apk-patches"
 
     new-instance p1, Ljava/lang/StringBuilder;
 

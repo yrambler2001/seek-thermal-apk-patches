@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from seekpatch import __version__
-from seekpatch.cli import main
-from seekpatch.patches import ALL, RECOMMENDED, conflicts, every_patch
+from seekpatch import NAME, __version__
+from seekpatch.cli import default_out, main
+from seekpatch.patches import ALL, RECOMMENDED, every_patch
 
 
 def test_list(capsys):
@@ -17,17 +17,8 @@ def test_list(capsys):
                            "shutter", "calibration", "smart_smoothing"]
 
 
-def test_all_leaves_out_the_alternative():
-    assert every_patch() == RECOMMENDED + ["debug_log"]  # not no_smoothing
-    assert conflicts(every_patch()) == []
-    assert conflicts(["no_smoothing", "smoothing_settings", "flat_field"]) == [("no_smoothing", "smoothing_settings")]
-
-
-def test_patch_refuses_alternatives(tmp_path):
-    f = tmp_path / "x.apk"
-    f.write_bytes(b"")
-    with pytest.raises(SystemExit, match="alternatives"):
-        main(["patch", str(f), "-p", "smoothing_settings", "-p", "no_smoothing"])
+def test_all_is_the_default_set_and_debug_log():
+    assert every_patch() == RECOMMENDED + ["debug_log"]
 
 
 def test_patch_refuses_a_missing_requirement(tmp_path):
@@ -40,7 +31,12 @@ def test_patch_refuses_a_missing_requirement(tmp_path):
 def test_version(capsys):
     with pytest.raises(SystemExit):
         main(["--version"])
-    assert __version__ in capsys.readouterr().out
+    assert capsys.readouterr().out.strip() == f"{NAME} {__version__}"
+
+
+def test_the_output_is_named_after_the_input_and_the_version():
+    assert default_out("dl/Seek Thermal_2.3.4.xapk", False) == f"dl/Seek Thermal_2.3.4-patched-{__version__}.apk"
+    assert default_out("Seek.apk", True) == f"Seek-patched-{__version__}-side-by-side.apk"
 
 
 def test_patch_missing_file():
@@ -48,19 +44,17 @@ def test_patch_missing_file():
         main(["patch", "does-not-exist.apk"])
 
 
-def test_patch_rejects_bad_sharpness(tmp_path):
-    f = tmp_path / "x.apk"
-    f.write_bytes(b"")
-    with pytest.raises(SystemExit, match="sharpness"):
-        main(["patch", str(f), "--sharpness", "1"])
-
-
-@pytest.mark.parametrize("args, match", [(["--video-qp", "5"], "video-qp"), (["--video-qp", "50"], "video-qp")])
-def test_patch_rejects_bad_video_options(tmp_path, args, match):
-    f = tmp_path / "x.apk"
-    f.write_bytes(b"")
+@pytest.mark.parametrize("args, match", [
+    (["--sharpness", "3"], "--sharpness was removed in 1.0: the build starts at Sharp 2, as iOS; pick Upscaling"),
+    (["--sharpness=3"], "--sharpness was removed"),
+    (["--video-codec", "avc"], "--video-codec was removed in 1.0: the build starts at H.265; pick Video codec"),
+    (["--video-qp", "24"], "--video-qp was removed in 1.0: the build starts at QP 18; pick Video quality"),
+    (["-p", "no_smoothing"], "no_smoothing was removed in 1.0: smoothing_settings"),
+    (["--patch=no_smoothing"], "no_smoothing was removed"),
+])
+def test_patch_names_what_replaced_a_removed_option(args, match):
     with pytest.raises(SystemExit, match=match):
-        main(["patch", str(f), *args])
+        main(["patch", "x.apk", *args])
 
 
 def test_patch_unknown_name():

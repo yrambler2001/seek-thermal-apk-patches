@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 125
+    .line 126
     iput-object p1, p0, Lseekpatch/Mic$1;->val$a:Landroid/app/Activity;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -44,7 +44,7 @@
 .method public run()V
     .locals 4
 
-    .line 128
+    .line 129
     iget-object v0, p0, Lseekpatch/Mic$1;->val$a:Landroid/app/Activity;
 
     invoke-virtual {v0}, Landroid/app/Activity;->isFinishing()Z
@@ -55,7 +55,7 @@
 
     return-void
 
-    .line 131
+    .line 132
     :cond_0
     iget-object v0, p0, Lseekpatch/Mic$1;->val$a:Landroid/app/Activity;
 
@@ -67,12 +67,12 @@
 
     const/4 v0, 0x1
 
-    .line 132
+    .line 133
     invoke-static {v0}, Lseekpatch/Mic;->access$002(Z)Z
 
     return-void
 
-    .line 135
+    .line 136
     :cond_1
     iget-object v0, p0, Lseekpatch/Mic$1;->val$a:Landroid/app/Activity;
 

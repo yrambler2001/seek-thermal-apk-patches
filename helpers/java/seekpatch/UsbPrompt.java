@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * seek-patch usb_prompt: the camera library asks Android for a camera once at a time.
+ * seek-thermal-apk-patches usb_prompt: the camera library asks Android for a camera once at a time.
  *
  * <p>The library searches for cameras when the camera screen is created and again each time it
  * resumes, and each search asks for permission for every camera it does not have open.  On a
@@ -24,7 +24,7 @@ import java.util.Map;
  * with no dialog.
  */
 public final class UsbPrompt {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     /** After this long a request counts as lost and is made again (Android answers every dialog, even dismissed). */
     private static final long WAIT_MS = 60000;
 

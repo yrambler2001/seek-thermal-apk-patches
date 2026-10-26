@@ -20,7 +20,7 @@ import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * seek-patch flat_field: a "Flat field" button that has the image library learn the camera's own
+ * seek-thermal-apk-patches flat_field: a "Flat field" button that has the image library learn the camera's own
  * gradient from a uniform surface.
  *
  * <p>libseekip's gradient stage subtracts a smooth correction map, and learns it only from frames
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * right after the app has sent its own features.
  */
 public final class Flat {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     // Gradient-stage features of the first filter; the second filter's copy is at + 40000.
     private static final int DETAIL_LIMIT = 30100;
     private static final int DETAIL = 30101;

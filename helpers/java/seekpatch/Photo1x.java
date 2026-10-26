@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * seek-patch photo_1x: with every photo, the thermal frame at the sensor's resolution as a PNG.
+ * seek-thermal-apk-patches photo_1x: with every photo, the thermal frame at the sensor's resolution as a PNG.
  *
  * <p>The photo method hands its frame bitmap (sensor-sized, colorized, no overlays) to
  * {@link #capture} before scaling it up; once the photo file is written, {@link #saved} stores the
@@ -25,7 +25,7 @@ import java.io.OutputStream;
  * default); without a settings screen it stays on.
  */
 public final class Photo1x {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
 
     public static volatile boolean enabled = true;
 

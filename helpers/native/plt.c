@@ -1,5 +1,5 @@
 /*
- * plt.c -- the loaded libseekip.so's dynamic symbols and PLT slots, for seek-patch's hooks.
+ * plt.c -- the loaded libseekip.so's dynamic symbols and PLT slots, for seek-thermal-apk-patches' hooks.
  *
  * libseekip calls its own exported functions through its PLT (R_*_JUMP_SLOT relocations); it is
  * linked BIND_NOW with RELRO, so the slots are resolved at load and read-only: plt_swap makes one

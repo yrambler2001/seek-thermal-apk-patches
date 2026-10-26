@@ -16,7 +16,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import GAP, REG, PatchError, SmaliTree, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import render_thread
 
 NAME = "resume_fix"
@@ -27,7 +27,7 @@ RECOMMENDED = True
 MARK = mark(NAME)
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     rpath, cls = render_thread(tree, NAME)
     c = re.escape(cls)

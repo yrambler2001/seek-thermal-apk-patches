@@ -11,7 +11,7 @@
 
 .field private static final KEY:Ljava/lang/String; = "flat_field_frames"
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static loaded:I
 
@@ -136,7 +136,7 @@
 
     move-result-object p0
 
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 

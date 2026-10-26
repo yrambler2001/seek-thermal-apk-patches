@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 /**
- * seek-patch: the patches' settings, in the app's own <i>Settings → Image &amp; Video</i> screen.
+ * seek-thermal-apk-patches: the patches' settings, in the app's own <i>Settings → Image &amp; Video</i> screen.
  *
  * <p>Two hooks call in: {@link #attach} from the camera screen's onCreate, which loads the values
  * before the first frame and follows every later change, and {@link #screen} right after the
@@ -46,7 +46,7 @@ import java.lang.reflect.Method;
  * store into the seekpatch file themselves.
  */
 public final class Settings {
-    static final String TAG = "seek-patch";
+    static final String TAG = "seek-thermal-apk-patches";
     public static final String PREFS = "seekpatch";
     /** The app's "Image smoothing" switch: the class our switches copy (and smoothing_settings hides it). */
     public static final String OLD_SWITCH = "use_smoothing";
@@ -162,7 +162,7 @@ public final class Settings {
         }
     }
 
-    /** Is a class of seek-patch's in the app (that is: was its patch applied)? */
+    /** Is a class of seek-thermal-apk-patches' in the app (that is: was its patch applied)? */
     public static boolean present(String name) {
         try {
             Class.forName(name, false, Settings.class.getClassLoader());

@@ -11,11 +11,11 @@ import re
 import shutil
 import tempfile
 import zipfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable
 
 from . import axml, bundle, manifest, zipalign
-from .patches import BY_NAME, Options
+from .patches import BY_NAME
 from .smali import AlreadyApplied, PatchError, SmaliTree
 from .toolchain import KEY_ALIAS, KEY_PASSWORD, Toolchain, ToolchainError
 
@@ -93,7 +93,7 @@ def build(tc: Toolchain, src: str, out: str) -> None:
 
 def sign(tc: Toolchain, unsigned: str, out: str, log: Callable[[str], None] = print) -> str:
     """Align (in Python) and sign with the per-user key; returns the key's path."""
-    with tempfile.TemporaryDirectory(prefix="seek-patch-sign-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-sign-") as tmp:
         aligned = os.path.join(tmp, "aligned.apk")
         zipalign.zipalign(unsigned, aligned)
         ks = tc.keystore(log)
@@ -114,7 +114,6 @@ def sign(tc: Toolchain, unsigned: str, out: str, log: Callable[[str], None] = pr
 @dataclass
 class Plan:
     patches: list[str]
-    options: Options = field(default_factory=Options)
     side_by_side: bool = False
     package: str | None = None   # side-by-side package name (default: <original>.patched)
     label: str | None = None     # side-by-side launcher label
@@ -131,7 +130,7 @@ def apply_patches(root: str, plan: Plan, log: Callable[[str], None] = print, tre
         patch = BY_NAME[name]
         try:
             with tree.transaction():
-                lines = patch.apply(tree, plan.options)
+                lines = patch.apply(tree)
         except PatchError as e:
             if not plan.skip_unavailable or isinstance(e, AlreadyApplied):
                 raise
@@ -151,7 +150,7 @@ def apply_patches(root: str, plan: Plan, log: Callable[[str], None] = print, tre
 def check(tc: Toolchain, apk: str, log: Callable[[str], None] = print) -> dict[str, str | None]:
     """Dry run of every patch on its own: name -> None (applies) or the reason it does not."""
     results: dict[str, str | None] = {}
-    with tempfile.TemporaryDirectory(prefix="seek-patch-check-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-check-") as tmp:
         single = single_apk(tc, apk, tmp, log)
         src = os.path.join(tmp, "src")
         decode(tc, single, src, resources=False)
@@ -165,10 +164,10 @@ def check(tc: Toolchain, apk: str, log: Callable[[str], None] = print) -> dict[s
                 with tree.transaction():
                     for need in getattr(patch, "REQUIRES", ()):  # applied first, in the same dry run
                         try:
-                            BY_NAME[need].apply(tree, Options())
+                            BY_NAME[need].apply(tree)
                         except PatchError as e:
                             raise PatchError(f"{name}: needs {need}, which does not apply ({e})") from e
-                    patch.apply(tree, Options())
+                    patch.apply(tree)
                     raise _Rollback
             except _Rollback:
                 results[name] = None
@@ -182,7 +181,7 @@ class _Rollback(Exception):
 
 
 def patch_apk(tc: Toolchain, apk: str, out: str, plan: Plan, log: Callable[[str], None] = print) -> None:
-    with tempfile.TemporaryDirectory(prefix="seek-patch-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-") as tmp:
         single = single_apk(tc, apk, tmp, log)
         src = os.path.join(tmp, "src")
         log(f"decode {'the merged apk' if single != apk else os.path.basename(apk)}"

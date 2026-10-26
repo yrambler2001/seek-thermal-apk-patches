@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 
 from ..smali import REG, PatchError, SmaliTree, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "fps_readout"
 SUMMARY = 'the "Show Frame Rate" readout (Hz) updates every 0.5 s instead of every 3 s'
@@ -30,7 +30,7 @@ SECOND = "0x408f400000000000L"     # 1000.0
 HALF_SECOND = "0x407f400000000000L"  # 500.0
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     # (now - last) as a double, then the window constant and, a few instructions on, the comparison
     elapsed = re.compile(r"^[ \t]*sub-long (" + REG + r"), " + REG + ", " + REG + r"\n(?:[ \t]*(?:\.line \d+)?\n)*"

@@ -10,7 +10,7 @@ Pro — as a lossless PNG without overlays, turned upright.
 |---|---|
 | 1280×960 (EXIF: rotate 90°), overlays, ~0.6 MB | 156×206, no overlays, ~60 KB |
 
-![The saved photo, shown upright, and its 1× copy enlarged with nearest neighbour](images/photo-1x.png)
+![The saved photo, shown upright, and its 1× copy enlarged with nearest neighbour](images/photo-1x.avif)
 
 <sub>Left: the photo (with `png_photos` and `sharp_scaling`).  Right: the 1× copy, each sensor pixel
 drawn as a block.  Seek Compact, Iron palette.</sub>

@@ -4,8 +4,8 @@
     python3 tools/codecs.py list                     # encoders: hardware?, rate control, 4:4:4 profiles, sizes
     python3 tools/codecs.py ladder REF.mp4           # re-encode REF's frames at a QP ladder and score them
 
-`ladder` wants a recording much better than the candidates -- patch with `--video-qp 10` and record
-10+ s of the scene you care about.  Its frames are decoded here, pushed to the phone, encoded there by
+`ladder` wants a recording much better than the candidates -- record 10+ s of the scene you care
+about at Video quality 40 Mbit/s, the top of the app's list.  Its frames are decoded here, pushed to the phone, encoded there by
 each hardware HEVC / H.264 encoder at every QP (set up as video_quality does), pulled back and scored
 against REF: bitrate, PSNR (luma, chroma), SSIM, and how much of the sensor's frame-to-frame noise is
 kept (100 % = as in REF; lower = the encoder smooths it away).
@@ -26,7 +26,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PLATFORM = "android-35"
-REMOTE = "/data/local/tmp/seek-patch-codecs"
+REMOTE = "/data/local/tmp/seek-thermal-apk-patches-codecs"
 
 
 def sh(cmd: list[str], **kw) -> str:
@@ -77,7 +77,7 @@ def cmd_ladder(a) -> None:
     fps = float(num) / float(den)
     qps = [int(q) for q in a.qp.split(",")]
     fs = w * h * 3 // 2
-    with tempfile.TemporaryDirectory(prefix="seek-patch-ladder-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-ladder-") as tmp:
         dex = build_dex(tmp)
         encoders = hardware_encoders(run_on_phone(dex, "Encoders"))
         if not encoders:
@@ -124,7 +124,7 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list", help="the phone's encoders").set_defaults(fn=cmd_list)
     lad = sub.add_parser("ladder", help="score a QP ladder against a reference recording")
-    lad.add_argument("ref", help="a high-quality recording (--video-qp 10)")
+    lad.add_argument("ref", help="a high-quality recording (Video quality 40 Mbit/s)")
     lad.add_argument("--qp", default="14,16,18,20,22,24,26,28", help="comma-separated QPs (default %(default)s)")
     lad.add_argument("--frames", type=int, default=120, help="frames to use (default %(default)s)")
     lad.add_argument("--skip", type=float, default=2.0, help="seconds to skip at the start (default %(default)s)")

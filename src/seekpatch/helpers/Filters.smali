@@ -37,7 +37,7 @@
 
 .field private static final STRIPES:Ljava/lang/String; = "smart_stripes"
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static final TEMPORAL:Ljava/lang/String; = "temporal_smoothing"
 
@@ -158,7 +158,7 @@
 
     .line 105
     :cond_1
-    const-string v4, "seek-patch"
+    const-string v4, "seek-thermal-apk-patches"
 
     if-nez p2, :cond_2
 

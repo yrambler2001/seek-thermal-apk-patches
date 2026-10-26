@@ -1,5 +1,5 @@
 /*
- * lock.c -- seek-patch lock_range on Android: holds libseekip's contrast curve.  JNI for seekpatch.Lock.
+ * lock.c -- seek-thermal-apk-patches lock_range on Android: holds libseekip's contrast curve.  JNI for seekpatch.Lock.
  *
  * libseekip's contrast stage (bclahe_process, the app's only one) builds, every frame, a histogram
  * of the frame's raw values, clips it, averages it with the previous frames' and turns it into the
@@ -18,7 +18,7 @@
 
 #include "plt.h"
 
-#define TAG "seek-patch"
+#define TAG "seek-thermal-apk-patches"
 
 /* st_size of create_transfer in the verified libseekip builds (2.11.3.2) */
 static const struct { unsigned size; const char *what; } VERIFIED[] = {

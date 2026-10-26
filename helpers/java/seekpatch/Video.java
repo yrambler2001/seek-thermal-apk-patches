@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * seek-patch video_quality: the encoder for the app's video recordings.
+ * seek-thermal-apk-patches video_quality: the encoder for the app's video recordings.
  *
  * <p>Called in place of {@code MediaCodec.createEncoderByType(...)} + {@code configure(...)} with the
  * app's own format (H.264, 480x640, 1.5 Mbit/s) and returns a configured encoder.  In order of
@@ -29,7 +29,7 @@ import java.util.Locale;
  * app's own format is used.
  */
 public final class Video {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final int FULL = 3;   // rate control + profile + colour description
     private static final int RATE = 2;   // rate control + colour description (some encoders refuse the profile)
     private static final int PLAIN = 1;  // colour description, VBR at the chosen or the fallback bitrate

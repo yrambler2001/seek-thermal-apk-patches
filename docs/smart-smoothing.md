@@ -4,7 +4,7 @@
 the two barely differ.  On a hand-held camera almost every pixel moves a little between frames, so
 it either does almost nothing or leaves trails.
 **Patched:** a **Smart smoothing** button at the top left of the camera screen.  When it is on, the
-image library runs without `alpf`.  Instead, seek-patch's own filter follows the camera's motion
+image library runs without `alpf`.  Instead, seek-thermal-apk-patches' own filter follows the camera's motion
 and averages up to eight frames for each pixel.  It also removes most of the column stripes and
 levels the bright strip at the screen's left edge.
 
@@ -15,7 +15,7 @@ loaded until you first turn it on.  A long press explains what it does.
 With [`smoothing_settings`](smoothing-settings.md) (in the default set too), *Settings → Image &
 Video* has a **Smart smoothing** switch and, under it, **Stripe correction** and **Left-edge
 levelling** (both on by default; they stand for `lines` and `edge` below).  The switch and the
-button are one setting, kept in seek-patch's preferences file: `seekpatch.Smooth` follows the file
+button are one setting, kept in seek-thermal-apk-patches' preferences file: `seekpatch.Smooth` follows the file
 with a listener, so turning one moves the other.  While Smart smoothing is on, *Default temporal
 smoothing* has no effect, as Smart smoothing replaces it.
 
@@ -56,12 +56,12 @@ frame 16 onwards (lower is better).
 Everything after the first filter gets the cleaner frame: temperatures, the spot meter, the
 contrast stretch, photos and video.
 
-The measurements and the prototype come from seek-patch's research notes: a Python prototype, then
+The measurements and the prototype come from seek-thermal-apk-patches' research notes: a Python prototype, then
 this C code, checked against the prototype on the bursts.
 
 ## How it works
 
-The filter is [`helpers/native/tnr.c`](../helpers/native/tnr.c), written from scratch for seek-patch.
+The filter is [`helpers/native/tnr.c`](../helpers/native/tnr.c), written from scratch for seek-thermal-apk-patches.
 It uses only libc and libm, with NEON on arm64.  For each frame it:
 
 1. **Aligns** the frame to the running estimate: a frame-wide shift plus a level offset
@@ -116,7 +116,7 @@ On the Java side, `seekpatch.Smooth.attach` adds the button to the top bar (`mai
 It goes on the left; *Flat field* is on the right.  `seekpatch.Smooth.frame()` runs on the camera
 thread right after the per-frame feature-900 call.  The first time the button is on, it loads the
 library and installs the hook.  After that it passes the switch on.  If the hook refuses, a toast
-says *Smart smoothing is not available here*, and `adb logcat -s seek-patch` says why.
+says *Smart smoothing is not available here*, and `adb logcat -s seek-thermal-apk-patches` says why.
 
 The patch adds the library to `lib/arm64-v8a/` and `lib/armeabi-v7a/`, wherever the apk has a
 `libseekip.so` for that ABI.  It goes in uncompressed and 16 KiB aligned, because the app maps its
@@ -141,7 +141,7 @@ correction.  The in-app figure is higher: the camera thread shares the cores wit
 app and runs at whatever clock the governor picks (not measured further).  It fits easily in the
 Compact's 33 ms frame.
 
-`adb logcat -s seek-patch` prints a line every 256 frames: CPU per frame, the noise estimate,
+`adb logcat -s seek-thermal-apk-patches` prints a line every 256 frames: CPU per frame, the noise estimate,
 shutter and other restarts, and the cores it ran on; and a line whenever the stripe and edge options
 change.
 

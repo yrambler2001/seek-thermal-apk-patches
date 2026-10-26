@@ -40,7 +40,7 @@
 .method static constructor <clinit>()V
     .locals 2
 
-    .line 49
+    .line 50
     new-instance v0, Ljava/lang/ref/WeakReference;
 
     const/4 v1, 0x0
@@ -55,7 +55,7 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 51
+    .line 52
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -91,7 +91,7 @@
 .method public static frame()V
     .locals 5
 
-    .line 117
+    .line 118
     sget-boolean v0, Lseekpatch/Mic;->startPending:Z
 
     if-nez v0, :cond_0
@@ -101,10 +101,10 @@
     :cond_0
     const/4 v0, 0x0
 
-    .line 120
+    .line 121
     sput-boolean v0, Lseekpatch/Mic;->startPending:Z
 
-    .line 121
+    .line 122
     sget-object v0, Lseekpatch/Mic;->activity:Ljava/lang/ref/WeakReference;
 
     invoke-virtual {v0}, Ljava/lang/ref/WeakReference;->get()Ljava/lang/Object;
@@ -115,7 +115,7 @@
 
     if-eqz v0, :cond_2
 
-    .line 122
+    .line 123
     invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
 
     move-result-wide v1
@@ -128,7 +128,7 @@
 
     goto :goto_0
 
-    .line 125
+    .line 126
     :cond_1
     new-instance v1, Lseekpatch/Mic$1;
 
@@ -144,14 +144,14 @@
 .method public static gate(Landroid/app/Activity;IZ)I
     .locals 2
 
-    .line 59
+    .line 60
     new-instance v0, Ljava/lang/ref/WeakReference;
 
     invoke-direct {v0, p0}, Ljava/lang/ref/WeakReference;-><init>(Ljava/lang/Object;)V
 
     sput-object v0, Lseekpatch/Mic;->activity:Ljava/lang/ref/WeakReference;
 
-    .line 60
+    .line 61
     const-string v0, "android.permission.RECORD_AUDIO"
 
     invoke-virtual {p0, v0}, Landroid/app/Activity;->checkSelfPermission(Ljava/lang/String;)I
@@ -162,15 +162,15 @@
 
     if-nez v0, :cond_1
 
-    .line 61
+    .line 62
     sput-boolean v1, Lseekpatch/Mic;->withoutSound:Z
 
-    .line 62
+    .line 63
     invoke-static {p0}, Lseekpatch/Mic;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object p0
 
-    .line 63
+    .line 64
     const-string p1, "mic_denied_for_good"
 
     invoke-interface {p0, p1}, Landroid/content/SharedPreferences;->contains(Ljava/lang/String;)Z
@@ -179,7 +179,7 @@
 
     if-eqz p2, :cond_0
 
-    .line 64
+    .line 65
     invoke-interface {p0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
 
     move-result-object p0
@@ -202,18 +202,18 @@
 
     goto :goto_0
 
-    .line 71
+    .line 72
     :cond_2
     sget-boolean p1, Lseekpatch/Mic;->withoutSound:Z
 
     if-eqz p1, :cond_3
 
-    .line 72
+    .line 73
     sput-boolean v1, Lseekpatch/Mic;->withoutSound:Z
 
     return v1
 
-    .line 75
+    .line 76
     :cond_3
     sput-boolean p0, Lseekpatch/Mic;->pending:Z
 
@@ -234,12 +234,12 @@
     :goto_0
     if-eqz p0, :cond_1
 
-    .line 171
+    .line 172
     array-length v1, p0
 
     if-ge v0, v1, :cond_1
 
-    .line 172
+    .line 173
     aget-object v1, p0, v0
 
     invoke-virtual {p1, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -264,21 +264,21 @@
 .method private static offerSettings(Landroid/app/Activity;)V
     .locals 2
 
-    .line 146
+    .line 147
     new-instance v0, Landroid/app/AlertDialog$Builder;
 
     invoke-direct {v0, p0}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;)V
 
     const-string v1, "Microphone is off"
 
-    .line 147
+    .line 148
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setTitle(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
     move-result-object v0
 
     const-string v1, "Android will not ask again for this app. To record sound, allow the microphone in the app\'s settings."
 
-    .line 148
+    .line 149
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setMessage(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
     move-result-object v0
@@ -287,7 +287,7 @@
 
     invoke-direct {v1, p0}, Lseekpatch/Mic$3;-><init>(Landroid/app/Activity;)V
 
-    .line 149
+    .line 150
     const-string p0, "Open settings"
 
     invoke-virtual {v0, p0, v1}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
@@ -298,14 +298,14 @@
 
     invoke-direct {v0}, Lseekpatch/Mic$2;-><init>()V
 
-    .line 156
+    .line 157
     const-string v1, "Record without sound"
 
     invoke-virtual {p0, v1, v0}, Landroid/app/AlertDialog$Builder;->setNegativeButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
     move-result-object p0
 
-    .line 163
+    .line 164
     invoke-virtual {p0}, Landroid/app/AlertDialog$Builder;->show()Landroid/app/AlertDialog;
 
     return-void
@@ -322,7 +322,7 @@
 
     return v1
 
-    .line 94
+    .line 95
     :cond_0
     sget-boolean p1, Lseekpatch/Mic;->pending:Z
 
@@ -332,11 +332,11 @@
 
     return v0
 
-    .line 97
+    .line 98
     :cond_1
     sput-boolean v0, Lseekpatch/Mic;->pending:Z
 
-    .line 98
+    .line 99
     const-string p1, "android.permission.RECORD_AUDIO"
 
     invoke-static {p2, p1}, Lseekpatch/Mic;->indexOf([Ljava/lang/String;Ljava/lang/String;)I
@@ -345,25 +345,25 @@
 
     if-ltz p2, :cond_5
 
-    .line 99
+    .line 100
     array-length v2, p3
 
     if-lt p2, v2, :cond_2
 
     goto :goto_0
 
-    .line 102
+    .line 103
     :cond_2
     aget p2, p3, p2
 
     if-nez p2, :cond_3
 
-    .line 103
+    .line 104
     invoke-static {}, Lseekpatch/Mic;->startOnNextFrame()V
 
     goto :goto_0
 
-    .line 104
+    .line 105
     :cond_3
     invoke-virtual {p0, p1}, Landroid/app/Activity;->shouldShowRequestPermissionRationale(Ljava/lang/String;)Z
 
@@ -371,7 +371,7 @@
 
     if-eqz p1, :cond_4
 
-    .line 105
+    .line 106
     const-string p1, "Recording without sound: the microphone is not allowed"
 
     invoke-static {p0, p1, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
@@ -380,15 +380,15 @@
 
     invoke-virtual {p0}, Landroid/widget/Toast;->show()V
 
-    .line 106
+    .line 107
     sput-boolean v1, Lseekpatch/Mic;->withoutSound:Z
 
-    .line 107
+    .line 108
     invoke-static {}, Lseekpatch/Mic;->startOnNextFrame()V
 
     goto :goto_0
 
-    .line 109
+    .line 110
     :cond_4
     invoke-static {p0}, Lseekpatch/Mic;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
@@ -406,7 +406,7 @@
 
     invoke-interface {p1}, Landroid/content/SharedPreferences$Editor;->apply()V
 
-    .line 110
+    .line 111
     invoke-static {p0}, Lseekpatch/Mic;->offerSettings(Landroid/app/Activity;)V
 
     :cond_5
@@ -417,7 +417,7 @@
 .method private static prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
     .locals 2
 
-    .line 167
+    .line 168
     const-string v0, "seek-patch"
 
     const/4 v1, 0x0
@@ -432,7 +432,7 @@
 .method public static request(Landroid/app/Activity;[Ljava/lang/String;I)V
     .locals 3
 
-    .line 81
+    .line 82
     sget-boolean v0, Lseekpatch/Mic;->pending:Z
 
     if-eqz v0, :cond_0
@@ -459,15 +459,15 @@
 
     if-nez v0, :cond_0
 
-    .line 82
+    .line 83
     sput-boolean v2, Lseekpatch/Mic;->pending:Z
 
-    .line 83
+    .line 84
     invoke-static {p0}, Lseekpatch/Mic;->offerSettings(Landroid/app/Activity;)V
 
     return-void
 
-    .line 86
+    .line 87
     :cond_0
     invoke-virtual {p0, p1, p2}, Landroid/app/Activity;->requestPermissions([Ljava/lang/String;I)V
 
@@ -477,7 +477,7 @@
 .method private static startOnNextFrame()V
     .locals 4
 
-    .line 141
+    .line 142
     invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
 
     move-result-wide v0
@@ -490,7 +490,7 @@
 
     const/4 v0, 0x1
 
-    .line 142
+    .line 143
     sput-boolean v0, Lseekpatch/Mic;->startPending:Z
 
     return-void

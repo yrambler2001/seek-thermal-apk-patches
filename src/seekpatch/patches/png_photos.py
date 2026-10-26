@@ -18,7 +18,7 @@ from __future__ import annotations
 import re
 
 from ..smali import GAP, REG, PatchError, SmaliTree, code_start, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "png_photos"
 SUMMARY = 'save photos as lossless PNG (the app\'s hidden "Save Uncompressed" setting, forced on)'
@@ -91,7 +91,7 @@ def _setter(tree: SmaliTree) -> str:
     return f"{tree.rel(path)} {s.name}()"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     reader = _reader(tree)
     setter = _setter(tree)

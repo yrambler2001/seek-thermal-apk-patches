@@ -17,7 +17,7 @@
 
 .field private static final PREFS:Ljava/lang/String; = "seekpatch"
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static volatile b:F
 
@@ -232,7 +232,7 @@
     move-exception p0
 
     .line 75
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     const-string v1, "calibration: no button"
 
@@ -798,7 +798,7 @@
 
     move-result-object p0
 
-    const-string p1, "seek-patch"
+    const-string p1, "seek-thermal-apk-patches"
 
     invoke-static {p1, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
@@ -1033,7 +1033,7 @@
 
     move-result-object p0
 
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     invoke-static {v0, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 

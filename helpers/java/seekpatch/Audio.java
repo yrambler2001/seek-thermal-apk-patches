@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
- * seek-patch video_quality: the sound of video recordings.
+ * seek-thermal-apk-patches video_quality: the sound of video recordings.
  *
  * <p>The app records mono 44.1 kHz from the camcorder microphone and encodes AAC-LC at 64 kbit/s.
  * {@link #minBufferSize} (called in place of {@code AudioRecord.getMinBufferSize}) picks 48 kHz
@@ -41,7 +41,7 @@ import java.util.Arrays;
  * block's bytes from its first.
  */
 public final class Audio {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final int STEREO_BITRATE = 256000;
     private static final int MONO_BITRATE = 160000;
 

@@ -15,7 +15,7 @@
 
 .field private static final SUMMARY_COLOR:I = -0x333334
 
-.field static final TAG:Ljava/lang/String; = "seek-patch"
+.field static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static listType:Ljava/lang/reflect/Constructor;
     .annotation system Ldalvik/annotation/Signature;
@@ -217,7 +217,7 @@
     move-exception v0
 
     .line 79
-    const-string v1, "seek-patch"
+    const-string v1, "seek-thermal-apk-patches"
 
     const-string v2, "settings: not loaded"
 
@@ -354,7 +354,7 @@
 
     move-result-object p1
 
-    const-string v3, "seek-patch"
+    const-string v3, "seek-thermal-apk-patches"
 
     invoke-static {v3, p1, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
@@ -570,7 +570,7 @@
 
     move-result-object v3
 
-    const-string v4, "seek-patch"
+    const-string v4, "seek-thermal-apk-patches"
 
     invoke-static {v4, v3, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
@@ -675,7 +675,7 @@
     move-exception p0
 
     .line 127
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     const-string v1, "settings: list not padded"
 
@@ -789,7 +789,7 @@
 
     .line 143
     :try_start_2
-    const-string v4, "seek-patch"
+    const-string v4, "seek-thermal-apk-patches"
 
     new-instance v5, Ljava/lang/StringBuilder;
 
@@ -921,7 +921,7 @@
     .locals 7
 
     .line 87
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     :try_start_0
     invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getActivity()Landroid/app/Activity;

@@ -26,7 +26,7 @@ import re
 from .. import native
 from ..helpers import add_helpers
 from ..smali import PatchError, SmaliTree, class_descriptor
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import camera_activity, feature_900_call
 
 NAME = "calibration"
@@ -40,7 +40,7 @@ CALIB = "Lseekpatch/Calib;"
 SEEKIP = "libseekip.so"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     code = tree.version_code
     if code is None:

@@ -14,7 +14,7 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 
 /**
- * seek-patch shutter: a button that stops the camera's automatic shutter, and starts it again.
+ * seek-thermal-apk-patches shutter: a button that stops the camera's automatic shutter, and starts it again.
  *
  * <p>The camera closes its shutter by itself to recalibrate, every few seconds (the Compact: about every
  * 5 s, more often just after connecting): a click, a frozen frame (0.44 s) and a small jump in the
@@ -32,7 +32,7 @@ import java.lang.ref.WeakReference;
  * See docs/shutter.md.
  */
 public final class Shutter {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static final int OUT = 0x41;      // vendor request to the interface, host to device
     private static final int REQUEST = 55;    // the camera's shutter request

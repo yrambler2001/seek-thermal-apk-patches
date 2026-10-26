@@ -29,7 +29,7 @@ import re
 from .. import native
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, class_descriptor, code_start, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import camera_activity, feature_900_call
 
 NAME = "lock_range"
@@ -97,7 +97,7 @@ def _bar(tree: SmaliTree) -> str:
     return f"{tree.rel(path)} {m.name}()"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     code = tree.version_code
     if code is None:

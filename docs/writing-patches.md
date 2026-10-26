@@ -20,7 +20,7 @@
 - `seekpatch/zipalign.py` aligns in Python: stored entries to 4 bytes, `.so` files to 16 KiB pages (the
   app maps them straight out of the apk: `extractNativeLibs="false"`).  Stale `META-INF` signature and
   build-metadata files are dropped.
-- uber-apk-signer signs (v1 + v2 + v3) with the per-user key in the seek-patch home directory, created
+- uber-apk-signer signs (v1 + v2 + v3) with the per-user key in the seek-thermal-apk-patches home directory, created
   with `keytool` on first use.
 
 ## A patch module
@@ -29,13 +29,12 @@
 
 ```python
 NAME = "my_patch"
-SUMMARY = "one line for `seek-patch list`"
+SUMMARY = "one line for `seek-thermal-apk-patches list`"
 VERSIONS = "2.2.0 - 2.3.4"     # the range you tested
 RECOMMENDED = False            # part of the default set?
-CONFLICTS = ("other_patch",)   # optional: patches it cannot be combined with
 REQUIRES = ("other_patch",)    # optional: patches applied before it (apply() checks their marks)
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     ...                         # find, check, edit
     return ["what was changed, one line each"]
@@ -74,7 +73,7 @@ helpers/java/seekpatch/*.java ──javac (Java 8 bytecode)──► d8 --releas
   `flat_field.py`), and the helper compiles against the stub.
 - The app's minSdk is 23: guard newer APIs with `Build.VERSION.SDK_INT`.  Constants (`MediaFormat.KEY_*`)
   are inlined by javac and safe on any version.
-- Helpers must not fail the app: catch, log under the tag `seek-patch`, and fall back to what the
+- Helpers must not fail the app: catch, log under the tag `seek-thermal-apk-patches`, and fall back to what the
   app did.
 
 ## Settings in the app
@@ -84,7 +83,7 @@ A patch can add switches and lists to the app's *Settings → Image & Video* scr
 `addPreferencesFromResource` (`seekpatch.Settings.screen`) and in the camera screen's `onCreate`
 (`seekpatch.Settings.attach`).  The patch then adds a section class with `load(SharedPreferences)`
 and `screen(PreferenceFragment, SharedPreferences)`, listed in `Settings.SECTIONS`; Settings finds
-it by name at run time, so an absent patch costs nothing.  Values go to seek-patch's own
+it by name at run time, so an absent patch costs nothing.  Values go to seek-thermal-apk-patches' own
 preferences file, not the app's; `Settings.addSwitch` / `addList` create the app's own preference
 classes, not persisted by the framework.  Runtime code reads values that `load` cached, never the
 file.  See `smoothing_settings.py` and `Filters.java`.
@@ -108,9 +107,9 @@ stand-in library.
 2. **Expect exactly one match.**  If a search finds zero or two, raise `PatchError` with what you
    looked for and what you found.  Never pick the first of several.
 3. **Prove the code is what you think before changing it.**  `debug_log` only fills methods that are
-   empty stubs; `no_smoothing` refuses versions whose native library it has not verified;
+   empty stubs; `smoothing_settings` refuses versions whose native library it has not verified;
    `sharp_scaling` checks the shader has exactly one sample and one `main`.
-4. **Mark what you add.**  Every inserted line carries `mark(NAME)` (`# seek-patch <name>`), which is
+4. **Mark what you add.**  Every inserted line carries `mark(NAME)` (`# seek-thermal-apk-patches <name>`), which is
    how `ensure_unpatched` refuses a second application.
 5. **Keep registers safe.**  Only use registers you know are free at the insertion point, or that the
    surrounding code no longer reads.  Non-range `invoke` needs registers ≤ v15.  Prefer adding a

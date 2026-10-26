@@ -97,9 +97,9 @@ def seekip_feature(tree: SmaliTree, patch: str, native: str) -> str:
 SEEKIP = "Lseekpatch/SeekIP;"
 SEEKIP_SMALI = """.class public final Lseekpatch/SeekIP;
 .super Ljava/lang/Object;
-.source "seek-patch {patch}"
+.source "seek-thermal-apk-patches {patch}"
 
-{mark}: the app's own image-library feature calls, for seek-patch's helpers
+{mark}: the app's own image-library feature calls, for seek-thermal-apk-patches' helpers
 
 
 # direct methods

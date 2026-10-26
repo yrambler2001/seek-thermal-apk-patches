@@ -7,7 +7,7 @@ a ceiling, a closed door) and tap it.  About 1.5 s later the gradient is gone.
 
 | before the tap: 52 – 66 °F across a uniform surface | after: 65 °F everywhere |
 |:---:|:---:|
-| ![live view of a uniform surface with a warm-camera gradient](images/flat-field-before.jpg) | ![the same surface after one tap](images/flat-field-after.jpg) |
+| ![live view of a uniform surface with a warm-camera gradient](images/flat-field-before.avif) | ![the same surface after one tap](images/flat-field-after.avif) |
 
 <sub>Seek Compact on a Pixel 8 Pro, app 2.3.4, Iron palette, the same scene before and 15 s after the
 tap; each shot auto-ranges its own colour span.  What is left after the tap is sensor noise and the
@@ -79,8 +79,8 @@ infrared from a warm lens or housing in front of it is not in that frame.
   panels that cover the bar cover the button too.  Patches decode with `apktool d -r`, which
   leaves the resources untouched; the button is built in code.
 - **The camera thread.**  `seekpatch.Flat.frame(handle)` runs right after the per-frame
-  feature-900 call (the hook `no_smoothing` uses), before the frame is processed.  On a tap:
-  1. It logs the current detail and step against their limits (`adb logcat -s seek-patch`).
+  feature-900 call (the hook `smoothing_settings` uses), before the frame is processed.  On a tap:
+  1. It logs the current detail and step against their limits (`adb logcat -s seek-thermal-apk-patches`).
   2. It sets 30105 = 1 and remembers the update count, 30104.
   3. Once the count has gone up by 40 (the *Flat field frames* setting, below), it sets
      30105 = 0.  That leaves (7/8)⁴⁰ ≈ 0.5 % of the old map, about 1.5 s at the Compact's ~27 fps.
@@ -112,7 +112,7 @@ frames took 0.15 s and 60 frames 1.9 s, each from a fresh map on a warm camera; 
 of the gradient at the edges than 5.
 
 Versions: 2.2.0 – 2.3.4.  The gradient features are verified in libseekip 2.10.5.0 (app 2.2.2) and
-2.11.3.2 (2.2.3 – 2.3.4), and the patch refuses older apps, like `no_smoothing`.  Sources:
+2.11.3.2 (2.2.3 – 2.3.4), and the patch refuses older apps, like `smoothing_settings`.  Sources:
 [`helpers/java/seekpatch/Flat.java`](../helpers/java/seekpatch/Flat.java),
 [`FlatSettings.java`](../helpers/java/seekpatch/FlatSettings.java).
 

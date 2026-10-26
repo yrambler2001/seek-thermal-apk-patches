@@ -5,7 +5,7 @@
 
 
 # static fields
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 
 # direct methods
@@ -69,7 +69,7 @@
     move-result-object p0
 
     .line 32
-    const-string p1, "seek-patch"
+    const-string p1, "seek-thermal-apk-patches"
 
     invoke-static {p1, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 

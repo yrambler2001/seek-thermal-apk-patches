@@ -8,17 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * seek-patch sharp_scaling: its setting, <i>Upscaling</i>, one list from soft to blocky:
+ * seek-thermal-apk-patches sharp_scaling: its setting, <i>Upscaling</i>, one list from soft to blocky:
  * <pre>
  *     Smooth          the stock Android bilinear scaling (the shader returns the coordinate unchanged)
  *     Sharp 1.5 … 8   the sharp-bilinear shader, blending over 1/N of a pixel (2: as iOS)
  *     Blocky          square pixels: the blend is narrower than an output pixel, the photo unfiltered
  * </pre>
- * It starts from the patch's --sharpness, kept by the fields' initial values; the shader reads
+ * It starts from Sharp 2, the fields' initial values from the patch; the shader reads
  * {@link SharpScale#sharpness} at every draw, the photo {@link SharpScale#photoFactor}.
  */
 public final class Upscale {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String KEY = "upscaling";
     private static final String SMOOTH = "android";
     private static final String BLOCKY = "blocky";
@@ -26,7 +26,7 @@ public final class Upscale {
     /** Blocky's shader sharpness: a blend 1/1000 of a texel wide, far below one output pixel. */
     private static final float BLOCKY_SHARPNESS = 1000f;
     private static final int MAX_PHOTO_FACTOR = 8;
-    /** --sharpness: the fields' values before any setting is loaded. */
+    /** Sharp 2: the fields' values before any setting is loaded. */
     private static final float DEFAULT = SharpScale.sharpness;
 
     private static String loaded;
@@ -67,7 +67,7 @@ public final class Upscale {
         boolean listed = false;
         for (float c : CHOICES) {
             if (!listed && DEFAULT < c) {
-                add(entries, values, DEFAULT);  // a --sharpness between the choices
+                add(entries, values, DEFAULT);  // a start value between the choices
                 listed = true;
             }
             listed |= c == DEFAULT;
@@ -95,7 +95,7 @@ public final class Upscale {
         values.add(text(n));
     }
 
-    /** The stored choice: "android", "blocky" or a sharpness (> 1, at most 16); else --sharpness. */
+    /** The stored choice: "android", "blocky" or a sharpness (> 1, at most 16); else Sharp 2. */
     private static String value(SharedPreferences p) {
         String v = p.getString(KEY, null);
         if (SMOOTH.equals(v) || BLOCKY.equals(v)) {

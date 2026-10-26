@@ -27,7 +27,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, class_descriptor, code_start, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import camera_activity
 
 NAME = "shutter"
@@ -63,7 +63,7 @@ def _frame_request(tree: SmaliTree) -> str:
     return f"{tree.rel(path)} {m.name}()"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     activity_path, after_layout = camera_activity(tree, NAME)
     activity = class_descriptor(tree.get(activity_path))

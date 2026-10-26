@@ -19,6 +19,8 @@ import tempfile
 import urllib.request
 from dataclasses import dataclass
 
+from . import LEGACY_NAME, NAME
+
 
 class ToolchainError(Exception):
     pass
@@ -47,18 +49,31 @@ APKEDITOR = Jar("APKEditor", "1.4.9",
                 "https://github.com/REAndroid/APKEditor/releases/download/V1.4.9/APKEditor-1.4.9.jar",
                 "a9cd40df818845456be6d696de6110c89edf4b0a0580cb83438ed6b25a366e67", "SEEK_PATCH_APKEDITOR")
 
-KEY_ALIAS = "seek-patch"
-KEY_PASSWORD = "seek-patch"  # a local, per-user key: it only has to stay the same across updates
+# a local, per-user key: it only has to stay the same across updates, so the alias and password keep
+# the old name, which every key made before 1.0 was created with
+KEY_ALIAS = LEGACY_NAME
+KEY_PASSWORD = LEGACY_NAME
+
+
+def data_dir(name: str) -> str:
+    """The per-user folder for name: the downloaded tools and the signing key."""
+    if sys.platform == "win32":
+        return os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), name)
+    if sys.platform == "darwin":
+        return os.path.join(os.path.expanduser("~/Library/Application Support"), name)
+    return os.path.join(os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share")), name)
 
 
 def home() -> str:
     if os.environ.get("SEEK_PATCH_HOME"):
         return os.environ["SEEK_PATCH_HOME"]
-    if sys.platform == "win32":
-        return os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "seek-patch")
-    if sys.platform == "darwin":
-        return os.path.expanduser("~/Library/Application Support/seek-patch")
-    return os.path.join(os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share")), "seek-patch")
+    path, old = data_dir(NAME), data_dir(LEGACY_NAME)
+    if os.path.isdir(old) and not os.path.exists(path):
+        # before 1.0 the folder had the old name: move it, signing key and all, so that apps patched
+        # then still update (Android installs an update only when it is signed with the same key)
+        os.rename(old, path)
+        print(f"moved {old} to {path}", file=sys.stderr)
+    return path
 
 
 def sha256(path: str) -> str:
@@ -82,7 +97,7 @@ def ensure_jar(jar: Jar, download: bool = True, log=print) -> str:
     if os.path.isfile(path) and sha256(path) == jar.sha256:
         return path
     if not download:
-        raise ToolchainError(f"{jar.name} {jar.version} is not downloaded yet (run: seek-patch doctor)")
+        raise ToolchainError(f"{jar.name} {jar.version} is not downloaded yet (run: {NAME} doctor)")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     log(f"fetch  {jar.name} {jar.version} from {jar.url}")
     fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), suffix=".part")
@@ -190,7 +205,7 @@ class Toolchain:
         r = subprocess.run([keytool, "-genkeypair", "-keystore", path, "-storetype", "PKCS12",
                             "-storepass", KEY_PASSWORD, "-keypass", KEY_PASSWORD, "-alias", KEY_ALIAS,
                             "-keyalg", "RSA", "-keysize", "2048", "-validity", "10000",
-                            "-dname", "CN=seek-patch local key"], capture_output=True, text=True)
+                            "-dname", f"CN={NAME} local key"], capture_output=True, text=True)
         if r.returncode != 0:
             raise ToolchainError(f"keytool failed: {r.stderr.strip()}")
         return path

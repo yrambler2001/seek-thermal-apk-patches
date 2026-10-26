@@ -22,32 +22,33 @@ from __future__ import annotations
 import os
 import re
 
-from .. import axml, manifest
+from .. import LEGACY_NAME, axml, manifest
 from ..smali import MANIFEST, AlreadyApplied, PatchError, SmaliTree
-from .base import Options, mark
+from .base import mark
 
 NAME = "http_legacy"
 SUMMARY = "declare Android's Apache HTTP library: 2.1.6 - 2.3.1 use it undeclared and crash with it on Android 9+"
 VERSIONS = "2.1.6 - 2.3.1"
 RECOMMENDED = True
 
-NOTE = mark(NAME).lstrip("# ")  # "seek-patch http_legacy": the comment on the added element
+NOTE = mark(NAME).lstrip("# ")  # "seek-thermal-apk-patches http_legacy": the comment on the added element
+NOTES = (NOTE, f"{LEGACY_NAME} {NAME}")  # and the one added before 1.0
 LIBRARY = "org.apache.http.legacy"
 DECLARED_FROM = 28  # Android 9: from this targetSdkVersion on, the library has to be declared
 USE = "Lorg/apache/http/"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     data = tree.manifest
     try:
         if data[:2] == b"\x03\x00":  # binary
             declared = axml.uses_libraries(data)
-            if any(comment == NOTE for _, comment in declared):
+            if any(comment in NOTES for _, comment in declared):
                 raise AlreadyApplied(f"{NAME}: already applied")
             libraries, target = [n for n, _ in declared], axml.target_sdk(data)
         else:
             xml = data.decode("utf-8")
-            if NOTE in xml:
+            if any(note in xml for note in NOTES):
                 raise AlreadyApplied(f"{NAME}: already applied")
             libraries, target = manifest.uses_libraries(xml), _yml_target(tree.root)
     except (axml.AxmlError, UnicodeError) as e:

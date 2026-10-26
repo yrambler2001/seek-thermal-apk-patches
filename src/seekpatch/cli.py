@@ -1,4 +1,4 @@
-"""seek-patch command line: list, check, patch, doctor."""
+"""seek-thermal-apk-patches command line: list, check, patch, doctor."""
 from __future__ import annotations
 
 import argparse
@@ -7,20 +7,32 @@ import shutil
 import subprocess
 import sys
 
-from . import __version__
+from . import NAME, __version__
 from .apk import SEEK_PACKAGE, ApkError, Plan, app_info, check, patch_apk
 from .axml import AxmlError
 from .bundle import BundleError
 from .manifest import ManifestError, valid_package
-from .patches import ALL, BY_NAME, RECOMMENDED, Options, conflicts, every_patch, missing_requirements
+from .patches import ALL, BY_NAME, RECOMMENDED, every_patch, missing_requirements
 from .smali import PatchError
 from .toolchain import APKEDITOR, APKTOOL, SIGNER, Toolchain, ToolchainError, ensure_jar, find_java, home, java_major
 
 DEFAULT_LABEL = "Seek (patched)"
+SETTINGS = "in the app, Settings -> Image & Video"
+REMOVED = {  # options and patches removed in 1.0: what replaces them
+    "--sharpness": f"the build starts at Sharp 2, as iOS; pick Upscaling {SETTINGS}",
+    "--video-codec": f"the build starts at H.265; pick Video codec {SETTINGS}",
+    "--video-qp": f"the build starts at QP 18; pick Video quality {SETTINGS}",
+    "no_smoothing": f"smoothing_settings, in the default set, has a switch per filter {SETTINGS}",
+}
 
 
 def _log(line: str) -> None:
     print(line, flush=True)
+
+
+def default_out(apk: str, side_by_side: bool) -> str:
+    """Next to the input, named after it and this tool's version: X-patched-1.0.0[-side-by-side].apk."""
+    return f"{os.path.splitext(apk)[0]}-patched-{__version__}{'-side-by-side' if side_by_side else ''}.apk"
 
 
 def _info_or_warn(apk: str):
@@ -38,7 +50,7 @@ def cmd_list(_args) -> int:
     for p in ALL:
         star = "*" if p.RECOMMENDED else " "
         print(f"{star} {p.NAME:18} {p.VERSIONS:14} {p.SUMMARY}")
-    print("\n* = applied by default (seek-patch patch APK); add others with -p NAME, or --all")
+    print(f"\n* = applied by default ({NAME} patch APK); add others with -p NAME, or --all")
     return 0
 
 
@@ -54,9 +66,9 @@ def cmd_check(args) -> int:
     if not ok:
         return 1
     if all(n in ok for n in RECOMMENDED):
-        print(f"use    seek-patch patch {args.apk}")
+        print(f"use    {NAME} patch {args.apk}")
     else:
-        print(f"use    seek-patch patch {args.apk} " + " ".join(f"-p {n}" for n in ok if n in RECOMMENDED))
+        print(f"use    {NAME} patch {args.apk} " + " ".join(f"-p {n}" for n in ok if n in RECOMMENDED))
     return 0
 
 
@@ -65,25 +77,17 @@ def cmd_patch(args) -> int:
         raise SystemExit(f"error: {args.apk}: no such file")
     names = every_patch() if args.all else (args.patch or RECOMMENDED)
     names = [p.NAME for p in ALL if p.NAME in names]  # canonical order, no duplicates
-    for a, b in conflicts(names):
-        raise SystemExit(f"error: {a} and {b} are alternatives: pick one")
     for a, b in missing_requirements(names):
         raise SystemExit(f"error: {a} needs {b}: add it")
-    if not 1.0 < args.sharpness <= 16.0:
-        raise SystemExit("error: --sharpness must be > 1 and <= 16 (2 = iOS look)")
-    if not 10 <= args.video_qp <= 40:
-        raise SystemExit("error: --video-qp must be 10 - 40 (lower = better)")
     if (args.package or args.label) and not args.side_by_side:
         raise SystemExit("error: --package / --label only apply with --side-by-side")
     if args.package and not valid_package(args.package):
         raise SystemExit(f"error: --package {args.package}: not a valid Android package name")
     info = _info_or_warn(args.apk)
-    stem = os.path.splitext(args.apk)[0]
-    out = args.out or f"{stem}-patched{'-side-by-side' if args.side_by_side else ''}.apk"
+    out = args.out or default_out(args.apk, args.side_by_side)
     if os.path.exists(out) and not args.force:
         raise SystemExit(f"error: {out} exists (use -f to replace it)")
-    opts = Options(sharpness=args.sharpness, video_codec=args.video_codec, video_qp=args.video_qp)
-    plan = Plan(names, opts, args.side_by_side, args.package,
+    plan = Plan(names, args.side_by_side, args.package,
                 (args.label or DEFAULT_LABEL) if args.side_by_side else None,
                 skip_unavailable=not (args.all or args.patch))  # the default set adapts to the version
     tc = Toolchain.load(log=_log)
@@ -142,8 +146,8 @@ def cmd_doctor(_args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="seek-patch", description="Unofficial patches for the Seek Thermal Android app.")
-    ap.add_argument("--version", action="version", version=f"seek-patch {__version__}")
+    ap = argparse.ArgumentParser(prog=NAME, description="Unofficial patches for the Seek Thermal Android app.")
+    ap.add_argument("--version", action="version", version=f"{NAME} {__version__}")
     sub = ap.add_subparsers(dest="cmd", required=True, metavar="COMMAND")
     sub.add_parser("list", help="list the patches").set_defaults(fn=cmd_list)
     c = sub.add_parser("check", help="dry run: which patches apply to an apk")
@@ -157,23 +161,21 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("-p", "--patch", action="append", choices=list(BY_NAME), metavar="NAME",
                    help=f"apply this patch (repeatable); one of {', '.join(BY_NAME)}")
     p.add_argument("--all", action="store_true",
-                   help="apply every patch, debug_log included, but not no_smoothing (the alternative to "
-                        "smoothing_settings); all must apply")
-    p.add_argument("--sharpness", type=float, default=Options.sharpness, metavar="N",
-                   help="sharp_scaling: blend over 1/N of a pixel (2 = iOS look, higher = crisper)")
-    p.add_argument("--video-codec", choices=["hevc", "avc"], default="hevc",
-                   help="video_quality: codec tried first (hevc = smaller files; avc = H.264, plays everywhere)")
-    p.add_argument("--video-qp", type=int, default=Options.video_qp, metavar="N",
-                   help=f"video_quality: constant quantizer, lower = better and bigger (default {Options.video_qp})")
+                   help="apply every patch, debug_log included; all must apply")
     p.add_argument("--side-by-side", action="store_true",
                    help="new package name + label, installs next to the store app (rebuilds resources)")
     p.add_argument("--package", help="package name for --side-by-side (default: <original>.patched)")
     p.add_argument("--label", help=f'launcher label for --side-by-side (default: "{DEFAULT_LABEL}")')
-    p.add_argument("-o", "--out", help="output apk (default: <input>-patched.apk)")
+    p.add_argument("-o", "--out", help="output apk (default: <input>-patched-<version>.apk)")
     p.add_argument("-f", "--force", action="store_true", help="replace an existing output file")
     p.add_argument("--install", action="store_true", help="adb install the result")
     p.set_defaults(fn=cmd_patch)
     sub.add_parser("doctor", help="check Java, fetch the pinned tools, create the signing key").set_defaults(fn=cmd_doctor)
+    for arg in sys.argv[1:] if argv is None else argv:
+        flag, _, value = arg.partition("=")
+        for word in (flag, value):  # --sharpness 3, --sharpness=3, -p no_smoothing, --patch=no_smoothing
+            if word in REMOVED:
+                raise SystemExit(f"error: {word} was removed in 1.0: {REMOVED[word]}")
     args = ap.parse_args(argv)
     try:
         return args.fn(args)

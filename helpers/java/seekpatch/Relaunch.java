@@ -5,7 +5,7 @@ import android.hardware.usb.UsbInterface;
 import android.util.Log;
 
 /**
- * seek-patch relaunch_fix: the camera's packet numbering starts over each time the app takes it.
+ * seek-thermal-apk-patches relaunch_fix: the camera's packet numbering starts over each time the app takes it.
  *
  * <p>USB marks the packets of a bulk endpoint DATA0, DATA1, DATA0, ... (the data toggle), so that
  * the receiver can tell a repeated packet from a new one.  When the app's process dies while the
@@ -19,7 +19,7 @@ import android.util.Log;
  * refuses it, CLEAR_FEATURE(ENDPOINT_HALT) on each endpoint, which resets them too.
  */
 public final class Relaunch {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
 
     private Relaunch() {
     }

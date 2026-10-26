@@ -16,7 +16,7 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 
 /**
- * seek-patch mic_prompt: ask for the microphone when a video starts, never block anything else.
+ * seek-thermal-apk-patches mic_prompt: ask for the microphone when a video starts, never block anything else.
  *
  * <p>On Android 11+ the app checks the microphone before every photo, video and gallery action;
  * without it, it requests the permission and drops the tap, and once Android stops showing the
@@ -38,6 +38,7 @@ public final class Mic {
     private static final int ACTION_VIDEO = 1;
     /** Request code with which {@link #frame} has the activity start the video (the app's requests use 0). */
     static final int RESUME = 0x5ee;
+    // the app-side file keeps the name it had before 1.0, so what it remembers survives an update
     private static final String PREFS = "seek-patch";
     private static final String DENIED_FOR_GOOD = "mic_denied_for_good";
     private static final long START_WITHIN_MS = 10000;

@@ -20,7 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
- * seek-patch: two touches to the app's own screens, from {@link Settings#attach} (the camera screen's
+ * seek-thermal-apk-patches: two touches to the app's own screens, from {@link Settings#attach} (the camera screen's
  * onCreate).
  *
  * <p>The settings screens (PreferencePage, AboutPreferencePage: PreferenceActivity subclasses) have
@@ -30,11 +30,11 @@ import android.widget.TextView;
  * resumes (before its first frame).
  *
  * <p>The side menu (the camera screen's settings panel) gets a divider, in the panel's own style,
- * and "Patched by yrambler2001 v0.4.0" below its last item, Send Feedback: the version is seek-patch's,
+ * and "Patched by yrambler2001 v0.4.0" below its last item, Send Feedback: the version is seek-thermal-apk-patches',
  * written into {@link About} when the app was patched.
  */
 public final class Screens {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String CREDIT = "Patched by yrambler2001";
     private static boolean registered;  // main thread
 

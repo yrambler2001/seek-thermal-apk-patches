@@ -46,7 +46,7 @@ from __future__ import annotations
 import re
 
 from ..smali import GAP, REG, PatchError, SmaliTree, class_descriptor, code_start, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "reconnect_fix"
 SUMMARY = "the camera comes back after the camera screen closed (Back, or unplugging it in the background)"
@@ -325,7 +325,7 @@ def _stay_open(tree: SmaliTree) -> str:
             "longer finishes it)")
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     path = _library(tree)
     cls = class_descriptor(tree.get(path))

@@ -1,5 +1,5 @@
-/* tnr.h -- motion-compensated temporal noise reduction on a u16 image (seek-patch smart_smoothing).
- * Written for seek-patch; see tnr.c.  MIT license. */
+/* tnr.h -- motion-compensated temporal noise reduction on a u16 image (seek-thermal-apk-patches smart_smoothing).
+ * Written for seek-thermal-apk-patches; see tnr.c.  MIT license. */
 #ifndef SEEKPATCH_TNR_H
 #define SEEKPATCH_TNR_H
 

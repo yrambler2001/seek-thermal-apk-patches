@@ -25,7 +25,7 @@ from __future__ import annotations
 import re
 
 from ..smali import REG, PatchError, SmaliTree, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import render_thread, static_accessors, texture_upload, upload_call
 
 NAME = "full_fps"
@@ -37,7 +37,7 @@ MARK = mark(NAME)
 UPDATE_TEX_IMAGE = "Landroid/graphics/SurfaceTexture;->updateTexImage()V"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     rpath, cls = render_thread(tree, NAME)
     upload = texture_upload(tree, rpath, NAME).descriptor

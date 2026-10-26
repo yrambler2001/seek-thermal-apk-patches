@@ -17,7 +17,7 @@
 
 .field private static final STALE_MS:J = 0x3e8L
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static final UNLOCK:I = 0x2
 
@@ -157,7 +157,7 @@
     move-exception p0
 
     .line 68
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     const-string v1, "lock_range: no button"
 
@@ -255,7 +255,7 @@
     const/4 v4, 0x0
 
     .line 130
-    const-string v5, "seek-patch"
+    const-string v5, "seek-thermal-apk-patches"
 
     if-ne v1, v3, :cond_3
 
@@ -700,7 +700,7 @@
 
     move-result-object p0
 
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     invoke-static {v0, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 

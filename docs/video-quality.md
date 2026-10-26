@@ -5,7 +5,7 @@
 **Patched:** HEVC (or H.264), 960×1280 — the photo's pixels — at a constant quantizer, one frame per
 thermal frame, a keyframe every second; stereo 48 kHz AAC at 256 kbit/s.
 
-| Pixel 8 Pro, Compact, 2.3.4 | stock | `video_quality` (default `--video-qp 18`) |
+| Pixel 8 Pro, Compact, 2.3.4 | stock | `video_quality` (defaults: H.265, QP 18) |
 |---|---|---|
 | codec | H.264 High (hardware) | HEVC Main, `hvc1` (hardware), level 5.1 |
 | size | 480×640 | 960×1280 |
@@ -19,8 +19,8 @@ thermal frame, a keyframe every second; stereo 48 kHz AAC at 256 kbit/s.
 `seekpatch.Video` replaces the app's `MediaCodec.createEncoderByType("video/avc")` + `configure`.
 It takes the app's own format (to learn its size), and returns an encoder configured like this:
 
-1. **Which encoder.**  Every hardware encoder first — the configured codec (`--video-codec hevc`,
-   the default) before H.264 — then software ones.  Software encoders are a last resort: on the
+1. **Which encoder.**  Every hardware encoder first — the configured codec (H.265 by default)
+   before H.264 — then software ones.  Software encoders are a last resort: on the
    Pixel, Android's software H.264 encoder stops at 12 Mbit/s and 2048 px and its HEVC encoder at
    512 px.  The stock app also gets the hardware encoder: its files are H.264 *High* profile,
    which the software one does not produce.
@@ -47,7 +47,7 @@ It takes the app's own format (to learn its size), and returns an encoder config
 
 If an encoder refuses the full setup it is retried with plainer ones (no profile; then no profile
 or QP bounds; then nothing but size and bitrate); if every encoder refuses, the app's own format is used, so
-recording never breaks.  `adb logcat -s seek-patch` shows what was chosen.
+recording never breaks.  `adb logcat -s seek-thermal-apk-patches` shows what was chosen.
 
 ### Why not 4:4:4
 
@@ -132,7 +132,7 @@ first.  On the Redmi, a recording of a 1 kHz tone from the phone's own speaker, 
 **Stock:** the app stamps each block it reads from the microphone with the time the read
 *started*, before it waited for the samples, and some AAC encoders give each 1024-sample frame the
 stamp of the block the frame starts in.  Android 7's software encoder (`OMX.google.aac.encoder`)
-does: a video recorded with seek-patch 0.9.0 (whose sound timing is the app's own) on a Redmi 4X
+does: a video recorded with seek-thermal-apk-patches 0.9.0 (whose sound timing is the app's own) on a Redmi 4X
 (Android 7.1.2, 48 kHz stereo, 20 ms blocks) had its AAC frames 19 – 22 ms apart, and every 15th
 40 ms apart, where each frame is 21.3 ms of sound.  A
 player that keeps to the timestamps drops or stretches sound there: a stutter three times a
@@ -155,30 +155,22 @@ On the Redmi, 10 s recordings: every frame 21.333 ms after the last, no decoder 
 four 1024-sample blocks silent (the silent frame and the encoder's own delay).  The app's writer
 still drops the last three frames (~64 ms) when a recording stops.
 
-## Options
-
-| | |
-|---|---|
-| `--video-codec hevc` | default; H.264 is the automatic fallback.  The *Video codec* setting starts from it |
-| `--video-codec avc` | H.264 first: plays on anything, ~20 % bigger |
-| `--video-qp N` | 10 – 40, default 18; lower = better and bigger.  The setting below starts from it |
-
 ## Settings
 
 *Settings → Image & Video* (2.1.2 – 2.3.4):
 
 - **Video codec:** *H.265 (HEVC): smaller files* or *H.264 (AVC): plays everywhere, about 20 %
-  bigger*; `--video-codec` is the default.  A phone without an H.265 encoder for the video's size
+  bigger*; H.265 is the default.  A phone without an H.265 encoder for the video's size
   records H.264 either way, and the H.265 choice says so: *H.265 (HEVC): not on this phone,
   records H.264*.
 - **Video quality:** the QP, from *QP 14: about 115 MB a minute, best* to *QP 28: about 16 MB a
   minute, smallest*, in steps of 2, with the sizes of the ladder above (HEVC on a still scene;
   ×1.2 for H.264, when it is chosen or the phone has no H.265 encoder), then a bitrate: *2 Mbit/s:
   about 15 MB a minute* to *40 Mbit/s*, up to the encoder's highest.  A QP keeps the quality steady
-  and lets the size follow the scene; a bitrate keeps the size steady.  `--video-qp` is the
-  default, and it joins the list when it is not one of the choices.  A QP needs an encoder with QP
-  bounds (Android 12+) or a constant-quality mode; where the encoder that will record has neither,
-  the list has only the bitrates, and the default is *12 Mbit/s*, what a QP records at there.
+  and lets the size follow the scene; a bitrate keeps the size steady.  QP 18 is the default.  A
+  QP needs an encoder with QP bounds (Android 12+) or a constant-quality mode; where the encoder
+  that will record has neither, the list has only the bitrates, and the default is *12 Mbit/s*,
+  what a QP records at there.
 
 The next recording uses the new values: `seekpatch.VideoSettings` sets `VideoConfig.mime`,
 `VideoConfig.qp` and `VideoConfig.target` (a chosen bitrate; 0 for a QP), which `seekpatch.Video`

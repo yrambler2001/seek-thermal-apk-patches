@@ -5,7 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * seek-patch phone_camera: the phone's own rear camera runs only while Thermal+ is on.
+ * seek-thermal-apk-patches phone_camera: the phone's own rear camera runs only while Thermal+ is on.
  *
  * <p>The app opens the phone's camera with the live view and keeps its preview running in the plain
  * thermal view too, where nothing uses it: the picture is blended in only in Thermal+, and only

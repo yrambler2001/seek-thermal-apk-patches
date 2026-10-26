@@ -1,10 +1,10 @@
 /*
- * tnr.c -- motion-compensated recursive temporal noise reduction (seek-patch smart_smoothing).
+ * tnr.c -- motion-compensated recursive temporal noise reduction (seek-thermal-apk-patches smart_smoothing).
  *
- * Written from scratch for seek-patch's research (superres: live/prototype/tnr.py is the reference
+ * Written from scratch for seek-thermal-apk-patches' research (superres: live/prototype/tnr.py is the reference
  * implementation, live/native/seekip/src/tnr/tnr.c the original of this file, minus its seekip glue).
  * It contains no Seek code: it works on a plain u16 image and includes only libc / libm headers.
- * MIT license, like the rest of seek-patch.
+ * MIT license, like the rest of seek-thermal-apk-patches.
  *
  *   1. align the new frame f to the running estimate acc (last frame's coordinates): f(x) ~ acc(x + t) + c,
  *      Gauss-Newton with Huber weights on a 2-level pyramid (t: shift, c: level offset);

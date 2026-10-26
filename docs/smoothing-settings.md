@@ -2,7 +2,7 @@
 
 **Stock:** *Settings → Image & Video* has one *Image smoothing* switch.  It picks between two
 presets of the image library's filters, and *off* is the smoother picture (see
-[smoothing-switch.md](smoothing-switch.md)).
+[below](#what-the-library-does-with-image-smoothing)).
 **Patched:** in its place, one switch per filter:
 
 | switch | default | what it does |
@@ -10,11 +10,11 @@ presets of the image library's filters, and *off* is the smoother picture (see
 | **Default temporal smoothing** | on | Seek's filter (`alpf`): averages each pixel over recent frames |
 | **Default spatial smoothing (3×3)** | off | Seek's filter (`aslpf`): blurs each pixel with its neighbours |
 | **Default pattern correction** | on | Seek's filter (`sbnuc`): learns and removes the sensor's fixed pattern |
-| **Smart smoothing** | off | seek-patch's filter: follows the camera's motion; replaces temporal smoothing |
+| **Smart smoothing** | off | seek-thermal-apk-patches' filter: follows the camera's motion; replaces temporal smoothing |
 | **Stripe correction** | on | part of Smart smoothing: removes column stripes |
 | **Left-edge levelling** | on | part of Smart smoothing: levels the bright strip at the left edge |
 
-<img alt="Settings, Image &amp; Video: the switches and lists seek-patch adds, at their defaults" src="images/image-video-settings.png" width="336" align="right">
+<img alt="Settings, Image &amp; Video: the switches and lists seek-thermal-apk-patches adds, at their defaults" src="images/image-video-settings.avif" width="336" align="right">
 
 "Default" marks Seek's own algorithms.  The defaults are the stock app with *Image smoothing* on, so
 nothing changes until a switch is touched.  The last three appear only when
@@ -25,7 +25,36 @@ says so), and *Stripe correction* and *Left-edge levelling* only act while it is
 and the button at the top left of the camera screen are one setting: either moves the other.
 Changes apply from the next frame.  The old *Image smoothing* switch is hidden.  Below them come the settings of
 [`flat_field`](flat-field.md#setting), [`sharp_scaling`](sharp-scaling.md#settings),
-[`photo_1x`](photo-1x.md) and [`video_quality`](video-quality.md#setting).
+[`photo_1x`](photo-1x.md) and [`video_quality`](video-quality.md#settings).
+
+## Temporal and spatial smoothing
+
+The two noise filters in the camera's image library (libseekip).  They run before the colours are
+applied, so they shape the temperature readings as well as the picture.
+
+- *Temporal* smoothing (`alpf`) averages each pixel over time.  It compares the pixel with its
+  previous output.  A difference *d* below a threshold *T*, set from the camera's factory
+  sensitivity, shows only a fraction *d/T* of itself: noise barely gets through, while a change of
+  *T* or more shows at once.  The result becomes the history for the next frame, so a small real
+  change creeps in over several frames.  The picture is calm, but faint moving warm things leave
+  trails and small temperature changes show late.
+- *Spatial* smoothing (`aslpf`) averages each pixel with its neighbours, one frame at a time.  Every
+  pixel becomes the mean of its 3 × 3 neighbourhood unless strong slopes around it mark an edge.
+  Noise in flat areas drops by up to 3×, but detail too faint to count as an edge is blurred: fine
+  texture, thin wires.  The edge test compares only the top-right side of a pixel with the
+  bottom-left side, so an edge running exactly from bottom-left to top-right is not seen, and it
+  is blurred too.
+
+| | temporal | spatial | detail kept |
+|---|---|---|---|
+| stock, "Image smoothing" on | on | off | 14.1 % |
+| stock, "Image smoothing" off | on | **on** | 10.6 % |
+
+That is why stock *off* looks softer than *on*: it adds the spatial blur and keeps the temporal
+one.  *Detail kept* is the per-pixel structure left in the recovered sensor frame (the standard
+deviation of the frame minus a 1-pixel blur), relative to the scene's contrast; see
+[measuring.md](measuring.md).  Scaling does not change it (on + `sharp_scaling` measures 13.4 %);
+filtering does.
 
 ## What the library does with "Image smoothing"
 
@@ -36,6 +65,9 @@ Before every frame the app sends feature 900 with the switch's value.  In the im
 |---|---|---|
 | 1 (on) | `0x86` | sbnuc `0x2` + alpf `0x4` + gradient `0x80` |
 | 0 (off) | `0x1C4` (`0xC4` on 1401 sensors) | alpf + peak limiting `0x40` + gradient + aslpf `0x100` |
+
+So *off* swaps the pattern correction for a blur, and the temporal filter runs in both positions.
+Seek's iOS app has the same mapping.
 
 The value is also stored, but only read back by the matching *get* call.  The rest of case 900
 does the same in both positions: per-model defaults for some OEM cores (filter and gradient-stage
@@ -54,7 +86,7 @@ sensor's fixed pattern from both.
 Right after the app's feature-900 call, `seekpatch.Filters.frame(handle, sent)`:
 
 1. makes the *on* preset the base: if the app sent 0 (the hidden switch may still be off, from an
-   older seek-patch build or from before), it sends 900 = 1 again;
+   older seek-thermal-apk-patches build or from before), it sends 900 = 1 again;
 2. sends a stage feature for each switch that is away from its default:
 
 | switch away from its default | feature | mask bit |
@@ -69,7 +101,7 @@ once.  When the combination changes, or a new camera connection starts, the help
 back (feature 132) and logs it:
 
 ```
-$ adb logcat -s seek-patch
+$ adb logcat -s seek-thermal-apk-patches
 smoothing_settings: first-filter mask 0x86: temporal on, spatial off, pattern correction on
 smoothing_settings: first-filter mask 0x82: temporal off, spatial off, pattern correction on
 smoothing_settings: first-filter mask 0x184: temporal on, spatial on, pattern correction off
@@ -99,7 +131,7 @@ under it; `seekpatch.Screens` makes that bar black, with a light handle, wheneve
 resumes.  Titles and summaries are English strings in the code.  No resource is read
 or added, so this works with `apktool d -r` (the default) as well as with `--side-by-side`.
 
-The values live in a preferences file of seek-patch's own (`seekpatch`), not in the app's settings:
+The values live in a preferences file of seek-thermal-apk-patches' own (`seekpatch`), not in the app's settings:
 
 | key | default |
 |---|---|
@@ -121,18 +153,14 @@ The *Image smoothing* switch also appears as an item of a legacy `ImagePreferenc
 nothing starts that activity: it is declared but not exported, and no code names it.  From 2.2.3
 on, nothing loads the file at all.  The item is never on screen, so the patch leaves it alone.
 
-## `no_smoothing`, the alternative
-
-[`no_smoothing`](smoothing-switch.md) keeps the single switch and makes *off* turn temporal and
-spatial smoothing off.  It is no longer in the default set; pick it with `-p no_smoothing` instead of
-`smoothing_settings`.  The two refuse to be combined, and `--all` leaves `no_smoothing` out.
-
 ## Versions
 
 2.2.0 – 2.3.4, the releases whose image library has been checked to handle feature 900 and the stage
 features this way (libseekip 2.10.5.0 in 2.2.2, 2.11.3.2 in 2.2.3 – 2.3.4; 2.2.0 and 2.2.1 carry
-the same preset code), as for `no_smoothing`.  The settings fragment exists in this shape from 2.0
-on.  The Smart smoothing switches need `smart_smoothing`, which starts at 2.2.3.
+the same preset code); 2.1.x ships an older library whose feature 900 is different, so the patch
+refuses apps older than 2.2.0 (versionCode 260).  Up to 2.3.0 the app passes the switch as
+`flag ? 1 : 0`, compiled to a small branch; 2.3.4 passes the boolean directly; both shapes are
+matched.  The settings fragment exists in this shape from 2.0 on.  The Smart smoothing switches need `smart_smoothing`, which starts at 2.2.3.
 
 Run on a Pixel 8 Pro with a Seek Compact, app 2.3.4 side by side: the switches and their defaults,
 the hidden old switch, the button following the switch and back, the values after a restart and

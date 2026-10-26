@@ -24,7 +24,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, class_descriptor
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "relaunch_fix"
 SUMMARY = "the camera starts with a picture after the app was swiped away or killed, not a -40 °C magenta screen"
@@ -37,7 +37,7 @@ CLAIM = "Landroid/hardware/usb/UsbDeviceConnection;->claimInterface(Landroid/har
 CALL = re.compile(r"^([ \t]*)invoke-virtual \{(" + REG + ", " + REG + ", " + REG + r")\}, " + re.escape(CLAIM) + "$", re.M)
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     paths = tree.containing(FAILED, CLAIM)
     if len(paths) != 1:

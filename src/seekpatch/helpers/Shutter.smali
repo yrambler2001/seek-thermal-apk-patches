@@ -25,7 +25,7 @@
 
 .field private static final SUSPEND:[B
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static final TIMEOUT_MS:I = 0x3e8
 
@@ -204,7 +204,7 @@
     move-exception p0
 
     .line 78
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     const-string v1, "shutter: no button"
 
@@ -328,7 +328,7 @@
 
     move-result-object v0
 
-    const-string v2, "seek-patch"
+    const-string v2, "seek-thermal-apk-patches"
 
     invoke-static {v2, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
@@ -508,7 +508,7 @@
     .line 115
     const-string v4, "The camera did not take the command"
 
-    const-string v5, "seek-patch"
+    const-string v5, "seek-thermal-apk-patches"
 
     if-ne v1, v0, :cond_5
 

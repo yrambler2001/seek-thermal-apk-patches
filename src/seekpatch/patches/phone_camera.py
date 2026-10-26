@@ -30,7 +30,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, class_descriptor, code_start, locals_count, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import render_thread
 
 NAME = "phone_camera"
@@ -58,7 +58,7 @@ def _handler_calls(text: str, handler: str, args: str):
     return [(m, c) for m in methods(text) for c in call.finditer(m.body)]
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     for need in REQUIRES:
         if not tree.containing(mark(need)):

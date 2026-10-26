@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "seek-patch"
+name = "seek-thermal-apk-patches"
 dynamic = ["version"]
 description = "Unofficial patches for the Seek Thermal Android app: full frame rate, iOS-like sharp scaling, a working smoothing switch, lossless photos, photo-quality video"
 readme = "README.md"
@@ -31,7 +31,7 @@ Issues = "https://github.com/yrambler2001/seek-thermal-apk-patches/issues"
 Changelog = "https://github.com/yrambler2001/seek-thermal-apk-patches/blob/main/CHANGELOG.md"
 
 [project.scripts]
-seek-patch = "seekpatch.cli:main"
+seek-thermal-apk-patches = "seekpatch.cli:main"
 
 [tool.setuptools.dynamic]
 version = { attr = "seekpatch.__version__" }

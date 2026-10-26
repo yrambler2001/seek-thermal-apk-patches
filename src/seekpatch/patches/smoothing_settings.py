@@ -25,20 +25,21 @@ defaults is exactly the stock "Image smoothing on".  Peak limiting, part of the 
 gets no switch: the "on" base does not run it.
 
 The values are kept in the "seekpatch" preferences file; the settings hooks are shared with
-sharp_scaling and video_quality (settings.py).  no_smoothing is the opt-in alternative (it changes
-what the old switch does); the two refuse to combine.
+sharp_scaling and video_quality (settings.py).
 
 Versions: the feature ids and presets are verified in libseekip 2.10.5.0 (app 2.2.2) and 2.11.3.2
-(2.2.3 - 2.3.4), as for no_smoothing.  The old switch also appears in a legacy ImagePreference
-(res/xml/pref_settings.xml), which 2.2.0 - 2.2.2 load only in a SettingsActivity nothing starts,
-and 2.2.3+ not at all: it is never on screen, so it is left alone.  Sources:
+(2.2.3 - 2.3.4); 2.2.0 / 2.2.1 carry the same preset code, and older apps (2.1.x) bundle a
+library whose feature 900 works differently, so the patch refuses them.  The old switch also
+appears in a legacy ImagePreference (res/xml/pref_settings.xml), which 2.2.0 - 2.2.2 load only in
+a SettingsActivity nothing starts, and 2.2.3+ not at all: it is never on screen, so it is left
+alone.  Sources:
 helpers/java/seekpatch/{Filters,Settings}.java; see docs/smoothing-settings.md.
 """
 from __future__ import annotations
 
 from ..helpers import add_helpers
 from ..smali import PatchError, SmaliTree
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import feature_900_call, seekip_class
 from .settings import install as install_settings
 
@@ -47,7 +48,6 @@ SUMMARY = "Settings switches for Seek's temporal / spatial smoothing and pattern
 VERSIONS = "2.2.0 - 2.3.4"
 MIN_VERSION_CODE = 260  # 2.2.0
 RECOMMENDED = True
-CONFLICTS = ("no_smoothing",)
 
 MARK = mark(NAME)
 
@@ -63,11 +63,8 @@ HELPER = """
 """
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
-    for other in CONFLICTS:
-        if tree.containing(mark(other)):
-            raise PatchError(f"{NAME}: {other} is applied, and the two are alternatives -- pick one")
     code = tree.version_code
     if code is None:
         raise PatchError(f"{NAME}: cannot tell the app version, and the patch is only verified on {VERSIONS}")

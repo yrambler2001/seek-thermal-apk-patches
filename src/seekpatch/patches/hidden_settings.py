@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 
 from ..smali import GAP, REG, PatchError, SmaliTree, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "hidden_settings"
 SUMMARY = "Settings always shows the app's hidden switches (Show Frame Rate, Save Uncompressed, ...)"
@@ -69,7 +69,7 @@ def _reader(tree: SmaliTree, key: str) -> tuple[str, str] | None:
     return tree.rel(path), m.name
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     report = []
     for key, switch in SWITCHES.items():

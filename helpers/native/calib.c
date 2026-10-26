@@ -1,5 +1,5 @@
 /*
- * calib.c -- seek-patch calibration on Android: every temperature libseekip reports goes through
+ * calib.c -- seek-thermal-apk-patches calibration on Android: every temperature libseekip reports goes through
  * k * t + b.  JNI for seekpatch.Calib.
  *
  * libseekip's thermography_process turns each frame into degrees: the per-pixel image and the spot,
@@ -25,7 +25,7 @@
 
 #include "plt.h"
 
-#define TAG "seek-patch"
+#define TAG "seek-thermal-apk-patches"
 
 /* st_size of thermography_process and thermography_getfeature in the verified libseekip builds */
 static const struct { unsigned process, getfeature; const char *what; } VERIFIED[] = {

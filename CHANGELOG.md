@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.0.0 — 2026-10-26
+
+seek-patch is now seek-thermal-apk-patches, the name of its repository, and the README is new.
+Options the app's settings already cover are gone.
+
+- The command and the pip package are `seek-thermal-apk-patches`.  Installed as `seek-patch`: delete
+  its virtual environment (the `seek-patch` folder in your home folder) and install again, as in
+  the README.
+- The per-user folder (the downloaded tools and your signing key) is now named
+  `seek-thermal-apk-patches` too.  The first run moves the old `seek-patch` folder there, so apps
+  patched before still take updates: Android installs an update only when it is signed with the
+  same key.  The key keeps its alias and password.
+- The log tag is `seek-thermal-apk-patches` (`adb logcat -s seek-thermal-apk-patches`), and so are the
+  markers on the code the patches add.  An app patched before, with the old markers, is still
+  recognised as patched.
+- Unchanged: the Python module `seekpatch` (`python -m seekpatch`), the `SEEK_PATCH_*` environment
+  variables, and the app-side names an update must keep (the helper classes, the microphone prompt's
+  preferences).
+- README: a landing page with photos and crops of a board (stock and patched, next to a colour photo
+  aligned to them by `tools/readme_images.py`), the camera screen, the lock range, the frame rate and
+  video; the patch reference moved to [docs/README.md](docs/README.md), with its table written from
+  the patches.  Images are AVIF.
+- The patched APK's default name carries the version: `X-patched-1.0.0.apk`
+  (`X-patched-1.0.0-side-by-side.apk` with `--side-by-side`).
+- Removed `--sharpness`, `--video-codec` and `--video-qp`.  They only chose where the app's own
+  *Upscaling*, *Video codec* and *Video quality* settings start (*Settings → Image & Video*).  A
+  build starts at *Sharp 2*, H.265 and QP 18, the old defaults.  Naming one of them is an error that
+  says where the setting is.
+- Removed `no_smoothing`, the opt-in alternative to `smoothing_settings`, whose switches in the
+  default set cover it.  `--all` is now every patch.
+
 ## 0.11.0 — 2026-10-26
 
 A fix for the magenta -40 °C picture when the app is opened again after it was killed.

@@ -7,7 +7,7 @@
 # static fields
 .field private static final CREDIT:Ljava/lang/String; = "Patched by yrambler2001"
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static registered:Z
 
@@ -57,7 +57,7 @@
     .locals 13
 
     .line 111
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     .line 0
     const-string v1, "screens: no Send Feedback item for the credit ("
@@ -373,7 +373,7 @@
     move-exception p0
 
     .line 103
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     const-string v1, "screens: navigation bar unchanged"
 

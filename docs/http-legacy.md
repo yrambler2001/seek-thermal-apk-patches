@@ -59,7 +59,7 @@ The two patches fix different things, and both are in the default set:
 
 ## How the manifest is edited
 
-By default seek-patch decodes only the code (`apktool d -r`), so the manifest stays in Android's
+By default seek-thermal-apk-patches decodes only the code (`apktool d -r`), so the manifest stays in Android's
 binary XML.  [`seekpatch/axml.py`](../src/seekpatch/axml.py) parses it into its chunks: string pool,
 resource map, and one chunk per namespace, element start, element end and text.  It then adds the
 element and writes the file back.
@@ -72,11 +72,11 @@ element and writes the file back.
   reference moves up by one.
 - The element's layout is the one aapt2 writes into 2.3.4's manifest: first child of
   `<application>`, the two attributes in resource-id order, and `required` as a boolean `0`.  Its
-  comment field, which aapt leaves empty and Android ignores, holds `seek-patch http_legacy`.  That
+  comment field, which aapt leaves empty and Android ignores, holds `seek-thermal-apk-patches http_legacy`.  That
   is how a second run tells its own element from Seek's.
 
 With `--side-by-side` the manifest is decoded to text, and the patch adds the same line there, after
-`<!-- seek-patch http_legacy -->`.
+`<!-- seek-thermal-apk-patches http_legacy -->`.
 
 The patch refuses:
 

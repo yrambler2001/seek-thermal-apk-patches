@@ -19,7 +19,7 @@
 
 .field private static final SMOOTH:Ljava/lang/String; = "android"
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static loaded:Ljava/lang/String;
 
@@ -309,7 +309,7 @@
 
     move-result-object p0
 
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 

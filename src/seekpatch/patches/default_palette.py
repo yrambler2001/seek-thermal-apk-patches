@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 
 from ..smali import GAP, REG, PatchError, SmaliTree, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "default_palette"
 SUMMARY = "the camera starts in the Tyrian palette instead of Spectra, until another is picked"
@@ -58,7 +58,7 @@ def _palette_index(tree: SmaliTree) -> int:
     return found.pop()
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     index = _palette_index(tree)
     read = re.compile(r'const-string (' + REG + r'), "color_palette"' + GAP + r"const(?:/4|/16)? (" + REG

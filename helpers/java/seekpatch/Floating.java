@@ -19,14 +19,14 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * seek-patch's floating buttons below the camera screen's top bar (lock_range, calibration, shutter):
+ * seek-thermal-apk-patches' floating buttons below the camera screen's top bar (lock_range, calibration, shutter):
  * one row, the left side's buttons from the left edge in their order, the right side's from the
  * right edge, so buttons of separate patches line up instead of overlapping, each in a fixed place
  * whichever patches are applied.  A button that does not fit in the row (a narrow screen, a long
  * label) goes to the next row down; the rows are laid out again whenever a button's width changes.
  */
 public final class Floating {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String MARK = "seekpatch.floating:";
     private static final int HEIGHT = 28;  // dp
     private static final int GAP = 8;

@@ -60,11 +60,11 @@ python3 tools/codecs.py ladder REF.mp4       # bitrate / PSNR / SSIM / noise kep
 ```
 
 Both compile two small Java programs (`tools/codecs/`) and run them on the phone with
-`app_process`, so nothing is installed.  For `ladder`, patch with `--video-qp 10` and record 10+ s
-of the scene you care about: that file is the reference.  Its frames are decoded on the computer,
+`app_process`, so nothing is installed.  For `ladder`, record 10+ s of the scene you care about at
+*Video quality: 40 Mbit/s*, the top of the list: that file is the reference.  Its frames are decoded on the computer,
 pushed to the phone, encoded there by every hardware HEVC / H.264 encoder at each QP (QP bounds and
 keyframes set as `video_quality` sets them), pulled back and compared with the reference.  Needs a
 JDK, the Android SDK (`ANDROID_HOME`), ffmpeg and numpy.  The table in
 [video-quality.md](video-quality.md) is its output for a Pixel 8 Pro.
 
-`adb logcat -s seek-patch` shows the encoder and sound format a patched app chose.
+`adb logcat -s seek-thermal-apk-patches` shows the encoder and sound format a patched app chose.

@@ -18,7 +18,7 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 
 /**
- * seek-patch smart_smoothing: a "Smart smoothing" button that switches the live image to seek-patch's
+ * seek-thermal-apk-patches smart_smoothing: a "Smart smoothing" button that switches the live image to seek-thermal-apk-patches'
  * motion-compensated noise filter (native library libseekpatch_smooth.so).
  *
  * <p>The filter follows the camera's motion and averages up to eight frames per pixel, so it
@@ -33,7 +33,7 @@ import java.lang.ref.WeakReference;
  * the switch are one value: a listener keeps the button and the filter in step with the file.
  */
 public final class Smooth {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String PREFS = "seekpatch";
     private static final String KEY = "smart_smoothing";
     private static final String STRIPES = "smart_stripes";

@@ -111,7 +111,7 @@ def base_identity(path: str) -> dict[str, object]:
 def merge(tc: Toolchain, path: str, out: str, log: Callable[[str], None] = print) -> None:
     """Merge the bundle into one unsigned apk at `out`."""
     b = inspect(path)
-    with tempfile.TemporaryDirectory(prefix="seek-patch-merge-") as tmp, zipfile.ZipFile(path) as z:
+    with tempfile.TemporaryDirectory(prefix="seek-thermal-apk-patches-merge-") as tmp, zipfile.ZipFile(path) as z:
         if not b.splits:
             log(f"bundle {os.path.basename(path)}: a base apk without splits")
             with z.open(b.base) as src, open(out, "wb") as dst:

@@ -22,7 +22,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, code_start, methods, param_registers, register_number
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .settings import optional_settings
 
 NAME = "photo_1x"
@@ -71,7 +71,7 @@ def _exif_method(tree: SmaliTree, path: str):
     return m, orientation.pop()
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     path, photo, bitmap, context = _photo_method(tree)
     exif, orientation = _exif_method(tree, path)

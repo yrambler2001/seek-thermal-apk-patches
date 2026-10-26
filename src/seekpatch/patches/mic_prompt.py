@@ -25,7 +25,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import GAP, REG, PatchError, SmaliTree, class_descriptor, methods, register_number
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import render_thread, upload_call
 
 NAME = "mic_prompt"
@@ -78,7 +78,7 @@ def _calls_to(tree: SmaliTree, cls: str, api: str) -> str:
     return "(?:" + virtual + (")" if not static else "|" + static + ")")
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     hits = []
     for p in tree.containing(RECORD_AUDIO):

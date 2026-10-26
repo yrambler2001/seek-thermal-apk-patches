@@ -5,7 +5,7 @@ import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 
 /**
- * seek-patch resume_fix: let go of the live view's window when its GL thread stops.
+ * seek-thermal-apk-patches resume_fix: let go of the live view's window when its GL thread stops.
  *
  * <p>When the app pauses, the GL thread drops its window surface without destroying it, so the EGL
  * surface stays connected to the view's window.  If the window survives the pause -- a permission

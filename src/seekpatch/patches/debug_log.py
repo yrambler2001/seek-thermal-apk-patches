@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 
 from ..smali import REG, PatchError, SmaliTree, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 
 NAME = "debug_log"
 SUMMARY = 'send the SDK\'s compiled-out debug log (USB timing, DAQ fps) to logcat, tag "Seekware"'
@@ -57,7 +57,7 @@ BODY_TAG_MSG = """    .locals 0
 """
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     # the logger is whatever the DAQ thread hands its constant messages to
     loggers = set()

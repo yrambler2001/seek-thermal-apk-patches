@@ -25,7 +25,7 @@
 
 .field private static final QP:Ljava/lang/String; = "video_qp"
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 .field private static loadedMime:Ljava/lang/String;
 
@@ -429,7 +429,7 @@
     move-exception p0
 
     .line 174
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     const-string v1, "video_quality: encoders not listed"
 
@@ -964,7 +964,7 @@
     move-result-object p0
 
     .line 57
-    const-string v0, "seek-patch"
+    const-string v0, "seek-thermal-apk-patches"
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 

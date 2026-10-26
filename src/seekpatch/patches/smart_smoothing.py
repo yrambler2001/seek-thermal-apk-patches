@@ -2,7 +2,7 @@
 motion-compensated noise filter.
 
 The app's temporal filter (libseekip's alpf, first-filter bit 0x4) only blends pixels that did not
-change, so a hand-held camera gets almost nothing from it, or smear.  seek-patch's filter (written
+change, so a hand-held camera gets almost nothing from it, or smear.  seek-thermal-apk-patches' filter (written
 for this project, helpers/native/tnr.c) aligns each frame to a running estimate -- frame-wide shift
 and level, then per 16 px tile -- and averages up to 8 frames per pixel, dropping pixels that do not
 match (motion the alignment missed).  It also removes column stripes (lines = 3) and levels the
@@ -35,7 +35,7 @@ import re
 from .. import native
 from ..helpers import add_helpers
 from ..smali import PatchError, SmaliTree, class_descriptor
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import camera_activity, feature_900_call
 
 NAME = "smart_smoothing"
@@ -48,7 +48,7 @@ MARK = mark(NAME)
 SEEKIP = "libseekip.so"
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     code = tree.version_code
     if code is None:

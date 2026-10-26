@@ -82,9 +82,8 @@ Image processing and temperatures are untouched.
 | **Sharp 2: blends 50 % of each pixel, as iOS (default)** | as above | 2× nearest first |
 | **Blocky: square pixels, no blending** | sharpness 1000: the blend is 1/1000 of a texel, far below one screen pixel | the frame drawn with an unfiltered copy of the app's `Paint` |
 
-`--sharpness N` (default 2) picks the default entry, and joins the list when it falls between the
-choices; the setting then wins.  Changes show as soon as the live view is back.  The value sits in
-seek-patch's preferences file (key `upscaling`: `android`, a sharpness, or `blocky`);
+A build starts at *Sharp 2*.  Changes show as soon as the live view is back.  The value sits in
+seek-thermal-apk-patches' preferences file (key `upscaling`: `android`, a sharpness, or `blocky`);
 `seekpatch.Upscale` writes it to `SharpScale.sharpness` (the uniform) and `SharpScale.photoFactor`
 (the photo: 1 is the stock draw, 0 the unfiltered one).
 

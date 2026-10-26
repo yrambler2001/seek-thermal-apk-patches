@@ -21,7 +21,7 @@
 
 .field private static final RATE:I = 0x2
 
-.field private static final TAG:Ljava/lang/String; = "seek-patch"
+.field private static final TAG:Ljava/lang/String; = "seek-thermal-apk-patches"
 
 
 # direct methods
@@ -256,7 +256,7 @@
 
     move-result v4
 
-    const-string v6, "seek-patch"
+    const-string v6, "seek-thermal-apk-patches"
 
     const/4 v7, 0x0
 

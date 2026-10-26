@@ -30,7 +30,7 @@ import re
 
 from ..helpers import add_helpers
 from ..smali import REG, PatchError, SmaliTree, code_start, methods
-from .base import Options, ensure_unpatched, mark
+from .base import ensure_unpatched, mark
 from .seek import render_thread
 
 NAME = "steady_fps"
@@ -91,7 +91,7 @@ def _one(found: list, what: str) -> object:
     return found[0]
 
 
-def apply(tree: SmaliTree, opts: Options) -> list[str]:
+def apply(tree: SmaliTree) -> list[str]:
     ensure_unpatched(tree, NAME)
     rpath, _ = render_thread(tree, NAME)
     usb = _one(tree.containing('"SeekwareDeviceHandler"'), "SeekwareDeviceHandler class")

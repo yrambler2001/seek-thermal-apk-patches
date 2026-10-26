@@ -1,5 +1,5 @@
 /*
- * smooth_android.c -- seek-patch smart_smoothing on Android: finds the loaded libseekip.so, checks it
+ * smooth_android.c -- seek-thermal-apk-patches smart_smoothing on Android: finds the loaded libseekip.so, checks it
  * is a library the hook was verified on, and points its GOT entries for filter_process and
  * filter_process_shutter at smooth.c's wrappers.  JNI for seekpatch.Smooth.
  *
@@ -19,7 +19,7 @@
 #include "plt.h"
 #include "smooth.h"
 
-#define TAG "seek-patch"
+#define TAG "seek-thermal-apk-patches"
 
 /* st_size of filter_process, filter_process_shutter, seekip_process in the verified libseekip builds
  * (libseekip 2.11.3.2; the frame-set layout was read from each build's seekip_process) */

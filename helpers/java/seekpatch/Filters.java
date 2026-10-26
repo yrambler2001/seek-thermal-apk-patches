@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * seek-patch smoothing_settings: a switch for each of Seek's own image filters, and for Smart
+ * seek-thermal-apk-patches smoothing_settings: a switch for each of Seek's own image filters, and for Smart
  * smoothing, in place of the app's "Image smoothing" switch.
  *
  * <p>Before every frame the app sends library feature 900 with the "Image smoothing" switch, and the
@@ -25,7 +25,7 @@ import java.nio.ByteOrder;
  * seekpatch.Smooth keeps in the same preferences file, so its top-left button follows them.
  */
 public final class Filters {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     // keys in the seekpatch preferences
     private static final String TEMPORAL = "temporal_smoothing";
     private static final String SPATIAL = "spatial_smoothing";

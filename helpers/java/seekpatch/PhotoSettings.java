@@ -5,12 +5,12 @@ import android.preference.PreferenceFragment;
 import android.util.Log;
 
 /**
- * seek-patch photo_1x: its setting, <i>Also save a 1x PNG</i>, off by default.  It sets
+ * seek-thermal-apk-patches photo_1x: its setting, <i>Also save a 1x PNG</i>, off by default.  It sets
  * {@link Photo1x#enabled}, which is on where the app has no settings screen for it (then the patch
  * saves with every photo, as before there was a setting).
  */
 public final class PhotoSettings {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String KEY = "photo_1x";
 
     private static int loaded = -1;

@@ -1,5 +1,5 @@
 /*
- * plt.h -- the loaded libseekip.so's dynamic symbols and PLT slots, for seek-patch's hooks
+ * plt.h -- the loaded libseekip.so's dynamic symbols and PLT slots, for seek-thermal-apk-patches' hooks
  * (smooth_android.c, lock.c).
  */
 #ifndef SEEKPATCH_PLT_H

@@ -12,7 +12,7 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 
 /**
- * seek-patch lock_range: a "Lock range" button that holds the colors where they are, so a hotter or
+ * seek-thermal-apk-patches lock_range: a "Lock range" button that holds the colors where they are, so a hotter or
  * colder object entering the scene no longer recolors everything else.
  *
  * <p>The app's image comes out of libseekip's contrast stage, which builds a new curve from raw sensor
@@ -23,7 +23,7 @@ import java.lang.ref.WeakReference;
  * so does a camera reconnect.  The lock lasts until the app is closed.  See docs/lock-range.md.
  */
 public final class Lock {
-    private static final String TAG = "seek-patch";
+    private static final String TAG = "seek-thermal-apk-patches";
     private static final String LIBRARY = "seekpatch_lock";
     private static final long STALE_MS = 1000;
     private static final String LABEL = "Lock range";
