@@ -62,8 +62,8 @@ public final class Shutter {
     public static void attach(Activity a) {
         try {
             prefs = a.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-            TextView b = Floating.button(a, "Stops the camera's automatic shutter: no clicks or frozen frames, but the picture "
-                            + "slowly drifts; tap again to start it (it shutters right away)",
+            TextView b = Floating.button(a, Lang.t("Stops the camera's automatic shutter: no clicks or frozen frames, but the picture "
+                            + "slowly drifts; tap again to start it (it shutters right away)"),
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -81,14 +81,14 @@ public final class Shutter {
 
     private static void tap(TextView b) {
         if (!connected) {
-            Toast.makeText(b.getContext(), "No camera", Toast.LENGTH_SHORT).show();
+            Toast.makeText(b.getContext(), Lang.t("No camera"), Toast.LENGTH_SHORT).show();
         } else {
             request = off ? START : STOP;
         }
     }
 
     private static void show(TextView b) {
-        b.setText(off ? "Shutter off" : "Shutter auto");
+        b.setText(off ? Lang.t("Shutter off") : Lang.t("Shutter auto"));
         Floating.style(b, off);
     }
 
@@ -120,7 +120,7 @@ public final class Shutter {
                     refresh(null);
                 } else {
                     off = false;
-                    refresh("The camera did not take the command: its shutter stays on");
+                    refresh(Lang.t("The camera did not take the command: its shutter stays on"));
                 }
             } else {
                 if (send(c, RESUME)) {
@@ -129,12 +129,12 @@ public final class Shutter {
                     Log.i(TAG, "shutter: automatic shutter on");
                     refresh(null);
                 } else {
-                    refresh("The camera did not take the command");
+                    refresh(Lang.t("The camera did not take the command"));
                 }
             }
         } catch (Throwable t) {
             Log.w(TAG, "shutter: command failed", t);
-            refresh("The camera did not take the command");
+            refresh(Lang.t("The camera did not take the command"));
         }
     }
 

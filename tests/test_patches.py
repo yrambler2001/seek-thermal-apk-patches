@@ -7,7 +7,8 @@ import re
 import pytest
 from conftest import SHAPES
 
-from seekpatch import __version__, axml
+from seekpatch import __version__, axml, strings
+from seekpatch.helpers import add_helpers
 from seekpatch.patches import (
     BY_NAME,
     calibration,
@@ -19,6 +20,7 @@ from seekpatch.patches import (
     full_fps,
     hidden_settings,
     http_legacy,
+    language,
     lock_range,
     mic_prompt,
     no_analytics,
@@ -988,6 +990,7 @@ def test_flat_field(make_project, shape):
     assert "invoke-static/range {p0 .. p4}, Lfix/NativeLib;->c(JILjava/nio/ByteBuffer;I)I" in seekip
     assert "invoke-static/range {p0 .. p4}, Lfix/NativeLib;->g(JILjava/nio/ByteBuffer;I)I" in seekip
     assert all(tree.path_of(f"Lseekpatch/Flat{s};") for s in ("", "$1", "$2", "$3", "$4", "$5"))
+    assert tree.path_of("Lseekpatch/TopBar;") and tree.path_of("Lseekpatch/Lang;")  # the label fits the bar, translated
     assert "Lfix/NativeLib;->c(" in report[0]
     assert report[-1] == "settings: Flat field frames (seekpatch.FlatSettings)"
     assert tree.path_of("Lseekpatch/FlatSettings;") and tree.path_of("Lseekpatch/Settings;")
@@ -1145,6 +1148,71 @@ def test_calibration_needs_an_arm_libseekip(make_project):
         calibration.apply(tree)
 
 
+# language ---------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_language(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = language.apply(tree)
+    # the list, after the Settings screen's own preferences (not the Image & Video screen's)
+    assert re.search(r"->addPreferencesFromResource\(I\)V\n\n\s+# seek-thermal-apk-patches language: the Language list, at the "
+                     r"top\n\s+invoke-static/range \{p0 \.\. p0\}, " + re.escape(language.SCREEN) + "\n", text(tree, "Lfix/MainSettings;"))
+    assert language.SCREEN not in text(tree, "Lfix/ImageSettings;")
+    # an activity without attachBaseContext gets one, one with its own is hooked at its start
+    main = [m for m in methods(text(tree, "Lfix/Main;")) if m.descriptor == language.ATTACH]
+    assert len(main) == 1 and re.search(
+        r"invoke-static \{p1\}, " + re.escape(language.WRAP) + r"\n\n\s+move-result-object p1\n\n\s+"
+        r"invoke-super \{p0, p1\}, Landroid/app/Activity;->attachBaseContext\(Landroid/content/Context;\)V\n\n\s+return-void",
+        main[0].body)
+    viewer = [m for m in methods(text(tree, "Lfix/Viewer;")) if m.descriptor == language.ATTACH]
+    assert len(viewer) == 1 and re.search(
+        r"\.line 1\n\s+# seek-thermal-apk-patches language: .*\n\s+invoke-static/range \{p1 \.\. p1\}, " + re.escape(language.WRAP)
+        + r"\n\n\s+move-result-object p1\n\n\s+invoke-super \{p0, p1\}, Landroid/app/Activity;->attachBaseContext", viewer[0].body)
+    # one that extends another of the app's inherits it
+    assert language.MARK not in text(tree, "Lfix/Gallery;")
+    assert all(tree.path_of(c) for c in ("Lseekpatch/Language;", "Lseekpatch/Lang;", "Lseekpatch/Lang$1;",
+                                         "Lseekpatch/Strings;"))
+    assert report == ["MainSettings.onCreate -> Language.screen: the Language list at the top of Settings",
+                      "attachBaseContext -> Lang.wrap in 2 activity base classes (Main, Viewer)"]
+    with pytest.raises(AlreadyApplied):
+        language.apply(tree)
+
+
+def test_language_needs_the_settings_screen(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "MainSettings.smali"
+    p.write_text(p.read_text().replace('"image_and_video"', '"other"'))
+    tree = SmaliTree(str(root))
+    before = dict(tree.files)
+    with pytest.raises(PatchError, match='names "image_and_video"'):
+        with tree.transaction():
+            language.apply(tree)
+    assert tree.files == before
+
+
+def test_language_strings_are_the_apps_languages(make_project):
+    tree = tree_of(make_project, "lambda")
+    language.apply(tree)
+    generated = text(tree, "Lseekpatch/Strings;")
+    # the fixture app has German, Russian and some Portugal Portuguese (and one library string in Ukrainian)
+    assert '.field public static languages:Ljava/lang/String; = "de,pt-PT,ru"' in generated
+    fields = re.findall(r"^\.field public static (\w+):Ljava/lang/String; = \"(.*)\"$", generated, re.M)
+    assert [name for name, _ in fields] == ["languages", "english", "de", "pt", "ru"]
+    assert all(c.isascii() and c.isprintable() for _, value in fields for c in value)  # non-ASCII as \\uXXXX
+    english = strings.translations()["de"]
+    values = dict(fields)
+    assert values["english"].count("\\u001f") == len(english) - 1
+    assert "Sprache" in values["de"] and "\\u042f\\u0437\\u044b\\u043a" in values["ru"]  # Язык
+
+
+def test_helpers_with_text_bring_lang(make_project):
+    tree = tree_of(make_project, "lambda")
+    assert add_helpers(tree, "UsbPrompt") == ["Lseekpatch/UsbPrompt;"]  # no text: no Lang
+    added = add_helpers(tree, "Lock", "Floating")
+    assert {"Lseekpatch/Lang;", "Lseekpatch/Lang$1;", "Lseekpatch/Strings;"} <= set(added)
+    assert add_helpers(tree, "Shutter") == ["Lseekpatch/Shutter;", "Lseekpatch/Shutter$1;", "Lseekpatch/Shutter$2;"]
+
+
 # hidden_settings --------------------------------------------------------------------------------
 
 HIDDEN = {"D": "allow_reg_optout_key", "E": "export_frame_rate_allowed_key", "I": "lossless_comp_allowed_key",
@@ -1161,10 +1229,52 @@ def test_hidden_settings(make_project, shape):
         assert re.search(r"move-result p0\n\n\s+# seek-thermal-apk-patches hidden_settings: always shown\n\s+const/4 p0, 0x1\n\n\s+"
                          r"return p0\n", body), name
     assert "seek-thermal-apk-patches" not in next(m for m in methods(prefs) if m.name == "H").body  # the setting itself
-    assert len(report) == 5 and report[0] == ("smali/fix/Prefs.smali I(): lossless_comp_allowed_key is true -- "
+    assert len(report) == 6 and report[0] == ("smali/fix/Prefs.smali I(): lossless_comp_allowed_key is true -- "
                                               "Save Uncompressed shown")
+    # the lines under the switches, after the Settings screen's own preferences (not the Image & Video screen's)
+    assert re.search(r"->addPreferencesFromResource\(I\)V\n\n\s+# seek-thermal-apk-patches hidden_settings: what each "
+                     r"switch does, under its title\n\s+invoke-static/range \{p0 \.\. p0\}, "
+                     + re.escape(hidden_settings.SCREEN) + "\n", text(tree, "Lfix/MainSettings;"))
+    assert hidden_settings.SCREEN not in text(tree, "Lfix/ImageSettings;")
+    assert all(tree.path_of(c) for c in ("Lseekpatch/Hidden;", "Lseekpatch/Lang;", "Lseekpatch/Strings;"))
+    assert '.field static facts:Ljava/lang/String; = ""\n' in text(tree, "Lseekpatch/Hidden;")
+    assert report[-1] == ("MainSettings.onCreate -> Hidden.screen: what each switch does, under its title "
+                          "(no camera registration, no TIFF)")
     with pytest.raises(AlreadyApplied):
         hidden_settings.apply(tree)
+
+
+def test_hidden_settings_tells_what_the_app_does(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "Registration.smali").write_text(
+        ".class public Lfix/Registration;\n.super Ljava/lang/Object;\n\n"
+        ".method public static server()Ljava/lang/String;\n    .locals 1\n\n"
+        '    const-string v0, "https://register.thermal.com"\n\n    return-object v0\n.end method\n\n'
+        ".method public static tiff()Ljava/lang/String;\n    .locals 1\n\n"
+        '    const-string v0, "_thermo_"\n\n    return-object v0\n.end method\n')
+    tree = SmaliTree(str(root))
+    report = hidden_settings.apply(tree)
+    assert '.field static facts:Ljava/lang/String; = "registration,tiff"\n' in text(tree, "Lseekpatch/Hidden;")
+    assert report[-1].endswith("(registers cameras, TIFF with each photo)")
+
+
+def test_hidden_settings_facts_are_the_apps_not_ours(make_project):
+    tree = tree_of(make_project, "lambda")
+    language.apply(tree)  # Lang and Strings first: the patches' text names register.thermal.com
+    assert tree.containing("register.thermal.com")
+    hidden_settings.apply(tree)
+    assert '.field static facts:Ljava/lang/String; = ""\n' in text(tree, "Lseekpatch/Hidden;")
+
+
+def test_hidden_settings_without_the_settings_screen_shows_them_bare(make_project):
+    # 1.9.x: the switches, but not on a Settings screen of 2.0's
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "MainSettings.smali"
+    p.write_text(p.read_text().replace('"image_and_video"', '"other"'))
+    tree = SmaliTree(str(root))
+    report = hidden_settings.apply(tree)
+    assert len(report) == 6 and report[-1].startswith("no descriptions")
+    assert tree.path_of("Lseekpatch/Hidden;") is None and hidden_settings.SCREEN not in text(tree, "Lfix/MainSettings;")
 
 
 def test_hidden_settings_leaves_save_uncompressed_to_png_photos(make_project):
@@ -1183,7 +1293,7 @@ def test_hidden_settings_takes_the_switches_there_are(make_project):
     p = root / "smali" / "fix" / "Prefs.smali"
     p.write_text(p.read_text().replace('"export_frame_rate_allowed_key"', '"other_key"'))
     report = hidden_settings.apply(SmaliTree(str(root)))
-    assert len(report) == 4 and not any("Show Frame Rate" in line for line in report)
+    assert len(report) == 5 and not any("Show Frame Rate" in line for line in report)
 
 
 def test_hidden_settings_needs_one_reader_per_switch(make_project):
@@ -1285,6 +1395,7 @@ def test_smart_smoothing(make_project, shape):
                      r"invoke-static \{p0\}, Lseekpatch/Smooth;->attach\(Landroid/app/Activity;\)V\n",
                      text(tree, "Lfix/Main;"))
     assert all(tree.path_of(f"Lseekpatch/Smooth{s};") for s in ("", "$1", "$2", "$3"))
+    assert tree.path_of("Lseekpatch/TopBar;") and tree.path_of("Lseekpatch/Lang;")
     assert sorted(tree.natives) == ["lib/arm64-v8a/libseekpatch_smooth.so", "lib/armeabi-v7a/libseekpatch_smooth.so"]
     assert report[-1] == "lib/{arm64-v8a,armeabi-v7a}/libseekpatch_smooth.so"
 
@@ -1417,13 +1528,13 @@ def test_smoothing_settings_needs_the_feature_call(make_project):
 # all patches ------------------------------------------------------------------------------------
 
 APPLICABLE = {  # every patch that applies
-    "lambda": ["full_fps", "steady_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
+    "lambda": ["full_fps", "steady_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "language", "fps_readout",
                "photo_1x", "video_quality", "phone_camera", "resume_fix", "reconnect_fix", "no_analytics", "http_legacy",
                "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
-    "accessor": ["full_fps", "steady_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "fps_readout",
+    "accessor": ["full_fps", "steady_fps", "sharp_scaling", "smoothing_settings", "png_photos", "hidden_settings", "language", "fps_readout",
                  "photo_1x", "video_quality", "phone_camera", "resume_fix", "reconnect_fix", "no_analytics",
                  "http_legacy", "mic_prompt", "flat_field", "lock_range", "shutter", "calibration", "smart_smoothing", "debug_log"],
-    "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "fps_readout", "photo_1x",
+    "virtual": ["full_fps", "sharp_scaling", "png_photos", "hidden_settings", "language", "fps_readout", "photo_1x",
                 "reconnect_fix", "no_analytics", "http_legacy", "mic_prompt", "shutter", "debug_log"],
 }
 

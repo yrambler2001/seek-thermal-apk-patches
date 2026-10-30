@@ -53,7 +53,7 @@ public final class Lock {
     /** After the activity's setContentView: the button floats below the top bar, right side, first. */
     public static void attach(Activity a) {
         try {
-            TextView b = Floating.button(a, "Keeps the colors as they are now, whatever enters the view; tap again for automatic",
+            TextView b = Floating.button(a, Lang.t("Keeps the colors as they are now, whatever enters the view; tap again for automatic"),
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -71,11 +71,11 @@ public final class Lock {
 
     private static void tap(TextView b) {
         if (failed) {
-            Toast.makeText(b.getContext(), "Lock range is not available here", Toast.LENGTH_SHORT).show();
+            Toast.makeText(b.getContext(), Lang.t("Lock range is not available here"), Toast.LENGTH_SHORT).show();
         } else if (locked) {
             request = UNLOCK;
         } else if (SystemClock.uptimeMillis() - sceneAt > STALE_MS) {
-            Toast.makeText(b.getContext(), "No camera image", Toast.LENGTH_SHORT).show();
+            Toast.makeText(b.getContext(), Lang.t("No camera image"), Toast.LENGTH_SHORT).show();
         } else {
             low = sceneLow;
             high = sceneHigh;
@@ -87,9 +87,10 @@ public final class Lock {
         if (locked) {
             int unit = Floating.unit(b.getContext());
             // whole degrees as the bar writes them: truncated
-            b.setText("Locked " + (int) Floating.toUnit(low, unit) + "–" + (int) Floating.toUnit(high, unit) + Floating.symbol(unit));
+            b.setText(Lang.f("Locked %s", (int) Floating.toUnit(low, unit) + "–" + (int) Floating.toUnit(high, unit)
+                    + Floating.symbol(unit)));
         } else {
-            b.setText(LABEL);
+            b.setText(Lang.t(LABEL));
         }
         Floating.style(b, locked);
     }
@@ -140,7 +141,7 @@ public final class Lock {
             } else if (released()) {
                 locked = false;
                 Log.i(TAG, "lock_range: the camera was reconnected, automatic again");
-                refresh("Camera reconnected: the range is automatic again");
+                refresh(Lang.t("Camera reconnected: the range is automatic again"));
             }
         } catch (Throwable t) {
             unavailable(String.valueOf(t));
@@ -151,7 +152,7 @@ public final class Lock {
         failed = true;
         locked = false;
         Log.w(TAG, "lock_range: unavailable, " + why);
-        refresh("Lock range is not available here");
+        refresh(Lang.t("Lock range is not available here"));
     }
 
     private static void refresh(final String message) {

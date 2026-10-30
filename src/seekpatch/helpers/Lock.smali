@@ -120,6 +120,10 @@
     :try_start_0
     const-string v0, "Keeps the colors as they are now, whatever enters the view; tap again for automatic"
 
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     new-instance v1, Lseekpatch/Lock$1;
 
     invoke-direct {v1}, Lseekpatch/Lock$1;-><init>()V
@@ -173,7 +177,7 @@
 
     if-nez p0, :cond_1
 
-    .line 174
+    .line 175
     sget-boolean p0, Lseekpatch/Lock;->locked:Z
 
     if-eqz p0, :cond_0
@@ -196,12 +200,12 @@
 .method public static frame()V
     .locals 6
 
-    .line 115
+    .line 116
     const-string v0, "lock_range: locked; the bar keeps "
 
     sget v1, Lseekpatch/Lock;->request:I
 
-    .line 116
+    .line 117
     sget-boolean v2, Lseekpatch/Lock;->failed:Z
 
     if-nez v2, :cond_5
@@ -214,7 +218,7 @@
 
     goto/16 :goto_0
 
-    .line 120
+    .line 121
     :cond_0
     :try_start_0
     sget-boolean v2, Lseekpatch/Lock;->installed:Z
@@ -223,50 +227,50 @@
 
     if-nez v2, :cond_2
 
-    .line 121
+    .line 122
     const-string v2, "seekpatch_lock"
 
     invoke-static {v2}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 
-    .line 122
+    .line 123
     invoke-static {}, Lseekpatch/Lock;->install()Ljava/lang/String;
 
     move-result-object v2
 
     if-eqz v2, :cond_1
 
-    .line 124
+    .line 125
     invoke-static {v2}, Lseekpatch/Lock;->unavailable(Ljava/lang/String;)V
 
     return-void
 
-    .line 127
+    .line 128
     :cond_1
     sput-boolean v3, Lseekpatch/Lock;->installed:Z
 
     :cond_2
     const/4 v2, 0x0
 
-    .line 129
+    .line 130
     sput v2, Lseekpatch/Lock;->request:I
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
     const/4 v4, 0x0
 
-    .line 130
+    .line 131
     const-string v5, "seek-thermal-apk-patches"
 
     if-ne v1, v3, :cond_3
 
-    .line 131
+    .line 132
     :try_start_1
     invoke-static {v3}, Lseekpatch/Lock;->hold(Z)V
 
-    .line 132
+    .line 133
     sput-boolean v3, Lseekpatch/Lock;->locked:Z
 
-    .line 133
+    .line 134
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1, v0}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
@@ -293,7 +297,7 @@
 
     invoke-static {v5, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 134
+    .line 135
     invoke-static {v4}, Lseekpatch/Lock;->refresh(Ljava/lang/String;)V
 
     goto :goto_0
@@ -303,23 +307,23 @@
 
     if-ne v1, v0, :cond_4
 
-    .line 136
+    .line 137
     invoke-static {v2}, Lseekpatch/Lock;->hold(Z)V
 
-    .line 137
+    .line 138
     sput-boolean v2, Lseekpatch/Lock;->locked:Z
 
-    .line 138
+    .line 139
     const-string v0, "lock_range: automatic"
 
     invoke-static {v5, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 139
+    .line 140
     invoke-static {v4}, Lseekpatch/Lock;->refresh(Ljava/lang/String;)V
 
     goto :goto_0
 
-    .line 140
+    .line 141
     :cond_4
     invoke-static {}, Lseekpatch/Lock;->released()Z
 
@@ -327,16 +331,20 @@
 
     if-eqz v0, :cond_5
 
-    .line 141
+    .line 142
     sput-boolean v2, Lseekpatch/Lock;->locked:Z
 
-    .line 142
+    .line 143
     const-string v0, "lock_range: the camera was reconnected, automatic again"
 
     invoke-static {v5, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 143
+    .line 144
     const-string v0, "Camera reconnected: the range is automatic again"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     invoke-static {v0}, Lseekpatch/Lock;->refresh(Ljava/lang/String;)V
     :try_end_1
@@ -347,7 +355,7 @@
     :catchall_0
     move-exception v0
 
-    .line 146
+    .line 147
     invoke-static {v0}, Ljava/lang/String;->valueOf(Ljava/lang/Object;)Ljava/lang/String;
 
     move-result-object v0
@@ -362,7 +370,7 @@
 .method public static high(F)F
     .locals 1
 
-    .line 184
+    .line 185
     sget-boolean v0, Lseekpatch/Lock;->locked:Z
 
     if-eqz v0, :cond_0
@@ -382,7 +390,7 @@
 .method public static low(F)F
     .locals 1
 
-    .line 179
+    .line 180
     sget-boolean v0, Lseekpatch/Lock;->locked:Z
 
     if-eqz v0, :cond_0
@@ -396,7 +404,7 @@
 .method private static refresh(Ljava/lang/String;)V
     .locals 2
 
-    .line 158
+    .line 159
     sget-object v0, Lseekpatch/Lock;->MAIN:Landroid/os/Handler;
 
     new-instance v1, Lseekpatch/Lock$2;
@@ -414,7 +422,7 @@
 .method public static scene(FF)V
     .locals 6
 
-    .line 99
+    .line 100
     invoke-static {p0}, Ljava/lang/Float;->isNaN(F)Z
 
     move-result v0
@@ -441,13 +449,13 @@
 
     goto :goto_1
 
-    .line 102
+    .line 103
     :cond_0
     invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
 
     move-result-wide v0
 
-    .line 103
+    .line 104
     sget-wide v2, Lseekpatch/Lock;->sceneAt:J
 
     sub-long v2, v0, v2
@@ -458,15 +466,15 @@
 
     if-lez v2, :cond_1
 
-    .line 104
+    .line 105
     sput p0, Lseekpatch/Lock;->sceneLow:F
 
-    .line 105
+    .line 106
     sput p1, Lseekpatch/Lock;->sceneHigh:F
 
     goto :goto_0
 
-    .line 107
+    .line 108
     :cond_1
     sget v2, Lseekpatch/Lock;->sceneLow:F
 
@@ -482,7 +490,7 @@
 
     sput v2, Lseekpatch/Lock;->sceneLow:F
 
-    .line 108
+    .line 109
     sget p0, Lseekpatch/Lock;->sceneHigh:F
 
     sget v2, Lseekpatch/Lock;->sceneHigh:F
@@ -495,7 +503,7 @@
 
     sput p0, Lseekpatch/Lock;->sceneHigh:F
 
-    .line 110
+    .line 111
     :goto_0
     sput-wide v0, Lseekpatch/Lock;->sceneAt:J
 
@@ -524,9 +532,7 @@
     .line 90
     new-instance v1, Ljava/lang/StringBuilder;
 
-    const-string v2, "Locked "
-
-    invoke-direct {v1, v2}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
 
     sget v2, Lseekpatch/Lock;->low:F
 
@@ -556,6 +562,7 @@
 
     invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
 
+    .line 91
     invoke-static {v0}, Lseekpatch/Floating;->symbol(I)Ljava/lang/String;
 
     move-result-object v0
@@ -566,17 +573,36 @@
 
     move-result-object v0
 
+    const/4 v1, 0x1
+
+    new-array v1, v1, [Ljava/lang/Object;
+
+    const/4 v2, 0x0
+
+    aput-object v0, v1, v2
+
+    .line 90
+    const-string v0, "Locked %s"
+
+    invoke-static {v0, v1}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+
+    move-result-object v0
+
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
     goto :goto_0
 
-    .line 92
+    .line 93
     :cond_0
     const-string v0, "Lock range"
 
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
-    .line 94
+    .line 95
     :goto_0
     sget-boolean v0, Lseekpatch/Lock;->locked:Z
 
@@ -601,6 +627,10 @@
     move-result-object p0
 
     const-string v0, "Lock range is not available here"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     invoke-static {p0, v0, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
 
@@ -646,6 +676,10 @@
 
     const-string v0, "No camera image"
 
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     invoke-static {p0, v0, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
 
     move-result-object p0
@@ -679,15 +713,15 @@
 
     const/4 v0, 0x1
 
-    .line 151
+    .line 152
     sput-boolean v0, Lseekpatch/Lock;->failed:Z
 
     const/4 v0, 0x0
 
-    .line 152
+    .line 153
     sput-boolean v0, Lseekpatch/Lock;->locked:Z
 
-    .line 153
+    .line 154
     new-instance v0, Ljava/lang/StringBuilder;
 
     const-string v1, "lock_range: unavailable, "
@@ -704,8 +738,12 @@
 
     invoke-static {v0, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 154
+    .line 155
     const-string p0, "Lock range is not available here"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
 
     invoke-static {p0}, Lseekpatch/Lock;->refresh(Ljava/lang/String;)V
 

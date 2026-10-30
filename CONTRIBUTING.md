@@ -19,6 +19,8 @@ SEEK_SUPERRES=~/superres pytest tests/test_native.py   # the native hook against
 Java helpers (`helpers/java`): edit the Java, then run `python3 helpers/build.py` (needs the Android
 SDK: `build-tools;35.0.0`, `platforms;android-35`) and commit the regenerated
 `src/seekpatch/helpers/*.smali` with it (`helpers/build.py --check` tells you if they are stale).
+Text a helper shows goes through `Lang.t` / `Lang.f`, with a translation in every file of
+`src/seekpatch/strings` (see [docs/writing-patches.md](docs/writing-patches.md#text-on-the-screen)).
 Native helpers (`helpers/native`): `python3 helpers/build_native.py` (needs the NDK r25b), and
 commit the libraries with the sources.
 

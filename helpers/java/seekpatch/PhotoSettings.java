@@ -30,8 +30,8 @@ public final class PhotoSettings {
 
     /** Settings: the switch, appended. */
     public static void screen(PreferenceFragment f, SharedPreferences p) {
-        Settings.addSwitch(f.getPreferenceScreen(), p, KEY, "Also save a 1x PNG",
-                "With each photo, the frame at the sensor's resolution, next to it (img_1x_…)",
+        Settings.addSwitch(f.getPreferenceScreen(), p, KEY, Lang.t("Also save a 1x PNG"),
+                Lang.t("With each photo, the frame at the sensor's resolution, next to it (img_1x_…)"),
                 false, null);
     }
 }

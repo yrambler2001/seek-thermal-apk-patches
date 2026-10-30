@@ -22,7 +22,7 @@
 .method constructor <init>()V
     .locals 0
 
-    .line 193
+    .line 194
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -33,7 +33,7 @@
 .method public run()V
     .locals 3
 
-    .line 196
+    .line 197
     invoke-static {}, Lseekpatch/Calib;->access$500()Ljava/lang/ref/WeakReference;
 
     move-result-object v0
@@ -46,12 +46,16 @@
 
     if-eqz v0, :cond_0
 
-    .line 198
+    .line 199
     invoke-virtual {v0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object v0
 
     const-string v1, "Calibration is not available here"
+
+    invoke-static {v1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v1
 
     const/4 v2, 0x0
 

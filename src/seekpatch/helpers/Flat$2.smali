@@ -40,6 +40,10 @@
 
     const-string v0, "Point the camera at a uniform surface, then tap"
 
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     const/4 v1, 0x1
 
     invoke-static {p1, v0, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;

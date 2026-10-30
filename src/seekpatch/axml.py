@@ -1,7 +1,8 @@
 """Just enough of Android's binary resource formats to read an apk's identity -- the <manifest>
 element of the binary AndroidManifest.xml (package, versionCode, versionName) and, when versionName
-is a string resource, its value from resources.arsc -- without decoding the whole app; and to add an
-element to a binary manifest (Document, add_uses_library)."""
+is a string resource, its value from resources.arsc -- without decoding the whole app; to count the
+strings of each language in resources.arsc (string_locales); and to add an element to a binary
+manifest (Document, add_uses_library)."""
 from __future__ import annotations
 
 import os
@@ -163,6 +164,72 @@ def _entry_string(arsc: bytes, e: int, values: list[str]) -> str | None:
     else:
         _vsize, _res0, vtype, data = struct.unpack_from("<HBBI", arsc, e + size)
     return values[data] if vtype == _TYPE_STRING and data < len(values) else None
+
+
+def string_locales(arsc: bytes) -> dict[str, int]:
+    """How many string resources each locale of resources.arsc defines, by BCP 47 tag: {"": 413, "de": 364,
+    "pt-PT": 255, ...} ("" is the default, unqualified configuration; configurations that differ in other
+    qualifiers too are added to their locale's count)."""
+    try:
+        return _string_locales(arsc)
+    except (struct.error, IndexError, UnicodeError, ValueError) as e:
+        raise AxmlError(f"corrupt resource table ({e})") from None
+
+
+def _string_locales(arsc: bytes) -> dict[str, int]:
+    ctype, header, _size = struct.unpack_from("<HHI", arsc, 0)
+    if ctype != _TABLE:
+        raise AxmlError("not a resource table")
+    counts: dict[str, int] = {}
+    pos = header
+    while pos + 8 <= len(arsc):
+        ctype, header, size = struct.unpack_from("<HHI", arsc, pos)
+        if size < 8:
+            raise AxmlError("corrupt resource table chunk")
+        if ctype == _PACKAGE:
+            type_strings = struct.unpack_from("<I", arsc, pos + 268)[0]
+            id_offset = struct.unpack_from("<I", arsc, pos + 284)[0] if header >= 288 else 0
+            names = _strings(arsc, pos + type_strings)
+            if "string" in names:
+                string_type = names.index("string") + 1 + id_offset
+                p = pos + header
+                while p + 8 <= pos + size:
+                    t, th, ts = struct.unpack_from("<HHI", arsc, p)
+                    if ts < 8:
+                        raise AxmlError("corrupt resource table chunk")
+                    if t == _TYPE and arsc[p + 8] == string_type:
+                        # ResTable_config from p + 20: size, mcc, mnc, then language[2] and country[2]
+                        tag = _locale_part(arsc[p + 28:p + 30], ord("a"))
+                        region = _locale_part(arsc[p + 30:p + 32], ord("0"))
+                        if tag and region:
+                            tag += "-" + region
+                        counts[tag] = counts.get(tag, 0) + _entry_count(arsc, p, th)
+                    p += ts
+        pos += size
+    return counts
+
+
+def _locale_part(two: bytes, base: int) -> str:
+    """A ResTable_config language or region: two letters, or three packed into two bytes."""
+    if not two[0]:
+        return ""
+    if two[0] & 0x80:
+        first = two[1] & 0x1F
+        second = ((two[1] & 0xE0) >> 5) | ((two[0] & 0x03) << 3)
+        third = (two[0] & 0x7C) >> 2
+        return "".join(chr(base + c) for c in (first, second, third))
+    return two.decode("ascii")
+
+
+def _entry_count(arsc: bytes, chunk: int, header: int) -> int:
+    flags = arsc[chunk + 9]
+    count = struct.unpack_from("<I", arsc, chunk + 12)[0]
+    index = chunk + header
+    if flags & _FLAG_SPARSE:
+        return count
+    if flags & _FLAG_OFFSET16:
+        return sum(1 for (off,) in struct.iter_unpack("<H", arsc[index:index + 2 * count]) if off != _NO_ENTRY16)
+    return sum(1 for (off,) in struct.iter_unpack("<I", arsc[index:index + 4 * count]) if off != _NO_ENTRY)
 
 
 def app_identity(manifest: bytes, arsc: bytes | None) -> dict[str, object]:

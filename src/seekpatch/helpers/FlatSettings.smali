@@ -62,7 +62,7 @@
 
     const/16 v0, 0x28
 
-    .line 53
+    .line 56
     :try_start_0
     const-string v1, "flat_field_frames"
 
@@ -161,152 +161,169 @@
 
     const/4 v0, 0x0
 
+    move v1, v0
+
     .line 37
     :goto_0
-    sget-object v1, Lseekpatch/FlatSettings;->CHOICES:[I
+    sget-object v2, Lseekpatch/FlatSettings;->CHOICES:[I
 
-    array-length v2, v1
+    array-length v3, v2
 
-    if-ge v0, v2, :cond_4
+    if-ge v1, v3, :cond_4
 
     .line 38
-    aget v1, v1, v0
+    aget v2, v2, v1
 
-    const-wide/high16 v2, 0x3fec000000000000L    # 0.875
+    const-wide/high16 v3, 0x3fec000000000000L    # 0.875
 
-    int-to-double v4, v1
+    int-to-double v8, v2
 
     .line 39
-    invoke-static {v2, v3, v4, v5}, Ljava/lang/Math;->pow(DD)D
+    invoke-static {v3, v4, v8, v9}, Ljava/lang/Math;->pow(DD)D
 
-    move-result-wide v2
+    move-result-wide v3
 
-    const-wide/high16 v4, 0x3ff0000000000000L    # 1.0
+    const-wide/high16 v8, 0x3ff0000000000000L    # 1.0
 
-    sub-double/2addr v4, v2
+    sub-double/2addr v8, v3
 
-    const-wide/high16 v2, 0x4059000000000000L    # 100.0
+    const-wide/high16 v3, 0x4059000000000000L    # 100.0
 
-    mul-double/2addr v4, v2
+    mul-double/2addr v8, v3
 
-    const-wide v2, 0x4058c00000000000L    # 99.0
+    const-wide v3, 0x4058c00000000000L    # 99.0
 
-    cmpg-double v2, v4, v2
+    cmpg-double v3, v8, v3
+
+    if-gez v3, :cond_0
 
     .line 40
-    const-string v3, "all"
+    invoke-static {v8, v9}, Ljava/lang/Math;->round(D)J
 
-    if-gez v2, :cond_0
+    move-result-wide v3
 
-    invoke-static {v4, v5}, Ljava/lang/Math;->round(D)J
+    invoke-static {v3, v4}, Ljava/lang/String;->valueOf(J)Ljava/lang/String;
 
-    move-result-wide v4
-
-    invoke-static {v4, v5}, Ljava/lang/String;->valueOf(J)Ljava/lang/String;
-
-    move-result-object v2
+    move-result-object v3
 
     goto :goto_1
 
     :cond_0
-    const-wide v8, 0x4058fccccccccccdL    # 99.95
+    const-wide v3, 0x4058fccccccccccdL    # 99.95
 
-    cmpg-double v2, v4, v8
+    cmpg-double v3, v8, v3
 
-    if-gez v2, :cond_1
+    if-gez v3, :cond_1
 
-    const-wide/high16 v8, 0x4024000000000000L    # 10.0
+    const-wide/high16 v3, 0x4024000000000000L    # 10.0
 
-    mul-double/2addr v4, v8
+    mul-double/2addr v8, v3
 
     .line 41
-    invoke-static {v4, v5}, Ljava/lang/Math;->round(D)J
+    invoke-static {v8, v9}, Ljava/lang/Math;->round(D)J
 
-    move-result-wide v4
+    move-result-wide v8
 
-    long-to-double v4, v4
+    long-to-double v8, v8
 
-    div-double/2addr v4, v8
+    div-double/2addr v8, v3
 
-    invoke-static {v4, v5}, Ljava/lang/String;->valueOf(D)Ljava/lang/String;
+    invoke-static {v8, v9}, Ljava/lang/String;->valueOf(D)Ljava/lang/String;
 
-    move-result-object v2
+    move-result-object v3
 
     goto :goto_1
 
     :cond_1
-    move-object v2, v3
+    const/4 v3, 0x0
+
+    :goto_1
+    const/4 v4, 0x1
+
+    if-nez v3, :cond_2
 
     .line 42
-    :goto_1
-    new-instance v4, Ljava/lang/StringBuilder;
+    invoke-static {v2}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
 
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
+    move-result-object v3
 
-    invoke-virtual {v4, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    new-array v5, v4, [Ljava/lang/Object;
 
-    const-string v5, " frames: learns "
+    aput-object v3, v5, v0
 
-    invoke-virtual {v4, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const-string v3, "%d frames: learns all of the gradient"
 
-    invoke-virtual {v4, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-static {v3, v5}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
 
-    invoke-virtual {v2, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-
-    move-result v2
-
-    const-string v3, ""
-
-    if-eqz v2, :cond_2
-
-    move-object v2, v3
+    move-result-object v3
 
     goto :goto_2
 
+    .line 43
     :cond_2
-    const-string v2, " %"
+    invoke-static {v2}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
+
+    move-result-object v5
+
+    const/4 v8, 0x2
+
+    new-array v8, v8, [Ljava/lang/Object;
+
+    aput-object v5, v8, v0
+
+    aput-object v3, v8, v4
+
+    const-string v3, "%1$d frames: learns %2$s %% of the gradient"
+
+    invoke-static {v3, v8}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+
+    move-result-object v3
 
     :goto_2
-    invoke-virtual {v4, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    aput-object v3, v6, v1
 
-    const-string v2, " of the gradient"
+    const/16 v5, 0x28
 
-    invoke-virtual {v4, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    if-ne v2, v5, :cond_3
 
-    const/16 v2, 0x28
+    .line 45
+    new-array v4, v4, [Ljava/lang/Object;
 
-    if-ne v1, v2, :cond_3
+    aput-object v3, v4, v0
 
-    .line 43
-    const-string v3, " (default)"
+    const-string v3, "%s (default)"
 
+    invoke-static {v3, v4}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+
+    move-result-object v3
+
+    aput-object v3, v6, v1
+
+    .line 47
     :cond_3
-    invoke-virtual {v4, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v4}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-static {v2}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
 
     move-result-object v2
 
-    aput-object v2, v6, v0
+    aput-object v2, v7, v1
 
-    .line 44
-    invoke-static {v1}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
-
-    move-result-object v1
-
-    aput-object v1, v7, v0
-
-    add-int/lit8 v0, v0, 0x1
+    add-int/lit8 v1, v1, 0x1
 
     goto :goto_0
 
-    .line 46
+    .line 49
     :cond_4
     invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
 
     move-result-object v2
 
-    .line 47
+    const-string p0, "Flat field frames"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v5
+
+    .line 50
     invoke-static {p1}, Lseekpatch/FlatSettings;->frames(Landroid/content/SharedPreferences;)I
 
     move-result p0
@@ -317,10 +334,8 @@
 
     const/4 v9, 0x0
 
-    .line 46
+    .line 49
     const-string v4, "flat_field_frames"
-
-    const-string v5, "Flat field frames"
 
     move-object v3, p1
 
@@ -330,7 +345,11 @@
 
     const-string p1, "Flat field: frames to learn from per tap"
 
-    .line 48
+    .line 51
+    invoke-static {p1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p1
+
     invoke-virtual {p0, p1}, Landroid/preference/ListPreference;->setDialogTitle(Ljava/lang/CharSequence;)V
 
     return-void

@@ -121,7 +121,7 @@ public final class Screens {
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
             lp.setMargins(0, dp(a, 20), dp(a, 20), dp(a, 20));
             panel.addView(divider, at, lp);
-            SpannableStringBuilder text = new SpannableStringBuilder(CREDIT);
+            SpannableStringBuilder text = new SpannableStringBuilder(Lang.t(CREDIT));
             if (About.version != null) {
                 int start = text.length();
                 text.append(" v").append(About.version);

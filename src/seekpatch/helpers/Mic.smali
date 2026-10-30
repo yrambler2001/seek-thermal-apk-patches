@@ -262,7 +262,7 @@
 .end method
 
 .method private static offerSettings(Landroid/app/Activity;)V
-    .locals 2
+    .locals 3
 
     .line 147
     new-instance v0, Landroid/app/AlertDialog$Builder;
@@ -272,6 +272,10 @@
     const-string v1, "Microphone is off"
 
     .line 148
+    invoke-static {v1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v1
+
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setTitle(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
     move-result-object v0
@@ -279,29 +283,41 @@
     const-string v1, "Android will not ask again for this app. To record sound, allow the microphone in the app\'s settings."
 
     .line 149
+    invoke-static {v1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v1
+
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setMessage(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
     move-result-object v0
 
-    new-instance v1, Lseekpatch/Mic$3;
-
-    invoke-direct {v1, p0}, Lseekpatch/Mic$3;-><init>(Landroid/app/Activity;)V
+    const-string v1, "Open settings"
 
     .line 150
-    const-string p0, "Open settings"
+    invoke-static {v1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
 
-    invoke-virtual {v0, p0, v1}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
+    move-result-object v1
+
+    new-instance v2, Lseekpatch/Mic$3;
+
+    invoke-direct {v2, p0}, Lseekpatch/Mic$3;-><init>(Landroid/app/Activity;)V
+
+    invoke-virtual {v0, v1, v2}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
     move-result-object p0
 
-    new-instance v0, Lseekpatch/Mic$2;
-
-    invoke-direct {v0}, Lseekpatch/Mic$2;-><init>()V
+    const-string v0, "Record without sound"
 
     .line 157
-    const-string v1, "Record without sound"
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
 
-    invoke-virtual {p0, v1, v0}, Landroid/app/AlertDialog$Builder;->setNegativeButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
+    move-result-object v0
+
+    new-instance v1, Lseekpatch/Mic$2;
+
+    invoke-direct {v1}, Lseekpatch/Mic$2;-><init>()V
+
+    invoke-virtual {p0, v0, v1}, Landroid/app/AlertDialog$Builder;->setNegativeButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
     move-result-object p0
 
@@ -373,6 +389,10 @@
 
     .line 106
     const-string p1, "Recording without sound: the microphone is not allowed"
+
+    invoke-static {p1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p1
 
     invoke-static {p0, p1, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
 

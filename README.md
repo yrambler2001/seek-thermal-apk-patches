@@ -160,9 +160,13 @@ one reference only, keep k = 1 and set b to the true temperature minus the readi
 - A new install starts in the *Tyrian* palette instead of *Spectra*, and in Celsius everywhere
   (stock: Fahrenheit on a phone set to English (US)).  A palette or unit you pick is kept.
   [`default_palette`](docs/default-palette.md), [`default_unit`](docs/default-unit.md)
+- *Settings → Language*: the phone's language, or any other the app has (German, Spanish, French,
+  Italian, Japanese, Korean, Dutch, Portuguese, Russian, Chinese, as far as your download has
+  them).  Everything the patches add — buttons, tips, dialogs, settings — is translated into those
+  languages too.  [`language`](docs/language.md)
 - Settings always shows the five switches the stock app hides behind five taps on *About → Image
   Processing Software*: *Show Frame Rate*, *Save Uncompressed*, *Set Simulation Mode* and two
-  registration switches.  [`hidden_settings`](docs/hidden-settings.md)
+  registration switches, each with a line on what it does.  [`hidden_settings`](docs/hidden-settings.md)
 - *Show Frame Rate*'s number updates every 0.5 s instead of every 3 s.  [`fps_readout`](docs/fps-readout.md)
 - Opt-in: the SDK's USB and frame-timing log in `adb logcat -s Seekware`
   ([`debug_log`](docs/debug-log.md)).

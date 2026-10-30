@@ -42,6 +42,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 "seekpatch.helpers" = ["*.smali"]
 "seekpatch.native" = ["*/*.so"]
+"seekpatch.strings" = ["*.json"]
 
 [tool.ruff]
 line-length = 120

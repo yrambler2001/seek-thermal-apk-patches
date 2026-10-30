@@ -115,10 +115,10 @@
 
     const-string v0, "smoothing_settings: first-filter mask "
 
-    .line 99
+    .line 101
     sget v1, Lseekpatch/Filters;->changes:I
 
-    .line 100
+    .line 102
     sget-boolean v2, Lseekpatch/Filters;->smartOn:Z
 
     const/4 v3, 0x0
@@ -139,7 +139,7 @@
 
     if-nez v1, :cond_1
 
-    .line 101
+    .line 103
     sget v4, Lseekpatch/Filters;->loggedChanges:I
 
     if-ne v2, v4, :cond_1
@@ -156,13 +156,13 @@
 
     return-void
 
-    .line 105
+    .line 107
     :cond_1
     const-string v4, "seek-thermal-apk-patches"
 
     if-nez p2, :cond_2
 
-    .line 106
+    .line 108
     :try_start_0
     sget-object v5, Lseekpatch/Filters;->ON:Ljava/nio/ByteBuffer;
 
@@ -183,7 +183,7 @@
 
     if-eqz v5, :cond_3
 
-    .line 109
+    .line 111
     sget-object v6, Lseekpatch/Filters;->OFF:Ljava/nio/ByteBuffer;
 
     const/16 v7, 0x66
@@ -195,7 +195,7 @@
 
     if-eqz v6, :cond_4
 
-    .line 112
+    .line 114
     sget-object v7, Lseekpatch/Filters;->ON:Ljava/nio/ByteBuffer;
 
     const/16 v8, 0x64
@@ -207,14 +207,14 @@
 
     if-eqz v1, :cond_5
 
-    .line 115
+    .line 117
     sget-object v7, Lseekpatch/Filters;->OFF:Ljava/nio/ByteBuffer;
 
     const/16 v8, 0x6a
 
     invoke-static {p0, p1, v8, v7}, Lseekpatch/Filters;->set(JILjava/nio/ByteBuffer;)V
 
-    .line 117
+    .line 119
     :cond_5
     sget v7, Lseekpatch/Filters;->loggedChanges:I
 
@@ -230,17 +230,17 @@
 
     if-eq p2, v7, :cond_c
 
-    .line 118
+    .line 120
     :cond_6
     sput v2, Lseekpatch/Filters;->loggedChanges:I
 
-    .line 119
+    .line 121
     sput-wide p0, Lseekpatch/Filters;->loggedHandle:J
 
-    .line 120
+    .line 122
     sput-boolean p2, Lseekpatch/Filters;->loggedSent:Z
 
-    .line 121
+    .line 123
     new-instance v2, Ljava/lang/StringBuilder;
 
     invoke-direct {v2, v0}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
@@ -257,7 +257,7 @@
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
-    .line 122
+    .line 124
     const-string p0, "off"
 
     const-string p1, "on"
@@ -302,11 +302,11 @@
     :cond_9
     move-object p0, p1
 
-    .line 123
+    .line 125
     :goto_4
     invoke-virtual {v2, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 124
+    .line 126
     sget-boolean p0, Lseekpatch/Filters;->smartOn:Z
     :try_end_1
     .catchall {:try_start_1 .. :try_end_1} :catchall_0
@@ -330,7 +330,7 @@
 
     goto :goto_6
 
-    .line 125
+    .line 127
     :cond_b
     const-string p1, "; the app sent \"Image smoothing\" off, the on preset was sent again"
 
@@ -341,10 +341,10 @@
 
     move-result-object p0
 
-    .line 121
+    .line 123
     invoke-static {v4, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 127
+    .line 129
     :cond_c
     sput-boolean v3, Lseekpatch/Filters;->warned:Z
     :try_end_2
@@ -352,7 +352,7 @@
 
     goto :goto_8
 
-    .line 129
+    .line 131
     :goto_7
     sget-boolean p1, Lseekpatch/Filters;->warned:Z
 
@@ -360,10 +360,10 @@
 
     const/4 p1, 0x1
 
-    .line 130
+    .line 132
     sput-boolean p1, Lseekpatch/Filters;->warned:Z
 
-    .line 131
+    .line 133
     const-string p1, "smoothing_settings: features not set"
 
     invoke-static {v4, p1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
@@ -460,7 +460,7 @@
 .method private static mask(J)Ljava/lang/String;
     .locals 4
 
-    .line 137
+    .line 139
     sget-object v0, Lseekpatch/Filters;->OUT:Ljava/nio/ByteBuffer;
 
     const/4 v1, 0x0
@@ -471,14 +471,14 @@
 
     const/4 v3, 0x4
 
-    .line 138
+    .line 140
     invoke-static {p0, p1, v2, v0, v3}, Lseekpatch/SeekIP;->getFeature(JILjava/nio/ByteBuffer;I)I
 
     move-result p0
 
     if-nez p0, :cond_0
 
-    .line 139
+    .line 141
     new-instance p0, Ljava/lang/StringBuilder;
 
     const-string p1, "0x"
@@ -550,22 +550,34 @@
 
     move-result p0
 
+    .line 80
+    const-string v0, "Default temporal smoothing"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v3
+
     if-eqz p0, :cond_1
 
     .line 81
-    const-string v0, "; Smart smoothing replaces it while on"
+    const-string v0, "Seek\'s filter: averages each pixel over recent frames; Smart smoothing replaces it while on"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     goto :goto_0
 
+    .line 82
     :cond_1
-    const-string v0, ""
+    const-string v0, "Seek\'s filter: averages each pixel over recent frames"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     :goto_0
-    const-string v1, "Seek\'s filter: averages each pixel over recent frames"
-
-    invoke-virtual {v1, v0}, Ljava/lang/String;->concat(Ljava/lang/String;)Ljava/lang/String;
-
-    move-result-object v4
+    move-object v4, v0
 
     const/4 v5, 0x1
 
@@ -574,33 +586,55 @@
     .line 80
     const-string v2, "temporal_smoothing"
 
-    const-string v3, "Default temporal smoothing"
-
     move-object v0, v7
 
     move-object v1, p1
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
+    .line 83
+    const-string v0, "Default spatial smoothing (3\u00d73)"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v3
+
+    const-string v0, "Seek\'s filter: blurs each pixel with its neighbours"
+
+    .line 84
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
     const/4 v5, 0x0
 
-    .line 82
+    .line 83
     const-string v2, "spatial_smoothing"
 
-    const-string v3, "Default spatial smoothing (3\u00d73)"
-
-    const-string v4, "Seek\'s filter: blurs each pixel with its neighbours"
+    move-object v0, v7
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
+    .line 85
+    const-string v0, "Default pattern correction"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v3
+
+    const-string v0, "Seek\'s filter: learns and removes the sensor\'s fixed pattern"
+
+    .line 86
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
     const/4 v5, 0x1
 
-    .line 84
+    .line 85
     const-string v2, "pattern_correction"
 
-    const-string v3, "Default pattern correction"
-
-    const-string v4, "Seek\'s filter: learns and removes the sensor\'s fixed pattern"
+    move-object v0, v7
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
@@ -608,17 +642,25 @@
 
     return-void
 
+    .line 90
     :cond_2
+    const-string p0, "Smart smoothing"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v3
+
+    const-string p0, "Follows the camera\'s motion; replaces temporal smoothing"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
     const/4 v5, 0x0
 
     const/4 v6, 0x0
 
-    .line 89
     const-string v2, "smart_smoothing"
-
-    const-string v3, "Smart smoothing"
-
-    const-string v4, "Follows the camera\'s motion; replaces temporal smoothing"
 
     move-object v0, v7
 
@@ -626,23 +668,41 @@
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
+    .line 92
+    const-string p0, "Stripe correction"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v3
+
+    const-string p0, "Part of Smart smoothing: removes column stripes"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
     const/4 v5, 0x1
 
-    .line 91
     const-string v2, "smart_stripes"
-
-    const-string v3, "Stripe correction"
-
-    const-string v4, "Part of Smart smoothing: removes column stripes"
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
-    .line 93
+    .line 94
+    const-string p0, "Left-edge levelling"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v3
+
+    const-string p0, "Part of Smart smoothing: levels the bright strip at the left edge"
+
+    .line 95
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
+    .line 94
     const-string v2, "smart_left_edge"
-
-    const-string v3, "Left-edge levelling"
-
-    const-string v4, "Part of Smart smoothing: levels the bright strip at the left edge"
 
     invoke-static/range {v0 .. v6}, Lseekpatch/Settings;->addSwitch(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/Runnable;)Landroid/preference/SwitchPreference;
 
@@ -654,7 +714,7 @@
 
     const/4 v0, 0x4
 
-    .line 143
+    .line 145
     invoke-static {p0, p1, p2, p3, v0}, Lseekpatch/SeekIP;->setFeature(JILjava/nio/ByteBuffer;I)I
 
     move-result p0
@@ -663,7 +723,7 @@
 
     return-void
 
-    .line 145
+    .line 147
     :cond_0
     new-instance p1, Ljava/lang/IllegalStateException;
 
@@ -695,7 +755,7 @@
 
     const/4 v0, 0x4
 
-    .line 150
+    .line 152
     invoke-static {v0}, Ljava/nio/ByteBuffer;->allocateDirect(I)Ljava/nio/ByteBuffer;
 
     move-result-object v0
@@ -708,7 +768,7 @@
 
     const/4 v1, 0x0
 
-    .line 151
+    .line 153
     invoke-virtual {v0, v1, p0}, Ljava/nio/ByteBuffer;->putInt(II)Ljava/nio/ByteBuffer;
 
     return-object v0

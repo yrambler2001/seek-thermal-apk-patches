@@ -88,15 +88,25 @@
 
     move-result-object v0
 
+    const-string p0, "Also save a 1x PNG"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v3
+
+    const-string p0, "With each photo, the frame at the sensor\'s resolution, next to it (img_1x_\u2026)"
+
+    .line 34
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
     const/4 v5, 0x0
 
     const/4 v6, 0x0
 
+    .line 33
     const-string v2, "photo_1x"
-
-    const-string v3, "Also save a 1x PNG"
-
-    const-string v4, "With each photo, the frame at the sensor\'s resolution, next to it (img_1x_\u2026)"
 
     move-object v1, p1
 

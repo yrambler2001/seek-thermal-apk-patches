@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- a library's few strings in a language the app itself does not have -->
+<resources>
+    <string name="cancel">Скасувати</string>
+</resources>

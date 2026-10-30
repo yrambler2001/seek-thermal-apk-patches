@@ -113,7 +113,8 @@ slot is made writable for the swap and read-only again afterwards.
   The filter runs only on known sizes (206 × 156, 320 × 240) and only on 2-byte pixels.
 
 On the Java side, `seekpatch.Smooth.attach` adds the button to the top bar (`main_view_top_panel`).
-It goes on the left; *Flat field* is on the right.  `seekpatch.Smooth.frame()` runs on the camera
+It goes on the left; *Flat field* is on the right; `seekpatch.TopBar` keeps both clear of the
+logo and the camera's name in the middle (see [language.md](language.md)).  `seekpatch.Smooth.frame()` runs on the camera
 thread right after the per-frame feature-900 call.  The first time the button is on, it loads the
 library and installs the hook.  After that it passes the switch on.  If the hook refuses, a toast
 says *Smart smoothing is not available here*, and `adb logcat -s seek-thermal-apk-patches` says why.

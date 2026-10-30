@@ -15,7 +15,8 @@ release.  Each name links to its page: what the stock app does, what changes, ho
 | [`sharp_scaling`](sharp-scaling.md) | iOS-like upscaling: blend over half a pixel instead of a whole one (GPU shader) | 2.0 – 2.3.4 | ✓ |
 | [`smoothing_settings`](smoothing-settings.md) | Settings switches for Seek's temporal / spatial smoothing and pattern correction, and Smart smoothing | 2.2.0 – 2.3.4 | ✓ |
 | [`png_photos`](png-photos.md) | save photos as lossless PNG (the app's hidden "Save Uncompressed" setting, forced on) | 2.1.2 – 2.3.4 | ✓ |
-| [`hidden_settings`](hidden-settings.md) | Settings always shows the app's hidden switches (Show Frame Rate, Save Uncompressed, ...) | 1.9.3 – 2.3.4 | ✓ |
+| [`hidden_settings`](hidden-settings.md) | Settings always shows the app's hidden switches (Show Frame Rate, Save Uncompressed, ...), each saying what it does | 1.9.3 – 2.3.4 | ✓ |
+| [`language`](language.md) | a Language list at the top of Settings: the phone's language or any other the app has | 2.0 – 2.3.4 | ✓ |
 | [`fps_readout`](fps-readout.md) | the "Show Frame Rate" readout (Hz) updates every 0.5 s instead of every 3 s | 2.0 – 2.3.4 | ✓ |
 | [`photo_1x`](photo-1x.md) | a setting to save each photo's thermal frame at the sensor's resolution too (PNG, img_1x_... next to it) | 2.1.1 – 2.3.4 | ✓ |
 | [`video_quality`](video-quality.md) | video at the photo's size, HEVC constant quality, every thermal frame (no 15 fps cap), 48 kHz stereo | 2.1.2 – 2.3.4 | ✓ |
@@ -45,6 +46,8 @@ Beyond the app version:
 - `mic_prompt` — the stock prompts it fixes are Android 11+ behaviour.
 - `no_analytics`, `http_legacy` — the crashes they fix happen on Android 9+.
 - `usb_prompt` — the second dialog was seen on Android 7.1.2 (Redmi 4X).
+- `language` — from Android 13 the choice is the app's language in the system; before 13 the patch
+  applies it to each screen itself.  Android 13's own *App languages* page does not list the app.
 - `relaunch_fix` — the stuck start was seen with a Compact PRO FF; the Compact is untested.
 - `shutter` — the command is the camera firmware's, read in the Compact's 1.3.0.0; a camera that
   refuses it gets a message.
@@ -69,6 +72,7 @@ the shape is not what they expect.
 - [`smoothing_settings`](smoothing-settings.md) — adds the switches to the app's own settings screen; after the app sends the smoothing preset, makes the *on* preset the base and sets the temporal, spatial and pattern-correction stages from the switches.
 - [`png_photos`](png-photos.md) — turns on the app's hidden *Save Uncompressed* setting.
 - [`hidden_settings`](hidden-settings.md) — has the readers of the switches' "allowed" preferences, which the settings screen checks before removing each switch, return true.
+- [`language`](language.md) — adds the list to the app's Settings screen, and to every activity an `attachBaseContext` that gives it the chosen locale before Android 13; from 13 the choice is the app's language in the system (`LocaleManager`).  The patches' own text follows the app's language in every patch, from `src/seekpatch/strings`.
 - [`fps_readout`](fps-readout.md) — changes the frame counter's 3000 ms window to 500 ms.
 - [`photo_1x`](photo-1x.md) — keeps the photo method's sensor-sized frame and writes it once the photo is saved, when the *Also save a 1x PNG* setting is on.
 - [`video_quality`](video-quality.md) — picks and configures the encoder, hands it every thermal frame, records 48 kHz stereo, copies each microphone block from its first byte and stamps the sound by its samples.  How the QP was chosen is in there; the settings pick the codec and the QP or a bitrate per recording.

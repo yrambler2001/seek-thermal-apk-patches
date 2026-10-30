@@ -46,8 +46,14 @@ ABOUT = """.class public final Lseekpatch/About;
 
 def image_video_fragment(tree: SmaliTree, patch: str) -> tuple[str, int, str]:
     """(path, offset just past its addPreferencesFromResource call, indent) of the Image & Video fragment."""
+    return inflating_fragment(tree, patch, "use_smoothing", "the Image & Video screen")
+
+
+def inflating_fragment(tree: SmaliTree, patch: str, key: str, what: str) -> tuple[str, int, str]:
+    """(path, offset just past its addPreferencesFromResource call, indent) of the one PreferenceFragment that
+    names the preference key and inflates its preferences in onCreate."""
     hits = []
-    for p in tree.containing('"use_smoothing"', ADD_PREFERENCES):
+    for p in tree.containing(f'"{key}"', ADD_PREFERENCES):
         text = tree.get(p)
         if not re.search(r"^\.super " + re.escape(FRAGMENT) + "$", text, re.M):
             continue
@@ -58,7 +64,7 @@ def image_video_fragment(tree: SmaliTree, patch: str) -> tuple[str, int, str]:
                 hits += [(p, m.start + c.end(), c.group(1)) for c in calls]
     if len(hits) != 1:
         raise PatchError(f"{patch}: expected one PreferenceFragment that inflates its preferences in onCreate and "
-                         f'names "use_smoothing" (the Image & Video screen), found {len(hits)}')
+                         f'names "{key}" ({what}), found {len(hits)}')
     return hits[0]
 
 

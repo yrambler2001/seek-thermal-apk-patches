@@ -38,14 +38,17 @@ public final class FlatSettings {
             int n = CHOICES[i];
             double learned = 100 * (1 - Math.pow(7 / 8.0, n));
             String percent = learned < 99 ? String.valueOf(Math.round(learned))
-                    : learned < 99.95 ? String.valueOf(Math.round(learned * 10) / 10.0) : "all";
-            entries[i] = n + " frames: learns " + percent + (percent.equals("all") ? "" : " %") + " of the gradient"
-                    + (n == DEFAULT ? " (default)" : "");
+                    : learned < 99.95 ? String.valueOf(Math.round(learned * 10) / 10.0) : null;
+            entries[i] = percent == null ? Lang.f("%d frames: learns all of the gradient", n)
+                    : Lang.f("%1$d frames: learns %2$s %% of the gradient", n, percent);
+            if (n == DEFAULT) {
+                entries[i] = Lang.f("%s (default)", entries[i]);
+            }
             values[i] = String.valueOf(n);
         }
-        Settings.addList(f.getPreferenceScreen(), p, KEY, "Flat field frames", entries, values,
+        Settings.addList(f.getPreferenceScreen(), p, KEY, Lang.t("Flat field frames"), entries, values,
                 String.valueOf(frames(p)), null)
-                .setDialogTitle("Flat field: frames to learn from per tap");
+                .setDialogTitle(Lang.t("Flat field: frames to learn from per tap"));
     }
 
     private static int frames(SharedPreferences p) {

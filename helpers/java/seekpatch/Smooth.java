@@ -95,7 +95,7 @@ public final class Smooth {
             b.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    Toast.makeText(v.getContext(), "Motion-compensated noise filter instead of the app's temporal smoothing",
+                    Toast.makeText(v.getContext(), Lang.t("Motion-compensated noise filter instead of the app's temporal smoothing"),
                             Toast.LENGTH_LONG).show();
                     return true;
                 }
@@ -105,6 +105,7 @@ public final class Smooth {
             lp.addRule(RelativeLayout.CENTER_VERTICAL);
             lp.leftMargin = dp(a, 12);
             ((RelativeLayout) bar).addView(b, lp);
+            TopBar.fit(a, bar, b, false);
             button = new WeakReference<>(b);
             show(b);
         } catch (Throwable t) {
@@ -128,7 +129,7 @@ public final class Smooth {
     }
 
     private static void show(TextView b) {
-        b.setText(wanted ? "Smart smoothing on" : "Smart smoothing off");
+        b.setText(wanted ? Lang.t("Smart smoothing on") : Lang.t("Smart smoothing off"));
         GradientDrawable background = new GradientDrawable();
         background.setCornerRadius(dp(b.getContext(), 14));
         background.setColor(wanted ? 0x66ffffff : 0x33ffffff);
@@ -174,7 +175,7 @@ public final class Smooth {
             public void run() {
                 TextView b = button.get();
                 if (b != null) {
-                    Toast.makeText(b.getContext(), "Smart smoothing is not available here", Toast.LENGTH_LONG).show();
+                    Toast.makeText(b.getContext(), Lang.t("Smart smoothing is not available here"), Toast.LENGTH_LONG).show();
                 }
             }
         });

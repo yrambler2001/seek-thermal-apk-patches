@@ -77,20 +77,22 @@ public final class Filters {
             s.removePreference(old);  // replaced by the switches below
         }
         boolean smart = Settings.present("seekpatch.Smooth");
-        Settings.addSwitch(s, p, TEMPORAL, "Default temporal smoothing", "Seek's filter: averages each pixel over recent frames"
-                + (smart ? "; Smart smoothing replaces it while on" : ""), true, null);
-        Settings.addSwitch(s, p, SPATIAL, "Default spatial smoothing (3×3)",
-                "Seek's filter: blurs each pixel with its neighbours", false, null);
-        Settings.addSwitch(s, p, PATTERN, "Default pattern correction",
-                "Seek's filter: learns and removes the sensor's fixed pattern", true, null);
+        Settings.addSwitch(s, p, TEMPORAL, Lang.t("Default temporal smoothing"), smart
+                ? Lang.t("Seek's filter: averages each pixel over recent frames; Smart smoothing replaces it while on")
+                : Lang.t("Seek's filter: averages each pixel over recent frames"), true, null);
+        Settings.addSwitch(s, p, SPATIAL, Lang.t("Default spatial smoothing (3×3)"),
+                Lang.t("Seek's filter: blurs each pixel with its neighbours"), false, null);
+        Settings.addSwitch(s, p, PATTERN, Lang.t("Default pattern correction"),
+                Lang.t("Seek's filter: learns and removes the sensor's fixed pattern"), true, null);
         if (!smart) {
             return;
         }
-        Settings.addSwitch(s, p, SMART, "Smart smoothing", "Follows the camera's motion; replaces temporal smoothing",
+        Settings.addSwitch(s, p, SMART, Lang.t("Smart smoothing"), Lang.t("Follows the camera's motion; replaces temporal smoothing"),
                 false, null);
-        Settings.addSwitch(s, p, STRIPES, "Stripe correction", "Part of Smart smoothing: removes column stripes",
+        Settings.addSwitch(s, p, STRIPES, Lang.t("Stripe correction"), Lang.t("Part of Smart smoothing: removes column stripes"),
                 true, null);
-        Settings.addSwitch(s, p, EDGE, "Left-edge levelling", "Part of Smart smoothing: levels the bright strip at the left edge",
+        Settings.addSwitch(s, p, EDGE, Lang.t("Left-edge levelling"),
+                Lang.t("Part of Smart smoothing: levels the bright strip at the left edge"),
                 true, null);
     }
 

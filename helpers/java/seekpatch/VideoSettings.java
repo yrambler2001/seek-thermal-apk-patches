@@ -64,10 +64,10 @@ public final class VideoSettings {
     public static void screen(PreferenceFragment f, final SharedPreferences p) {
         final ListPreference[] quality = new ListPreference[1];
         boolean hevc = HEVC.equals(encoder(HEVC).mime);
-        String h265 = hevc ? "H.265 (HEVC): smaller files" : "H.265 (HEVC): not on this phone, records H.264";
-        String h264 = "H.264 (AVC): plays everywhere, about 20 % bigger";
-        Settings.addList(f.getPreferenceScreen(), p, CODEC, "Video codec",
-                new String[] {h265 + mark(HEVC), h264 + mark(AVC)}, new String[] {"hevc", "avc"},
+        String h265 = hevc ? Lang.t("H.265 (HEVC): smaller files") : Lang.t("H.265 (HEVC): not on this phone, records H.264");
+        String h264 = Lang.t("H.264 (AVC): plays everywhere, about 20 % bigger");
+        Settings.addList(f.getPreferenceScreen(), p, CODEC, Lang.t("Video codec"),
+                new String[] {mark(h265, HEVC), mark(h264, AVC)}, new String[] {"hevc", "avc"},
                 AVC.equals(mime(p)) ? "avc" : "hevc", new Runnable() {
                     @Override
                     public void run() {
@@ -76,14 +76,14 @@ public final class VideoSettings {
                         }
                     }
                 });
-        quality[0] = Settings.addList(f.getPreferenceScreen(), p, QP, "Video quality", new String[0], new String[0],
+        quality[0] = Settings.addList(f.getPreferenceScreen(), p, QP, Lang.t("Video quality"), new String[0], new String[0],
                 value(p), null);
-        quality[0].setDialogTitle("QP: steady quality, Mbit/s: steady size");
+        quality[0].setDialogTitle(Lang.t("QP: steady quality, Mbit/s: steady size"));
         entries(quality[0], p);
     }
 
-    private static String mark(String mime) {
-        return mime.equals(DEFAULT_MIME) ? " (default)" : "";
+    private static String mark(String entry, String mime) {
+        return mime.equals(DEFAULT_MIME) ? Lang.f("%s (default)", entry) : entry;
     }
 
     /** The quality list's entries, for the encoder that will record: its QPs, then its bitrates. */
@@ -141,22 +141,21 @@ public final class VideoSettings {
     }
 
     private static void addMbps(List<String> entries, List<String> values, int mbps, boolean byDefault) {
-        entries.add(mbps + " Mbit/s: about " + Math.round(mbps * 7.5) + " MB a minute" + (byDefault ? " (default)" : ""));
+        String label = Lang.f("%1$d Mbit/s: about %2$d MB a minute", mbps, Math.round(mbps * 7.5));
+        entries.add(byDefault ? Lang.f("%s (default)", label) : label);
         values.add(MBPS + mbps);
     }
 
     private static void addQp(List<String> entries, List<String> values, int qp, int mb, boolean avc) {
-        String label = "QP " + qp;
-        if (mb > 0) {
-            label += ": about " + Math.round(avc ? mb * 1.2f : mb) + " MB a minute";
-        }
+        String label = mb > 0 ? Lang.f("QP %1$d: about %2$d MB a minute", qp, Math.round(avc ? mb * 1.2f : mb))
+                : Lang.f("QP %d", qp);
         if (qp == CHOICES[0]) {
-            label += ", best";
+            label = Lang.f("%s, best", label);
         } else if (qp == CHOICES[CHOICES.length - 1]) {
-            label += ", smallest";
+            label = Lang.f("%s, smallest", label);
         }
         if (qp == DEFAULT) {
-            label += " (default)";
+            label = Lang.f("%s (default)", label);
         }
         entries.add(label);
         values.add(String.valueOf(qp));

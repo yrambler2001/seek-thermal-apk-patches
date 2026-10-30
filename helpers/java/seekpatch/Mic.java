@@ -103,7 +103,7 @@ public final class Mic {
         if (results[i] == PackageManager.PERMISSION_GRANTED) {
             startOnNextFrame();
         } else if (a.shouldShowRequestPermissionRationale(PERMISSION)) {
-            Toast.makeText(a, "Recording without sound: the microphone is not allowed", Toast.LENGTH_LONG).show();
+            Toast.makeText(a, Lang.t("Recording without sound: the microphone is not allowed"), Toast.LENGTH_LONG).show();
             withoutSound = true;
             startOnNextFrame();
         } else {
@@ -145,16 +145,16 @@ public final class Mic {
 
     private static void offerSettings(final Activity a) {
         new AlertDialog.Builder(a)
-                .setTitle("Microphone is off")
-                .setMessage("Android will not ask again for this app. To record sound, allow the microphone in the app's settings.")
-                .setPositiveButton("Open settings", new DialogInterface.OnClickListener() {
+                .setTitle(Lang.t("Microphone is off"))
+                .setMessage(Lang.t("Android will not ask again for this app. To record sound, allow the microphone in the app's settings."))
+                .setPositiveButton(Lang.t("Open settings"), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         a.startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                                 Uri.fromParts("package", a.getPackageName(), null)));
                     }
                 })
-                .setNegativeButton("Record without sound", new DialogInterface.OnClickListener() {
+                .setNegativeButton(Lang.t("Record without sound"), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         withoutSound = true;

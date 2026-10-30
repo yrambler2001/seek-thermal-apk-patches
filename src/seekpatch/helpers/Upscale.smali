@@ -67,7 +67,7 @@
 .end method
 
 .method private static add(Ljava/util/List;Ljava/util/List;F)V
-    .locals 2
+    .locals 4
     .annotation system Ldalvik/annotation/Signature;
         value = {
             "(",
@@ -81,21 +81,9 @@
     .end annotation
 
     .line 87
-    new-instance v0, Ljava/lang/StringBuilder;
-
-    const-string v1, "Sharp "
-
-    invoke-direct {v0, v1}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
-
     invoke-static {p2}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
 
-    move-result-object v1
-
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v1, ": blends "
-
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    move-result-object v0
 
     const/high16 v1, 0x42c80000    # 100.0f
 
@@ -105,63 +93,67 @@
 
     move-result v1
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    invoke-static {v1}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
 
-    const-string v1, " % of each pixel"
+    move-result-object v1
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const/4 v2, 0x2
 
-    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    new-array v2, v2, [Ljava/lang/Object;
 
-    move-result-object v0
+    const/4 v3, 0x0
 
-    const/high16 v1, 0x40000000    # 2.0f
+    aput-object v0, v2, v3
 
-    cmpl-float v1, p2, v1
+    const/4 v0, 0x1
 
-    if-nez v1, :cond_0
+    aput-object v1, v2, v0
+
+    const-string v1, "Sharp %1$s: blends %2$d %% of each pixel"
+
+    invoke-static {v1, v2}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+
+    move-result-object v1
+
+    const/high16 v2, 0x40000000    # 2.0f
+
+    cmpl-float v2, p2, v2
+
+    if-nez v2, :cond_0
 
     .line 89
-    new-instance v1, Ljava/lang/StringBuilder;
+    new-array v2, v0, [Ljava/lang/Object;
 
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+    aput-object v1, v2, v3
 
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const-string v1, "%s, as iOS"
 
-    const-string v0, ", as iOS"
+    invoke-static {v1, v2}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
 
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v0
+    move-result-object v1
 
     .line 91
     :cond_0
-    sget v1, Lseekpatch/Upscale;->DEFAULT:F
+    sget v2, Lseekpatch/Upscale;->DEFAULT:F
 
-    cmpl-float v1, p2, v1
+    cmpl-float v2, p2, v2
 
-    if-nez v1, :cond_1
+    if-nez v2, :cond_1
 
     .line 92
-    new-instance v1, Ljava/lang/StringBuilder;
+    new-array v0, v0, [Ljava/lang/Object;
 
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+    aput-object v1, v0, v3
 
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const-string v1, "%s (default)"
 
-    const-string v0, " (default)"
+    invoke-static {v1, v0}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
 
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v0
+    move-result-object v1
 
     .line 94
     :cond_1
-    invoke-interface {p0, v0}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    invoke-interface {p0, v1}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
     .line 95
     invoke-static {p2}, Lseekpatch/Upscale;->text(F)Ljava/lang/String;
@@ -333,6 +325,10 @@
     .line 65
     const-string v2, "Smooth: Android\'s bilinear, blends across each pixel"
 
+    invoke-static {v2}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v2
+
     invoke-interface {v0, v2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
     .line 66
@@ -407,6 +403,10 @@
     :cond_3
     const-string v2, "Blocky: square pixels, no blending"
 
+    invoke-static {v2}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v2
+
     invoke-interface {v0, v2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
     .line 80
@@ -418,6 +418,12 @@
     invoke-virtual {p0}, Landroid/preference/PreferenceFragment;->getPreferenceScreen()Landroid/preference/PreferenceScreen;
 
     move-result-object v5
+
+    const-string p0, "Upscaling"
+
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v8
 
     new-array p0, v4, [Ljava/lang/String;
 
@@ -449,8 +455,6 @@
     .line 81
     const-string v7, "upscaling"
 
-    const-string v8, "Upscaling"
-
     move-object v6, p1
 
     invoke-static/range {v5 .. v12}, Lseekpatch/Settings;->addList(Landroid/preference/PreferenceGroup;Landroid/content/SharedPreferences;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/Runnable;)Landroid/preference/ListPreference;
@@ -460,6 +464,10 @@
     const-string p1, "Upscaling: how the camera\'s pixels are enlarged"
 
     .line 83
+    invoke-static {p1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p1
+
     invoke-virtual {p0, p1}, Landroid/preference/ListPreference;->setDialogTitle(Ljava/lang/CharSequence;)V
 
     return-void

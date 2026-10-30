@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 158
+    .line 159
     iput-object p1, p0, Lseekpatch/Lock$2;->val$message:Ljava/lang/String;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -44,7 +44,7 @@
 .method public run()V
     .locals 3
 
-    .line 161
+    .line 162
     invoke-static {}, Lseekpatch/Lock;->access$100()Ljava/lang/ref/WeakReference;
 
     move-result-object v0
@@ -57,15 +57,15 @@
 
     if-eqz v0, :cond_0
 
-    .line 163
+    .line 164
     invoke-static {v0}, Lseekpatch/Lock;->access$200(Landroid/widget/TextView;)V
 
-    .line 164
+    .line 165
     iget-object v1, p0, Lseekpatch/Lock$2;->val$message:Ljava/lang/String;
 
     if-eqz v1, :cond_0
 
-    .line 165
+    .line 166
     invoke-virtual {v0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object v0

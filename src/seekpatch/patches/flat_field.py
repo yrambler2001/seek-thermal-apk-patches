@@ -65,7 +65,7 @@ def apply(tree: SmaliTree) -> list[str]:
             f"{indent}invoke-static {{p0}}, Lseekpatch/Flat;->attach(Landroid/app/Activity;)V\n")
     tree.set(activity_path, text[:after_layout] + hook + text[after_layout:])
 
-    add_helpers(tree, "Flat")
+    add_helpers(tree, "Flat", "TopBar")
     return [f"{tree.rel(call.path)}: Flat.frame after the feature-900 call; features via {setfeature} / {getfeature}",
             f"{tree.rel(activity_path)}: the button after {activity.split('/')[-1][:-1]}.setContentView",
             *optional_settings(tree, NAME, "FlatSettings", "Flat field frames")]

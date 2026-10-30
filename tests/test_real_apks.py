@@ -14,7 +14,7 @@ import zipfile
 
 import pytest
 
-from seekpatch import apk, axml, zipalign
+from seekpatch import apk, axml, strings, zipalign
 from seekpatch.patches import every_patch
 from seekpatch.toolchain import Toolchain, ToolchainError
 
@@ -27,7 +27,7 @@ FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0),
          "png_photos": (2, 1, 2), "photo_1x": (2, 1, 1), "video_quality": (2, 1, 2), "resume_fix": (1, 9, 1),
          "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0), "smart_smoothing": (2, 2, 3),
          "smoothing_settings": (2, 2, 0), "default_palette": (2, 0), "default_unit": (1, 9, 1), "lock_range": (2, 2, 3),
-         "calibration": (2, 2, 3), "shutter": (1, 9, 1), "hidden_settings": (1, 9, 3), "fps_readout": (2, 0),
+         "calibration": (2, 2, 3), "shutter": (1, 9, 1), "hidden_settings": (1, 9, 3), "language": (2, 0), "fps_readout": (2, 0),
          "no_analytics": (1, 9, 1), "http_legacy": (2, 1, 6), "reconnect_fix": (1, 9, 1), "usb_prompt": (1, 9, 1), "relaunch_fix": (1, 9, 1),
          "steady_fps": (1, 9, 1), "phone_camera": (2, 1, 2)}
 LAST = {"http_legacy": (2, 3, 1)}  # 2.3.3 declares the library itself
@@ -62,7 +62,8 @@ def test_patch_matrix(toolchain, path, tmp_path):
     if os.environ.get("SEEK_BUILD"):
         out = str(tmp_path / "patched.apk")
         names = [n for n in every_patch() if expected.get(n)]
-        apk.patch_apk(toolchain, path, out, apk.Plan(names), log=lambda _: None)
+        log = []
+        apk.patch_apk(toolchain, path, out, apk.Plan(names), log=log.append)
         assert zipalign.check(out) == []
         with zipfile.ZipFile(out) as z:
             libs = [i for i in z.infolist() if i.filename.endswith("/libseekpatch_smooth.so")]
@@ -71,6 +72,7 @@ def test_patch_matrix(toolchain, path, tmp_path):
             seekip = {n.split("/")[1] for n in z.namelist() if n.endswith("/libseekip.so")}
             dex = b"".join(z.read(n) for n in z.namelist() if n.startswith("classes") and n.endswith(".dex"))
             libraries = axml.uses_libraries(z.read("AndroidManifest.xml"))
+            arsc = z.read("resources.arsc")
         # every version from 2.1.6 on has Apache HTTP declared: by http_legacy up to 2.3.1, by Seek from 2.3.3
         assert (("org.apache.http.legacy", "seek-thermal-apk-patches http_legacy") in libraries) == expected["http_legacy"]
         assert any(n == "org.apache.http.legacy" for n, _ in libraries) == (version >= (2, 1, 6))
@@ -80,6 +82,19 @@ def test_patch_matrix(toolchain, path, tmp_path):
                                ("photo_1x", b"Lseekpatch/PhotoSettings;")):
             assert (section in dex) == expected[patch], patch
         assert (b"Lseekpatch/Shutter;" in dex) == expected["shutter"]
+        assert (b"Lseekpatch/Language;" in dex) == expected["language"]
+        # the hidden switches' lines, on the Settings screen of 2.0 on: registration up to 2.2.3, the TIFF from 2.1.1
+        assert (b"Lseekpatch/Hidden;" in dex) == (version >= (2, 0))
+        if version >= (2, 0):
+            registration = "registers cameras" if version <= (2, 2, 3) else "no camera registration"
+            tiff = "TIFF with each photo" if version >= (2, 1, 1) else "no TIFF"
+            assert any(f"Hidden.screen: what each switch does, under its title ({registration}, {tiff})" in line
+                       for line in log), log
+        # the patches' text comes with the languages of the file's own resources (a download can lack a language
+        # split: APKPure's 2.3.x bundles have no Dutch) -- Lang, with any patch that shows text: shutter is in all
+        languages = strings.languages(axml.string_locales(arsc))
+        assert {"de", "es", "fr", "it", "pt"} <= set(languages) and ("ru" in languages) == (version >= (1, 9, 5))
+        assert ",".join(languages).encode() in dex and b"Lseekpatch/Strings;" in dex
         assert (b"Lseekpatch/Steady;" in dex) == expected["steady_fps"]
         assert (b"Lseekpatch/PhoneCamera;" in dex) == expected["phone_camera"]
         # reconnect_fix also releases a camera left open from 2.3.0, where the library closes cameras through m.c

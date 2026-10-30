@@ -22,7 +22,7 @@
 .method constructor <init>()V
     .locals 0
 
-    .line 120
+    .line 121
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -33,7 +33,7 @@
 .method public run()V
     .locals 3
 
-    .line 123
+    .line 124
     invoke-static {}, Lseekpatch/Flat;->access$100()Ljava/util/concurrent/atomic/AtomicBoolean;
 
     move-result-object v0
@@ -48,8 +48,12 @@
 
     if-eqz v0, :cond_0
 
-    .line 124
+    .line 125
     const-string v0, "No camera image"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     invoke-static {v0}, Lseekpatch/Flat;->access$200(Ljava/lang/String;)V
 

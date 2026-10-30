@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 108
+    .line 109
     iput-object p1, p0, Lseekpatch/Calib$2;->val$a:Landroid/app/Activity;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -44,7 +44,7 @@
 .method public onClick(Landroid/content/DialogInterface;I)V
     .locals 1
 
-    .line 111
+    .line 112
     iget-object p1, p0, Lseekpatch/Calib$2;->val$a:Landroid/app/Activity;
 
     const/high16 p2, 0x3f800000    # 1.0f

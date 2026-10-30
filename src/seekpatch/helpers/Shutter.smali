@@ -169,6 +169,10 @@
     .line 65
     const-string v0, "Stops the camera\'s automatic shutter: no clicks or frozen frames, but the picture slowly drifts; tap again to start it (it shutters right away)"
 
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     new-instance v1, Lseekpatch/Shutter$1;
 
     invoke-direct {v1}, Lseekpatch/Shutter$1;-><init>()V
@@ -360,6 +364,10 @@
     const-string v0, "Shutter auto"
 
     :goto_0
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
     .line 92
@@ -409,6 +417,10 @@
     move-result-object p0
 
     const-string v0, "No camera"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     const/4 v1, 0x0
 
@@ -545,6 +557,10 @@
     .line 123
     const-string p0, "The camera did not take the command: its shutter stays on"
 
+    invoke-static {p0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
+
     invoke-static {p0}, Lseekpatch/Shutter;->refresh(Ljava/lang/String;)V
 
     goto :goto_1
@@ -577,7 +593,11 @@
 
     .line 132
     :cond_6
-    invoke-static {v4}, Lseekpatch/Shutter;->refresh(Ljava/lang/String;)V
+    invoke-static {v4}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
+
+    invoke-static {p0}, Lseekpatch/Shutter;->refresh(Ljava/lang/String;)V
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
 
@@ -592,7 +612,11 @@
     invoke-static {v5, v0, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
     .line 137
-    invoke-static {v4}, Lseekpatch/Shutter;->refresh(Ljava/lang/String;)V
+    invoke-static {v4}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p0
+
+    invoke-static {p0}, Lseekpatch/Shutter;->refresh(Ljava/lang/String;)V
 
     :goto_1
     return-void

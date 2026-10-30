@@ -159,6 +159,10 @@
 
     const-string v5, "Patched by yrambler2001"
 
+    invoke-static {v5}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v5
+
     invoke-direct {v4, v5}, Landroid/text/SpannableStringBuilder;-><init>(Ljava/lang/CharSequence;)V
 
     .line 125

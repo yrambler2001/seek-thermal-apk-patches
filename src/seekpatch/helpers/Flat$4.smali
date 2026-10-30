@@ -31,7 +31,7 @@
         }
     .end annotation
 
-    .line 128
+    .line 129
     iput p1, p0, Lseekpatch/Flat$4;->val$tap:I
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -44,7 +44,7 @@
 .method public run()V
     .locals 2
 
-    .line 131
+    .line 132
     invoke-static {}, Lseekpatch/Flat;->access$300()Z
 
     move-result v0
@@ -59,8 +59,12 @@
 
     if-ne v0, v1, :cond_0
 
-    .line 132
+    .line 133
     const-string v0, "Flat field interrupted, tap again"
+
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     invoke-static {v0}, Lseekpatch/Flat;->access$200(Ljava/lang/String;)V
 

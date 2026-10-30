@@ -6,6 +6,10 @@ import re
 from importlib import resources
 
 from ..smali import SmaliTree, class_descriptor
+from ..strings import strings_smali
+
+LANG = "Lseekpatch/Lang;"
+STRINGS = "Lseekpatch/Strings;"
 
 
 def smali(name: str) -> str:
@@ -15,9 +19,13 @@ def smali(name: str) -> str:
 
 def add_helpers(tree: SmaliTree, *classes: str) -> list[str]:
     """Add each helper class with its inner classes (Mic -> Mic, Mic$1, Mic$2); returns the descriptors.
-    A class another patch already added, unchanged (a shared helper such as Floating), is left as it is."""
+    A class another patch already added, unchanged (a shared helper such as Floating), is left as it is.
+    A helper with text brings seekpatch.Lang along, and Lang the generated seekpatch.Strings (the
+    translations, for this app's languages)."""
     names = sorted(p.name[:-len(".smali")] for p in resources.files(__name__).iterdir() if p.name.endswith(".smali"))
     added = []
+    if "Lang" not in classes and any(LANG in smali(n) for n in names if n.split("$")[0] in classes):
+        classes += ("Lang",)
     for cls in classes:
         group = [n for n in names if re.fullmatch(re.escape(cls) + r"(\$.+)?", n)]
         if cls not in group:
@@ -29,4 +37,7 @@ def add_helpers(tree: SmaliTree, *classes: str) -> list[str]:
                 continue
             tree.add_class(class_descriptor(text), text)
             added.append(class_descriptor(text))
+    if "Lang" in classes and not tree.path_of(STRINGS):
+        tree.add_class(STRINGS, strings_smali(tree.root))
+        added.append(STRINGS)
     return added

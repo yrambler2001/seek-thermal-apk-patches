@@ -74,7 +74,7 @@ public final class Flat {
                 return;
             }
             final TextView b = new TextView(a);
-            b.setText(LABEL);
+            b.setText(Lang.t(LABEL));
             b.setTextColor(0xffffffff);
             b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             b.setGravity(Gravity.CENTER);
@@ -93,7 +93,7 @@ public final class Flat {
             b.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    Toast.makeText(v.getContext(), "Point the camera at a uniform surface, then tap", Toast.LENGTH_LONG).show();
+                    Toast.makeText(v.getContext(), Lang.t("Point the camera at a uniform surface, then tap"), Toast.LENGTH_LONG).show();
                     return true;
                 }
             });
@@ -102,6 +102,7 @@ public final class Flat {
             lp.addRule(RelativeLayout.CENTER_VERTICAL);
             lp.rightMargin = dp(a, 12);
             ((RelativeLayout) bar).addView(b, lp);
+            TopBar.fit(a, bar, b, true);
             button = new WeakReference<>(b);
         } catch (Throwable t) {
             Log.w(TAG, "flat_field: no button", t);
@@ -114,14 +115,14 @@ public final class Flat {
         }
         busy = true;
         final int tap = ++taps;
-        b.setText("Hold still…");
+        b.setText(Lang.t("Hold still…"));
         b.setAlpha(0.6f);
         requested.set(true);
         MAIN.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (requested.compareAndSet(true, false)) {
-                    done("No camera image");
+                    done(Lang.t("No camera image"));
                 }
             }
         }, NO_CAMERA_MS);
@@ -129,7 +130,7 @@ public final class Flat {
             @Override
             public void run() {
                 if (busy && taps == tap) {
-                    done("Flat field interrupted, tap again");  // the frames stopped
+                    done(Lang.t("Flat field interrupted, tap again"));  // the frames stopped
                 }
             }
         }, NO_CAMERA_MS + timeout(updates) + 1000);
@@ -149,16 +150,16 @@ public final class Flat {
                 start(handle);
             } else if (handle != runHandle) {
                 running = false;  // a new connection: its map starts empty, the old handle is gone
-                done("Camera reconnected, tap again");
+                done(Lang.t("Camera reconnected, tap again"));
             } else {
                 int learned = Math.max(get(handle, COUNT, 4) - start1,
                         start2 == Integer.MIN_VALUE ? 0 : get(handle, FILTER2 + COUNT, 4) - start2);
                 if (learned >= target) {
                     stop(handle, learned);
-                    done("Flat field set");
+                    done(Lang.t("Flat field set"));
                 } else if (SystemClock.uptimeMillis() > deadline) {
                     stop(handle, learned);
-                    done("Flat field interrupted, tap again");
+                    done(Lang.t("Flat field interrupted, tap again"));
                 }
             }
         } catch (Throwable t) {
@@ -170,7 +171,7 @@ public final class Flat {
             } catch (Throwable ignored) {
                 // nothing more to undo
             }
-            done("Flat field failed");
+            done(Lang.t("Flat field failed"));
         }
     }
 
@@ -213,7 +214,7 @@ public final class Flat {
                 busy = false;
                 TextView b = button.get();
                 if (b != null) {
-                    b.setText(LABEL);
+                    b.setText(Lang.t(LABEL));
                     b.setAlpha(1f);
                     Toast.makeText(b.getContext(), message, Toast.LENGTH_SHORT).show();
                 }

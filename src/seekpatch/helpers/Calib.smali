@@ -195,6 +195,10 @@
     :cond_0
     const-string v0, "Your linear correction of every temperature: shown = k \u00d7 measured + b"
 
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     new-instance v1, Lseekpatch/Calib$1;
 
     invoke-direct {v1, p0}, Lseekpatch/Calib$1;-><init>(Landroid/app/Activity;)V
@@ -249,12 +253,16 @@
     .line 80
     sget-boolean v0, Lseekpatch/Calib;->failed:Z
 
+    const/4 v1, 0x0
+
     if-eqz v0, :cond_0
 
     .line 81
     const-string v0, "Calibration is not available here"
 
-    const/4 v1, 0x0
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
 
     invoke-static {p0, v0, v1}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
 
@@ -271,86 +279,84 @@
     move-result v0
 
     .line 85
-    new-instance v1, Landroid/app/AlertDialog$Builder;
+    new-instance v2, Landroid/app/AlertDialog$Builder;
 
-    invoke-direct {v1, p0}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;)V
+    invoke-direct {v2, p0}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;)V
 
     .line 86
-    invoke-virtual {v1}, Landroid/app/AlertDialog$Builder;->getContext()Landroid/content/Context;
+    invoke-virtual {v2}, Landroid/app/AlertDialog$Builder;->getContext()Landroid/content/Context;
 
-    move-result-object v2
+    move-result-object v3
 
     .line 87
-    new-instance v3, Landroid/widget/LinearLayout;
+    new-instance v4, Landroid/widget/LinearLayout;
 
-    invoke-direct {v3, v2}, Landroid/widget/LinearLayout;-><init>(Landroid/content/Context;)V
+    invoke-direct {v4, v3}, Landroid/widget/LinearLayout;-><init>(Landroid/content/Context;)V
 
-    const/4 v4, 0x1
+    const/4 v5, 0x1
 
     .line 88
-    invoke-virtual {v3, v4}, Landroid/widget/LinearLayout;->setOrientation(I)V
+    invoke-virtual {v4, v5}, Landroid/widget/LinearLayout;->setOrientation(I)V
 
-    const/16 v4, 0x14
+    const/16 v6, 0x14
 
     .line 89
-    invoke-static {v2, v4}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+    invoke-static {v3, v6}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
 
-    move-result v4
+    move-result v6
 
-    const/16 v5, 0x8
+    const/16 v7, 0x8
 
     .line 90
-    invoke-static {v2, v5}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+    invoke-static {v3, v7}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
 
-    move-result v5
+    move-result v7
 
-    const/16 v6, 0xc
+    const/16 v8, 0xc
 
-    invoke-static {v2, v6}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
+    invoke-static {v3, v8}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
 
-    move-result v2
+    move-result v3
 
-    invoke-virtual {v3, v4, v5, v4, v2}, Landroid/widget/LinearLayout;->setPadding(IIII)V
+    invoke-virtual {v4, v6, v7, v6, v3}, Landroid/widget/LinearLayout;->setPadding(IIII)V
 
     .line 91
-    sget v2, Lseekpatch/Calib;->k:F
+    const-string v3, "k, the gain (1: none)"
 
-    float-to-double v4, v2
+    invoke-static {v3}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
 
-    invoke-static {v4, v5}, Lseekpatch/Calib;->format(D)Ljava/lang/String;
+    move-result-object v3
 
-    move-result-object v2
+    sget v6, Lseekpatch/Calib;->k:F
 
-    const-string v4, "k, the gain (1: none)"
+    float-to-double v6, v6
 
-    invoke-static {v3, v4, v2}, Lseekpatch/Calib;->field(Landroid/widget/LinearLayout;Ljava/lang/String;Ljava/lang/String;)Landroid/widget/EditText;
+    invoke-static {v6, v7}, Lseekpatch/Calib;->format(D)Ljava/lang/String;
 
-    move-result-object v2
+    move-result-object v6
+
+    invoke-static {v4, v3, v6}, Lseekpatch/Calib;->field(Landroid/widget/LinearLayout;Ljava/lang/String;Ljava/lang/String;)Landroid/widget/EditText;
+
+    move-result-object v3
 
     .line 92
-    new-instance v4, Ljava/lang/StringBuilder;
-
-    const-string v5, "b, the offset in "
-
-    invoke-direct {v4, v5}, Ljava/lang/StringBuilder;-><init>(Ljava/lang/String;)V
-
     invoke-static {v0}, Lseekpatch/Floating;->symbol(I)Ljava/lang/String;
 
-    move-result-object v5
+    move-result-object v6
 
-    invoke-virtual {v5}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {v6}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v5
+    move-result-object v6
 
-    invoke-virtual {v4, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    new-array v5, v5, [Ljava/lang/Object;
 
-    const-string v5, " (0: none)"
+    aput-object v6, v5, v1
 
-    invoke-virtual {v4, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const-string v1, "b, the offset in %s (0: none)"
 
-    invoke-virtual {v4}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-static {v1, v5}, Lseekpatch/Lang;->f(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
 
-    move-result-object v4
+    move-result-object v1
 
     sget v5, Lseekpatch/Calib;->b:F
 
@@ -360,6 +366,7 @@
 
     float-to-double v7, v7
 
+    .line 93
     invoke-static {v5, v6, v7, v8, v0}, Lseekpatch/Calib;->toUnit(DDI)D
 
     move-result-wide v5
@@ -368,61 +375,82 @@
 
     move-result-object v5
 
-    invoke-static {v3, v4, v5}, Lseekpatch/Calib;->field(Landroid/widget/LinearLayout;Ljava/lang/String;Ljava/lang/String;)Landroid/widget/EditText;
-
-    move-result-object v4
-
-    .line 93
-    const-string v5, "Temperature calibration"
-
-    invoke-virtual {v1, v5}, Landroid/app/AlertDialog$Builder;->setTitle(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
+    .line 92
+    invoke-static {v4, v1, v5}, Lseekpatch/Calib;->field(Landroid/widget/LinearLayout;Ljava/lang/String;Ljava/lang/String;)Landroid/widget/EditText;
 
     move-result-object v1
+
+    .line 94
+    const-string v5, "Temperature calibration"
+
+    invoke-static {v5}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v5
+
+    invoke-virtual {v2, v5}, Landroid/app/AlertDialog$Builder;->setTitle(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
+
+    move-result-object v2
 
     const-string v5, "shown = k \u00d7 measured + b"
 
-    .line 94
-    invoke-virtual {v1, v5}, Landroid/app/AlertDialog$Builder;->setMessage(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
-
-    move-result-object v1
-
     .line 95
-    invoke-virtual {v1, v3}, Landroid/app/AlertDialog$Builder;->setView(Landroid/view/View;)Landroid/app/AlertDialog$Builder;
+    invoke-static {v5}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
 
-    move-result-object v1
+    move-result-object v5
 
-    new-instance v3, Lseekpatch/Calib$3;
+    invoke-virtual {v2, v5}, Landroid/app/AlertDialog$Builder;->setMessage(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
-    invoke-direct {v3, v2, v4, p0, v0}, Lseekpatch/Calib$3;-><init>(Landroid/widget/EditText;Landroid/widget/EditText;Landroid/app/Activity;I)V
+    move-result-object v2
 
     .line 96
-    const-string v0, "Apply"
+    invoke-virtual {v2, v4}, Landroid/app/AlertDialog$Builder;->setView(Landroid/view/View;)Landroid/app/AlertDialog$Builder;
 
-    invoke-virtual {v1, v0, v3}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
+    move-result-object v2
+
+    const-string v4, "Apply"
+
+    .line 97
+    invoke-static {v4}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v4
+
+    new-instance v5, Lseekpatch/Calib$3;
+
+    invoke-direct {v5, v3, v1, p0, v0}, Lseekpatch/Calib$3;-><init>(Landroid/widget/EditText;Landroid/widget/EditText;Landroid/app/Activity;I)V
+
+    invoke-virtual {v2, v4, v5}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
     move-result-object v0
 
-    new-instance v1, Lseekpatch/Calib$2;
+    const-string v1, "Reset"
 
-    invoke-direct {v1, p0}, Lseekpatch/Calib$2;-><init>(Landroid/app/Activity;)V
+    .line 109
+    invoke-static {v1}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
 
-    .line 108
-    const-string p0, "Reset"
+    move-result-object v1
 
-    invoke-virtual {v0, p0, v1}, Landroid/app/AlertDialog$Builder;->setNeutralButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
+    new-instance v2, Lseekpatch/Calib$2;
+
+    invoke-direct {v2, p0}, Lseekpatch/Calib$2;-><init>(Landroid/app/Activity;)V
+
+    invoke-virtual {v0, v1, v2}, Landroid/app/AlertDialog$Builder;->setNeutralButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
     move-result-object p0
 
     const-string v0, "Cancel"
 
+    .line 115
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     const/4 v1, 0x0
 
-    .line 114
     invoke-virtual {p0, v0, v1}, Landroid/app/AlertDialog$Builder;->setNegativeButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
     move-result-object p0
 
-    .line 115
+    .line 116
     invoke-virtual {p0}, Landroid/app/AlertDialog$Builder;->show()Landroid/app/AlertDialog;
 
     return-void
@@ -431,22 +459,22 @@
 .method private static field(Landroid/widget/LinearLayout;Ljava/lang/String;Ljava/lang/String;)Landroid/widget/EditText;
     .locals 3
 
-    .line 119
+    .line 120
     invoke-virtual {p0}, Landroid/widget/LinearLayout;->getContext()Landroid/content/Context;
 
     move-result-object v0
 
-    .line 120
+    .line 121
     new-instance v1, Landroid/widget/TextView;
 
     invoke-direct {v1, v0}, Landroid/widget/TextView;-><init>(Landroid/content/Context;)V
 
-    .line 121
+    .line 122
     invoke-virtual {v1, p1}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
     const/16 p1, 0x8
 
-    .line 122
+    .line 123
     invoke-static {v0, p1}, Lseekpatch/Floating;->dp(Landroid/content/Context;I)I
 
     move-result p1
@@ -455,31 +483,31 @@
 
     invoke-virtual {v1, v2, p1, v2, v2}, Landroid/widget/TextView;->setPadding(IIII)V
 
-    .line 123
+    .line 124
     invoke-virtual {p0, v1}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 124
+    .line 125
     new-instance p1, Landroid/widget/EditText;
 
     invoke-direct {p1, v0}, Landroid/widget/EditText;-><init>(Landroid/content/Context;)V
 
     const/16 v0, 0x3002
 
-    .line 125
+    .line 126
     invoke-virtual {p1, v0}, Landroid/widget/EditText;->setInputType(I)V
 
     const/4 v0, 0x1
 
-    .line 126
+    .line 127
     invoke-virtual {p1, v0}, Landroid/widget/EditText;->setSingleLine(Z)V
 
-    .line 127
+    .line 128
     invoke-virtual {p1, p2}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
 
-    .line 128
+    .line 129
     invoke-virtual {p1, v0}, Landroid/widget/EditText;->setSelectAllOnFocus(Z)V
 
-    .line 129
+    .line 130
     invoke-virtual {p0, p1}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
     return-object p1
@@ -488,7 +516,7 @@
 .method private static format(D)Ljava/lang/String;
     .locals 2
 
-    .line 233
+    .line 234
     sget-object v0, Ljava/util/Locale;->US:Ljava/util/Locale;
 
     invoke-static {p0, p1}, Ljava/lang/Double;->valueOf(D)Ljava/lang/Double;
@@ -509,7 +537,7 @@
 
     move-result-object p0
 
-    .line 234
+    .line 235
     const-string p1, "0+$"
 
     const-string v0, ""
@@ -524,7 +552,7 @@
 
     move-result-object p0
 
-    .line 235
+    .line 236
     const-string p1, "-0"
 
     invoke-virtual {p0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -542,7 +570,7 @@
 .method public static frame()V
     .locals 3
 
-    .line 165
+    .line 166
     sget-boolean v0, Lseekpatch/Calib;->failed:Z
 
     if-nez v0, :cond_4
@@ -556,17 +584,17 @@
     :cond_0
     const/4 v0, 0x0
 
-    .line 169
+    .line 170
     :try_start_0
     sput-boolean v0, Lseekpatch/Calib;->changed:Z
 
-    .line 170
+    .line 171
     sget v0, Lseekpatch/Calib;->k:F
 
-    .line 171
+    .line 172
     sget v1, Lseekpatch/Calib;->b:F
 
-    .line 172
+    .line 173
     sget-boolean v2, Lseekpatch/Calib;->installed:Z
 
     if-nez v2, :cond_3
@@ -585,20 +613,20 @@
 
     return-void
 
-    .line 176
+    .line 177
     :cond_1
     const-string v2, "seekpatch_calib"
 
     invoke-static {v2}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 
-    .line 177
+    .line 178
     invoke-static {}, Lseekpatch/Calib;->install()Ljava/lang/String;
 
     move-result-object v2
 
     if-eqz v2, :cond_2
 
-    .line 179
+    .line 180
     invoke-static {v2}, Lseekpatch/Calib;->unavailable(Ljava/lang/String;)V
 
     return-void
@@ -606,10 +634,10 @@
     :cond_2
     const/4 v2, 0x1
 
-    .line 182
+    .line 183
     sput-boolean v2, Lseekpatch/Calib;->installed:Z
 
-    .line 184
+    .line 185
     :cond_3
     invoke-static {v0, v1}, Lseekpatch/Calib;->set(FF)V
     :try_end_0
@@ -620,7 +648,7 @@
     :catchall_0
     move-exception v0
 
-    .line 186
+    .line 187
     invoke-static {v0}, Ljava/lang/String;->valueOf(Ljava/lang/Object;)Ljava/lang/String;
 
     move-result-object v0
@@ -679,7 +707,7 @@
 .method private static parse(Landroid/widget/EditText;)F
     .locals 2
 
-    .line 225
+    .line 226
     :try_start_0
     invoke-virtual {p0}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
 
@@ -726,7 +754,7 @@
 .method private static prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
     .locals 2
 
-    .line 239
+    .line 240
     const-string v0, "seekpatch"
 
     const/4 v1, 0x0
@@ -741,7 +769,7 @@
 .method private static save(Landroid/content/Context;FF)V
     .locals 1
 
-    .line 134
+    .line 135
     invoke-static {p0}, Lseekpatch/Calib;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object p0
@@ -764,18 +792,18 @@
 
     invoke-interface {p0}, Landroid/content/SharedPreferences$Editor;->apply()V
 
-    .line 135
+    .line 136
     sput p1, Lseekpatch/Calib;->k:F
 
-    .line 136
+    .line 137
     sput p2, Lseekpatch/Calib;->b:F
 
     const/4 p0, 0x1
 
-    .line 137
+    .line 138
     sput-boolean p0, Lseekpatch/Calib;->changed:Z
 
-    .line 138
+    .line 139
     new-instance p0, Ljava/lang/StringBuilder;
 
     const-string v0, "calibration: shown = "
@@ -802,7 +830,7 @@
 
     invoke-static {p1, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 139
+    .line 140
     sget-object p0, Lseekpatch/Calib;->button:Ljava/lang/ref/WeakReference;
 
     invoke-virtual {p0}, Ljava/lang/ref/WeakReference;->get()Ljava/lang/Object;
@@ -813,7 +841,7 @@
 
     if-eqz p0, :cond_0
 
-    .line 141
+    .line 142
     invoke-static {p0}, Lseekpatch/Calib;->show(Landroid/widget/TextView;)V
 
     :cond_0
@@ -826,10 +854,10 @@
 .method private static show(Landroid/widget/TextView;)V
     .locals 9
 
-    .line 146
+    .line 147
     sget v0, Lseekpatch/Calib;->k:F
 
-    .line 147
+    .line 148
     sget v1, Lseekpatch/Calib;->b:F
 
     const/high16 v2, 0x3f800000    # 1.0f
@@ -858,7 +886,7 @@
     :goto_1
     if-eqz v3, :cond_5
 
-    .line 150
+    .line 151
     invoke-virtual {p0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object v4
@@ -871,12 +899,12 @@
 
     float-to-double v0, v0
 
-    .line 151
+    .line 152
     invoke-static {v5, v6, v0, v1, v4}, Lseekpatch/Calib;->toUnit(DDI)D
 
     move-result-wide v5
 
-    .line 152
+    .line 153
     new-instance v7, Ljava/lang/StringBuilder;
 
     invoke-direct {v7}, Ljava/lang/StringBuilder;-><init>()V
@@ -903,7 +931,7 @@
 
     move-result-object v0
 
-    .line 153
+    .line 154
     invoke-static {v5, v6}, Ljava/lang/Math;->abs(D)D
 
     move-result-wide v1
@@ -914,7 +942,7 @@
 
     if-ltz v1, :cond_4
 
-    .line 154
+    .line 155
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
@@ -957,19 +985,19 @@
 
     move-result-object v0
 
-    .line 156
+    .line 157
     :cond_4
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
     goto :goto_4
 
-    .line 158
+    .line 159
     :cond_5
     const-string v0, "k\u00b7x+b"
 
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
-    .line 160
+    .line 161
     :goto_4
     invoke-static {p0, v3}, Lseekpatch/Floating;->style(Landroid/widget/TextView;Z)V
 
@@ -1017,10 +1045,10 @@
 
     const/4 v0, 0x1
 
-    .line 191
+    .line 192
     sput-boolean v0, Lseekpatch/Calib;->failed:Z
 
-    .line 192
+    .line 193
     new-instance v0, Ljava/lang/StringBuilder;
 
     const-string v1, "calibration: unavailable, "
@@ -1037,7 +1065,7 @@
 
     invoke-static {v0, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 193
+    .line 194
     sget-object p0, Lseekpatch/Calib;->MAIN:Landroid/os/Handler;
 
     new-instance v0, Lseekpatch/Calib$4;
@@ -1058,7 +1086,7 @@
 
     if-lez v0, :cond_0
 
-    .line 211
+    .line 212
     invoke-static {p0}, Ljava/lang/Float;->isInfinite(F)Z
 
     move-result p0

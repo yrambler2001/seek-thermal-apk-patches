@@ -37,7 +37,7 @@
         }
     .end annotation
 
-    .line 96
+    .line 97
     iput-object p1, p0, Lseekpatch/Calib$3;->val$fk:Landroid/widget/EditText;
 
     iput-object p2, p0, Lseekpatch/Calib$3;->val$fb:Landroid/widget/EditText;
@@ -56,31 +56,35 @@
 .method public onClick(Landroid/content/DialogInterface;I)V
     .locals 5
 
-    .line 99
+    .line 100
     iget-object p1, p0, Lseekpatch/Calib$3;->val$fk:Landroid/widget/EditText;
 
     invoke-static {p1}, Lseekpatch/Calib;->access$200(Landroid/widget/EditText;)F
 
     move-result p1
 
-    .line 100
+    .line 101
     iget-object p2, p0, Lseekpatch/Calib$3;->val$fb:Landroid/widget/EditText;
 
     invoke-static {p2}, Lseekpatch/Calib;->access$200(Landroid/widget/EditText;)F
 
     move-result p2
 
-    .line 101
+    .line 102
     invoke-static {p1, p2}, Lseekpatch/Calib;->access$300(FF)Z
 
     move-result v0
 
     if-nez v0, :cond_0
 
-    .line 102
+    .line 103
     iget-object p1, p0, Lseekpatch/Calib$3;->val$a:Landroid/app/Activity;
 
     const-string p2, "k must be a number above 0, b a number"
+
+    invoke-static {p2}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object p2
 
     const/4 v0, 0x1
 
@@ -92,7 +96,7 @@
 
     return-void
 
-    .line 105
+    .line 106
     :cond_0
     iget-object v0, p0, Lseekpatch/Calib$3;->val$a:Landroid/app/Activity;
 

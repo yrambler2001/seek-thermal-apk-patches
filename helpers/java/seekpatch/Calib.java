@@ -60,7 +60,7 @@ public final class Calib {
                 b = pb;
                 changed = true;
             }
-            TextView v = Floating.button(a, "Your linear correction of every temperature: shown = k × measured + b",
+            TextView v = Floating.button(a, Lang.t("Your linear correction of every temperature: shown = k × measured + b"),
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -78,7 +78,7 @@ public final class Calib {
 
     private static void dialog(final Activity a) {
         if (failed) {
-            Toast.makeText(a, "Calibration is not available here", Toast.LENGTH_SHORT).show();
+            Toast.makeText(a, Lang.t("Calibration is not available here"), Toast.LENGTH_SHORT).show();
             return;
         }
         final int unit = Floating.unit(a);
@@ -88,30 +88,31 @@ public final class Calib {
         form.setOrientation(LinearLayout.VERTICAL);
         int pad = Floating.dp(c, 20);
         form.setPadding(pad, Floating.dp(c, 8), pad, Floating.dp(c, 12));
-        final EditText fk = field(form, "k, the gain (1: none)", format(k));
-        final EditText fb = field(form, "b, the offset in " + Floating.symbol(unit).trim() + " (0: none)", format(toUnit(b, k, unit)));
-        builder.setTitle("Temperature calibration")
-                .setMessage("shown = k × measured + b")
+        final EditText fk = field(form, Lang.t("k, the gain (1: none)"), format(k));
+        final EditText fb = field(form, Lang.f("b, the offset in %s (0: none)", Floating.symbol(unit).trim()),
+                format(toUnit(b, k, unit)));
+        builder.setTitle(Lang.t("Temperature calibration"))
+                .setMessage(Lang.t("shown = k × measured + b"))
                 .setView(form)
-                .setPositiveButton("Apply", new DialogInterface.OnClickListener() {
+                .setPositiveButton(Lang.t("Apply"), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface d, int which) {
                         float nk = parse(fk);
                         float nb = parse(fb);
                         if (!valid(nk, nb)) {
-                            Toast.makeText(a, "k must be a number above 0, b a number", Toast.LENGTH_LONG).show();
+                            Toast.makeText(a, Lang.t("k must be a number above 0, b a number"), Toast.LENGTH_LONG).show();
                             return;
                         }
                         save(a, nk, fromUnit(nb, nk, unit));
                     }
                 })
-                .setNeutralButton("Reset", new DialogInterface.OnClickListener() {
+                .setNeutralButton(Lang.t("Reset"), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface d, int which) {
                         save(a, 1f, 0f);
                     }
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(Lang.t("Cancel"), null)
                 .show();
     }
 
@@ -195,7 +196,7 @@ public final class Calib {
             public void run() {
                 TextView v = button.get();
                 if (v != null) {
-                    Toast.makeText(v.getContext(), "Calibration is not available here", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(v.getContext(), Lang.t("Calibration is not available here"), Toast.LENGTH_SHORT).show();
                 }
             }
         });

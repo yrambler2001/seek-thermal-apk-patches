@@ -77,7 +77,7 @@ def apply(tree: SmaliTree) -> list[str]:
 
     for abi in abis:
         tree.add_native_library(abi, native.SMOOTH, native.library(abi))
-    add_helpers(tree, "Smooth")
+    add_helpers(tree, "Smooth", "TopBar")
     others = [a for a in tree.abis if a not in abis]
     return [f"{tree.rel(call.path)}: Smooth.frame after the feature-900 call",
             f"{tree.rel(activity_path)}: the button after {activity.split('/')[-1][:-1]}.setContentView",

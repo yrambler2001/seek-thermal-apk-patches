@@ -62,7 +62,7 @@ public final class Upscale {
     public static void screen(PreferenceFragment f, SharedPreferences p) {
         List<String> entries = new ArrayList<>();
         List<String> values = new ArrayList<>();
-        entries.add("Smooth: Android's bilinear, blends across each pixel");
+        entries.add(Lang.t("Smooth: Android's bilinear, blends across each pixel"));
         values.add(SMOOTH);
         boolean listed = false;
         for (float c : CHOICES) {
@@ -76,20 +76,20 @@ public final class Upscale {
         if (!listed) {
             add(entries, values, DEFAULT);
         }
-        entries.add("Blocky: square pixels, no blending");
+        entries.add(Lang.t("Blocky: square pixels, no blending"));
         values.add(BLOCKY);
-        Settings.addList(f.getPreferenceScreen(), p, KEY, "Upscaling", entries.toArray(new String[0]),
+        Settings.addList(f.getPreferenceScreen(), p, KEY, Lang.t("Upscaling"), entries.toArray(new String[0]),
                 values.toArray(new String[0]), value(p), null)
-                .setDialogTitle("Upscaling: how the camera's pixels are enlarged");
+                .setDialogTitle(Lang.t("Upscaling: how the camera's pixels are enlarged"));
     }
 
     private static void add(List<String> entries, List<String> values, float n) {
-        String label = "Sharp " + text(n) + ": blends " + Math.round(100 / n) + " % of each pixel";
+        String label = Lang.f("Sharp %1$s: blends %2$d %% of each pixel", text(n), Math.round(100 / n));
         if (n == 2f) {
-            label += ", as iOS";
+            label = Lang.f("%s, as iOS", label);
         }
         if (n == DEFAULT) {
-            label += " (default)";
+            label = Lang.f("%s (default)", label);
         }
         entries.add(label);
         values.add(text(n));

@@ -88,6 +88,22 @@ preferences file, not the app's; `Settings.addSwitch` / `addList` create the app
 classes, not persisted by the framework.  Runtime code reads values that `load` cached, never the
 file.  See `smoothing_settings.py` and `Filters.java`.
 
+## Text on the screen
+
+A helper writes what it shows in English and passes it through `seekpatch.Lang`: `Lang.t("Flat
+field set")`, or `Lang.f("Locked %s", range)` for a `String.format` pattern.  Keep sentences whole
+(two strings rather than one with an optional tail) and build lists from patterns
+(`Lang.f("%s (default)", label)`), so a translation can order the words its own way.  Then add
+the English text with its translation to every file in
+[`src/seekpatch/strings`](../src/seekpatch/strings) (one per language of the app's, English →
+translation); `tests/test_strings.py` fails on a string left out, one no helper shows any more, a
+pattern whose translation has other format specifiers, and text passed to a view without `Lang`.
+
+`add_helpers` brings `Lang` along with any helper that calls it, and with it the generated
+`seekpatch.Strings`: the languages the app has (counted in its `resources.arsc`) and the
+translations into them.  `Lang` picks the language of the app's own text: the one chosen in
+Settings (the `language` patch), else the first of the phone's languages the app has, else English.
+
 ## Native code
 
 `smart_smoothing` needs C: [`helpers/native`](../helpers/native) is built by

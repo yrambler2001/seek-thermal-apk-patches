@@ -76,7 +76,9 @@ infrared from a warm lens or housing in front of it is not in that frame.
   `setContentView`.  The activity is the one whose `onCreate` also looks up the `SurfaceView`.
   The helper finds the top bar by its resource name, `main_view_top_panel`, present in every
   release 1.9.1 – 2.3.4.  It adds the button on the bar's right, so the settings page and the other
-  panels that cover the bar cover the button too.  Patches decode with `apktool d -r`, which
+  panels that cover the bar cover the button too.  Where a long label would run into the camera's
+  name in the middle of the bar, `seekpatch.TopBar` moves the name aside (see
+  [language.md](language.md)).  Patches decode with `apktool d -r`, which
   leaves the resources untouched; the button is built in code.
 - **The camera thread.**  `seekpatch.Flat.frame(handle)` runs right after the per-frame
   feature-900 call (the hook `smoothing_settings` uses), before the frame is processed.  On a tap:

@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+A language setting, the patches' text in every language of the app's, and a line under each
+developer switch on what it does.
+
+- `language`, in the default set (2.0 – 2.3.4): *Settings* starts with *Language*, the phone's
+  language or any other the app has text in, each named in itself (English, German, Spanish,
+  French, Italian, Japanese, Korean, Dutch, Portuguese, Portugal's Portuguese, Russian, Chinese:
+  those the patched file has, as some downloads lack a language split).  The app switches at once and keeps the choice: from Android 13 as its
+  language in the system, before 13 by giving each screen the chosen locale.  When the app is not
+  in English the title also says *(Language)*.
+- Everything the patches show — buttons and their tips, toasts, the calibration and microphone
+  dialogs, the settings in *Image & Video*, the credit in the side menu — is translated into
+  German, Spanish, French, Italian, Japanese, Korean, Dutch, Portuguese, Russian and Chinese
+  (`src/seekpatch/strings`), and follows the app's own language in every release, with or without
+  `language`.  The translations have not been checked by native speakers yet.
+- The top bar makes room for its buttons: where *Smart smoothing* or *Flat field* (a longer
+  translation, a narrow phone) would run into the Seek logo and the camera's name, those move
+  aside, and the button only shrinks for what is still missing.  On a 360 dp phone the English
+  *Flat field* touched the camera's name before.
+- `hidden_settings`: each switch it shows says what it does, in a line under its title, and the
+  four titles Seek left in English are translated.  *Save Uncompressed* notes that the app cannot
+  save PNG photos before Android 11; *Disable Registration* and *Use Staging Server* say they do
+  nothing from 2.3.0, which no longer registers cameras; *Store All Thermal Data* (always shown)
+  says it saves a TIFF with every pixel's temperature with each photo.
+
 ## 1.0.0 — 2026-10-26
 
 seek-patch is now seek-thermal-apk-patches, the name of its repository, and the README is new.

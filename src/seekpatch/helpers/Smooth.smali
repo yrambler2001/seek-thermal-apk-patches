@@ -138,7 +138,7 @@
 .end method
 
 .method public static attach(Landroid/app/Activity;)V
-    .locals 7
+    .locals 8
 
     .line 75
     const-string v0, "seek-thermal-apk-patches"
@@ -257,9 +257,9 @@
 
     move-result v5
 
-    const/4 v6, -0x2
+    const/4 v7, -0x2
 
-    invoke-direct {v4, v6, v5}, Landroid/widget/RelativeLayout$LayoutParams;-><init>(II)V
+    invoke-direct {v4, v7, v5}, Landroid/widget/RelativeLayout$LayoutParams;-><init>(II)V
 
     const/16 v5, 0x9
 
@@ -274,23 +274,28 @@
     .line 106
     invoke-static {p0, v3}, Lseekpatch/Smooth;->dp(Landroid/content/Context;I)I
 
-    move-result p0
+    move-result v3
 
-    iput p0, v4, Landroid/widget/RelativeLayout$LayoutParams;->leftMargin:I
+    iput v3, v4, Landroid/widget/RelativeLayout$LayoutParams;->leftMargin:I
 
     .line 107
-    check-cast v2, Landroid/widget/RelativeLayout;
+    move-object v3, v2
 
-    invoke-virtual {v2, v1, v4}, Landroid/widget/RelativeLayout;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
+    check-cast v3, Landroid/widget/RelativeLayout;
+
+    invoke-virtual {v3, v1, v4}, Landroid/widget/RelativeLayout;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
 
     .line 108
+    invoke-static {p0, v2, v1, v6}, Lseekpatch/TopBar;->fit(Landroid/app/Activity;Landroid/view/View;Landroid/widget/TextView;Z)V
+
+    .line 109
     new-instance p0, Ljava/lang/ref/WeakReference;
 
     invoke-direct {p0, v1}, Ljava/lang/ref/WeakReference;-><init>(Ljava/lang/Object;)V
 
     sput-object p0, Lseekpatch/Smooth;->button:Ljava/lang/ref/WeakReference;
 
-    .line 109
+    .line 110
     invoke-static {v1}, Lseekpatch/Smooth;->show(Landroid/widget/TextView;)V
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
@@ -300,7 +305,7 @@
     :catchall_0
     move-exception p0
 
-    .line 111
+    .line 112
     const-string v1, "smart_smoothing: no button"
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
@@ -314,7 +319,7 @@
 
     int-to-float p1, p1
 
-    .line 213
+    .line 214
     invoke-virtual {p0}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
 
     move-result-object p0
@@ -342,7 +347,7 @@
 
     const/4 v0, 0x0
 
-    .line 199
+    .line 200
     :try_start_0
     invoke-virtual {p0}, Landroid/app/Activity;->getResources()Landroid/content/res/Resources;
 
@@ -365,7 +370,7 @@
     :catch_0
     move-object v1, v0
 
-    .line 203
+    .line 204
     :goto_0
     invoke-virtual {p0}, Landroid/app/Activity;->getPackageName()Ljava/lang/String;
 
@@ -392,7 +397,7 @@
 
     goto :goto_2
 
-    .line 204
+    .line 205
     :cond_0
     invoke-virtual {p0}, Landroid/app/Activity;->getResources()Landroid/content/res/Resources;
 
@@ -407,7 +412,7 @@
     :goto_2
     if-eqz v4, :cond_1
 
-    .line 206
+    .line 207
     invoke-virtual {p0, v4}, Landroid/app/Activity;->findViewById(I)Landroid/view/View;
 
     move-result-object p0
@@ -426,13 +431,13 @@
 .method public static frame()V
     .locals 5
 
-    .line 141
+    .line 142
     sget-boolean v0, Lseekpatch/Smooth;->wanted:Z
 
-    .line 142
+    .line 143
     sget v1, Lseekpatch/Smooth;->options:I
 
-    .line 143
+    .line 144
     sget-boolean v2, Lseekpatch/Smooth;->failed:Z
 
     if-nez v2, :cond_6
@@ -451,26 +456,26 @@
 
     goto :goto_1
 
-    .line 147
+    .line 148
     :cond_0
     :try_start_0
     sget-boolean v2, Lseekpatch/Smooth;->installed:Z
 
     if-nez v2, :cond_2
 
-    .line 148
+    .line 149
     const-string v2, "seekpatch_smooth"
 
     invoke-static {v2}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 
-    .line 149
+    .line 150
     invoke-static {}, Lseekpatch/Smooth;->install()Ljava/lang/String;
 
     move-result-object v2
 
     if-eqz v2, :cond_1
 
-    .line 151
+    .line 152
     invoke-static {v2}, Lseekpatch/Smooth;->unavailable(Ljava/lang/String;)V
 
     return-void
@@ -478,10 +483,10 @@
     :cond_1
     const/4 v2, 0x1
 
-    .line 154
+    .line 155
     sput-boolean v2, Lseekpatch/Smooth;->installed:Z
 
-    .line 156
+    .line 157
     :cond_2
     sget v2, Lseekpatch/Smooth;->appliedOptions:I
 
@@ -507,23 +512,23 @@
 
     const/4 v3, 0x6
 
-    .line 157
+    .line 158
     :cond_4
     invoke-static {v2, v3}, Lseekpatch/Smooth;->setOptions(II)V
 
-    .line 158
+    .line 159
     sput v1, Lseekpatch/Smooth;->appliedOptions:I
 
-    .line 160
+    .line 161
     :cond_5
     sget-boolean v1, Lseekpatch/Smooth;->applied:Z
 
     if-eq v0, v1, :cond_6
 
-    .line 161
+    .line 162
     invoke-static {v0}, Lseekpatch/Smooth;->enable(Z)V
 
-    .line 162
+    .line 163
     sput-boolean v0, Lseekpatch/Smooth;->applied:Z
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catchall_0
@@ -533,7 +538,7 @@
     :catchall_0
     move-exception v0
 
-    .line 165
+    .line 166
     invoke-static {v0}, Ljava/lang/String;->valueOf(Ljava/lang/Object;)Ljava/lang/String;
 
     move-result-object v0
@@ -551,7 +556,7 @@
 .method private static load(Landroid/content/SharedPreferences;)V
     .locals 4
 
-    .line 116
+    .line 117
     const-string v0, "smart_smoothing"
 
     const/4 v1, 0x0
@@ -562,7 +567,7 @@
 
     sput-boolean v0, Lseekpatch/Smooth;->wanted:Z
 
-    .line 117
+    .line 118
     const-string v0, "smart_stripes"
 
     const/4 v2, 0x1
@@ -592,7 +597,7 @@
 .method private static prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
     .locals 2
 
-    .line 192
+    .line 193
     const-string v0, "seekpatch"
 
     const/4 v1, 0x0
@@ -610,7 +615,7 @@
 .method private static show(Landroid/widget/TextView;)V
     .locals 3
 
-    .line 131
+    .line 132
     sget-boolean v0, Lseekpatch/Smooth;->wanted:Z
 
     if-eqz v0, :cond_0
@@ -623,14 +628,18 @@
     const-string v0, "Smart smoothing off"
 
     :goto_0
+    invoke-static {v0}, Lseekpatch/Lang;->t(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v0
+
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
-    .line 132
+    .line 133
     new-instance v0, Landroid/graphics/drawable/GradientDrawable;
 
     invoke-direct {v0}, Landroid/graphics/drawable/GradientDrawable;-><init>()V
 
-    .line 133
+    .line 134
     invoke-virtual {p0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object v1
@@ -645,7 +654,7 @@
 
     invoke-virtual {v0, v1}, Landroid/graphics/drawable/GradientDrawable;->setCornerRadius(F)V
 
-    .line 134
+    .line 135
     sget-boolean v1, Lseekpatch/Smooth;->wanted:Z
 
     if-eqz v1, :cond_1
@@ -660,7 +669,7 @@
     :goto_1
     invoke-virtual {v0, v1}, Landroid/graphics/drawable/GradientDrawable;->setColor(I)V
 
-    .line 135
+    .line 136
     invoke-virtual {p0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
     move-result-object v1
@@ -675,7 +684,7 @@
 
     invoke-virtual {v0, v1, v2}, Landroid/graphics/drawable/GradientDrawable;->setStroke(II)V
 
-    .line 136
+    .line 137
     invoke-virtual {p0, v0}, Landroid/widget/TextView;->setBackground(Landroid/graphics/drawable/Drawable;)V
 
     return-void
@@ -684,14 +693,14 @@
 .method private static toggle(Landroid/widget/TextView;)V
     .locals 3
 
-    .line 121
+    .line 122
     sget-boolean v0, Lseekpatch/Smooth;->wanted:Z
 
     xor-int/lit8 v0, v0, 0x1
 
     sput-boolean v0, Lseekpatch/Smooth;->wanted:Z
 
-    .line 123
+    .line 124
     :try_start_0
     invoke-virtual {p0}, Landroid/widget/TextView;->getContext()Landroid/content/Context;
 
@@ -722,14 +731,14 @@
     :catch_0
     move-exception v0
 
-    .line 125
+    .line 126
     const-string v1, "seek-thermal-apk-patches"
 
     const-string v2, "smart_smoothing: choice not saved"
 
     invoke-static {v1, v2, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 127
+    .line 128
     :goto_0
     invoke-static {p0}, Lseekpatch/Smooth;->show(Landroid/widget/TextView;)V
 
@@ -741,10 +750,10 @@
 
     const/4 v0, 0x1
 
-    .line 170
+    .line 171
     sput-boolean v0, Lseekpatch/Smooth;->failed:Z
 
-    .line 171
+    .line 172
     new-instance v0, Ljava/lang/StringBuilder;
 
     const-string v1, "smart_smoothing: unavailable, "
@@ -761,7 +770,7 @@
 
     invoke-static {v0, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 172
+    .line 173
     sget-object p0, Lseekpatch/Smooth;->MAIN:Landroid/os/Handler;
 
     new-instance v0, Lseekpatch/Smooth$4;
