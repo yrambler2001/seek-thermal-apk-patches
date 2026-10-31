@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 — 2026-10-31
 
 A language setting, the patches' text in every language of the app's, a line under each
 developer switch on what it does, and the thermal picture turned or mirrored from Settings.

@@ -31,7 +31,7 @@ def _log(line: str) -> None:
 
 
 def default_out(apk: str, side_by_side: bool) -> str:
-    """Next to the input, named after it and this tool's version: X-patched-1.0.0[-side-by-side].apk."""
+    """Next to the input, named after it and this tool's version: X-patched-1.1.0[-side-by-side].apk."""
     return f"{os.path.splitext(apk)[0]}-patched-{__version__}{'-side-by-side' if side_by_side else ''}.apk"
 
 

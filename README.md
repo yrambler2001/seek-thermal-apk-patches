@@ -246,7 +246,7 @@ window.
 source ~/seek-thermal-apk-patches/bin/activate                      # macOS, Linux
 seek-thermal-apk-patches doctor                                     # checks Java, fetches the pinned tools, creates your signing key
 cd ~/Downloads
-seek-thermal-apk-patches patch "Seek Thermal_2.3.4_APKPure.xapk"    # -> Seek Thermal_2.3.4_APKPure-patched-1.0.0.apk
+seek-thermal-apk-patches patch "Seek Thermal_2.3.4_APKPure.xapk"    # -> Seek Thermal_2.3.4_APKPure-patched-1.1.0.apk
 ```
 
 ```powershell
@@ -268,7 +268,7 @@ Seek's, so Android will not install one over the other.
 - **Keep both:** patch with `--side-by-side` added.  The result installs as a separate app called
   "Seek (patched)".
 - **With adb** (USB debugging on): `adb uninstall com.tyriansystems.SeekThermal`, then
-  `adb install "Seek Thermal_2.3.4_APKPure-patched-1.0.0.apk"`; or add `--side-by-side --install` to the
+  `adb install "Seek Thermal_2.3.4_APKPure-patched-1.1.0.apk"`; or add `--side-by-side --install` to the
   patch command.  adb comes with Android's platform tools: `winget install Google.PlatformTools`,
   `brew install android-platform-tools` or `sudo apt install adb`.
 

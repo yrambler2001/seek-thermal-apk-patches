@@ -1,6 +1,6 @@
 """seek-thermal-apk-patches: unofficial patches for the Seek Thermal Android app."""
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 NAME = "seek-thermal-apk-patches"
 LEGACY_NAME = "seek-patch"
