@@ -30,6 +30,7 @@ from seekpatch.patches import (
     reconnect_fix,
     relaunch_fix,
     resume_fix,
+    rotation,
     sharp_scaling,
     shutter,
     smart_smoothing,
@@ -219,6 +220,90 @@ def test_sharp_scaling_without_a_settings_screen(make_project):
     assert report[-1].startswith("no settings: expected one PreferenceFragment")
     assert not tree.path_of("Lseekpatch/Upscale;") and not tree.path_of("Lseekpatch/Settings;")
     assert "thermalSharp" in text(tree, "Lseekpatch/SharpScale;")  # the field keeps Sharp 2
+
+
+# rotation ---------------------------------------------------------------------------------------
+
+TURN_UNIFORM = "Lseekpatch/Rotation;->uniform()V"
+BLACK = ("if (thermalCoord.x < 0.0 || thermalCoord.x > 1.0 || thermalCoord.y < 0.0 || thermalCoord.y > 1.0) "
+         "thrm = vec3(0.0);")
+
+
+@pytest.mark.parametrize("shape", SHAPES)
+def test_rotation(make_project, shape):
+    tree = tree_of(make_project, shape)
+    report = rotation.apply(tree)
+    assert report[0] == ("smali/fix/Program.smali: the thermal texture through thermalTurn (vertex, 2 fragment shader(s)), "
+                         "set before 1 glDrawArrays")
+    assert report[1] == "Pipeline.F0() moves each marker with the picture, e0() turns 2 photo draw(s)"
+    assert report[-1] == "settings: Image rotation, Mirroring (seekpatch.RotationSettings)"
+    program = text(tree, "Lfix/Program;")
+    # the vertex shader: a second coordinate, for the thermal texture only, after the app's own turn
+    assert "uniform float imgRotation;\\nuniform mat2 thermalTurn;\\nvarying vec2 thermalCoord;\\n" in program
+    assert ("vTextureCoord = (uTexMatrix * vec4(tx.x,tx.y,0.0,1.0)).xy;\\nthermalCoord = (uTexMatrix * "
+            "vec4(tx + thermalTurn * (tx - vec2(0.5)), 0.0, 1.0)).xy;\\n") in program
+    # the fragment shaders sample the thermal texture there, black outside it; the app's coordinate stays
+    assert program.count("texture2D(thermalTexture, thermalCoord).rgb;\\n " + BLACK + "\\n") == 2
+    assert program.count("texture2D(thermalTexture, vTextureCoord)") == 0
+    assert program.count("varying vec2 vTextureCoord;\\nvarying vec2 thermalCoord;\\n") == 2  # the fragment shaders
+    assert re.search(r"invoke-static \{\}, " + re.escape(TURN_UNIFORM) + r"\n\n\s+invoke-static \{v0, v1, v2\}, "
+                     r"Landroid/opengl/GLES20;->glDrawArrays", program)
+    pipeline = text(tree, "Lfix/Pipeline;")
+    e0 = next(m for m in methods(pipeline) if m.name == "e0")
+    assert len(re.findall(r"invoke-static \{v0, p2, v1, v2\}, Lseekpatch/Rotation;->photo\(Landroid/graphics/Canvas;"
+                          r"Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/Rect;\)V\n\n\s+invoke-virtual "
+                          r"\{v0, p2, v1, v2, v3\}, Landroid/graphics/Canvas;->drawBitmap\([^)]*\)V\n\n\s+# [^\n]*\n\s+"
+                          r"invoke-static \{v0\}, Lseekpatch/Rotation;->drawn\(Landroid/graphics/Canvas;\)V\n", e0.body)) == 2
+    marker = next(m for m in methods(pipeline) if m.name == "F0")
+    assert re.search(r"\.locals 7\n\n\s+# seek-thermal-apk-patches rotation[^\n]*\n\s+invoke-static \{p1, p2, p3\}, "
+                     r"Lseekpatch/Rotation;->markerX\(Landroid/graphics/Canvas;FF\)F\n\s+move-result v0\n\s+"
+                     r"invoke-static \{p1, p2, p3\}, Lseekpatch/Rotation;->markerY\(Landroid/graphics/Canvas;FF\)F\n\s+"
+                     r"move-result p3\n\s+move p2, v0\n\n\s+new-instance v1", marker.body)
+    assert tree.path_of("Lseekpatch/Rotation;") and tree.path_of("Lseekpatch/RotationSettings;")
+    assert text(tree, "Lfix/ImageSettings;").count(SCREEN) == 1
+    with pytest.raises(AlreadyApplied):
+        rotation.apply(tree)
+
+
+def test_rotation_after_sharp_scaling(make_project):
+    tree = tree_of(make_project, "lambda")
+    sharp_scaling.apply(tree)
+    rotation.apply(tree)
+    program = text(tree, "Lfix/Program;")
+    assert program.count("texture2D(thermalTexture, sharpCoord(thermalCoord)).rgb;\\n " + BLACK) == 2
+    assert program.count("varying SHARP_P vec2 vTextureCoord;\\nvarying SHARP_P vec2 thermalCoord;\\n") == 2
+    assert re.search(r"Lseekpatch/SharpScale;->uniform\(\)V\n\n\s+# [^\n]*\n\s+invoke-static \{\}, "
+                     + re.escape(TURN_UNIFORM) + r"\n\n\s+invoke-static \{v0, v1, v2\}, Landroid/opengl/GLES20;->glDrawArrays",
+                     program)
+    e0 = next(m for m in methods(text(tree, "Lfix/Pipeline;")) if m.name == "e0")
+    assert len(re.findall(r"Rotation;->photo\([^)]*\)V\n\n\s+invoke-static \{v0, p2, v1, v2, v3\}, Lseekpatch/SharpScale;"
+                          r"->draw\([^)]*\)V\n\n\s+# [^\n]*\n\s+invoke-static \{v0\}, Lseekpatch/Rotation;->drawn", e0.body)) == 2
+
+
+def test_rotation_needs_the_settings_screen(make_project):
+    root = make_project("lambda")
+    (root / "smali" / "fix" / "ImageSettings.smali").unlink()
+    tree = SmaliTree(str(root))
+    program = text(tree, "Lfix/Program;")
+    with pytest.raises(PatchError, match="expected one PreferenceFragment"):
+        rotation.apply(tree)
+    assert text(tree, "Lfix/Program;") == program and not tree.path_of("Lseekpatch/Rotation;")
+
+
+def test_rotation_needs_the_marker_method(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Pipeline.smali"
+    p.write_text(p.read_text().replace("F0(Landroid/graphics/Canvas;FFFF", "F0(Landroid/graphics/Canvas;FFF", 1))
+    with pytest.raises(PatchError, match="one marker method"):
+        rotation.apply(SmaliTree(str(root)))
+
+
+def test_rotation_needs_the_apps_turn(make_project):
+    root = make_project("lambda")
+    p = root / "smali" / "fix" / "Program.smali"
+    p.write_text(p.read_text().replace("rotTex(imgRotation,tx)", "tx", 1))
+    with pytest.raises(PatchError, match="rotTex"):
+        rotation.apply(SmaliTree(str(root)))
 
 
 # debug_log --------------------------------------------------------------------------------------

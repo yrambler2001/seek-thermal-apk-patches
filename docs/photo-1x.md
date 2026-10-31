@@ -31,6 +31,8 @@ name returns, `Photo1x.saved(final file, orientation)` writes the PNG.  The orie
 value the app puts in the photo's EXIF; the PNG's pixels are rotated to match, because PNG viewers
 ignore EXIF orientation.
 
+With `rotation`'s *Image rotation* or *Mirroring* set, the copy is turned the same way first.
+
 Thermal+ photos store the thermal frame.  In 16:9 mode the photo is cropped; the 1× copy keeps the
 whole frame.
 

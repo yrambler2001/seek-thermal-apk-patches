@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
  *     seekpatch.Filters        smoothing_settings: Seek's filters, Smart smoothing
  *     seekpatch.FlatSettings   flat_field: frames per tap of the Flat field button
  *     seekpatch.Upscale        sharp_scaling: smooth, sharp or blocky upscaling
+ *     seekpatch.RotationSettings  rotation: the thermal picture turned and / or mirrored
  *     seekpatch.PhotoSettings  photo_1x: whether to save the 1x PNG
  *     seekpatch.VideoSettings  video_quality: the video's quantizer
  * </pre>
@@ -53,7 +54,7 @@ public final class Settings {
     /** CustomFontListPreference's summary color. */
     private static final int SUMMARY_COLOR = 0xffcccccc;
     private static final String[] SECTIONS = {"seekpatch.Filters", "seekpatch.FlatSettings", "seekpatch.Upscale",
-        "seekpatch.PhotoSettings", "seekpatch.VideoSettings"};
+        "seekpatch.RotationSettings", "seekpatch.PhotoSettings", "seekpatch.VideoSettings"};
 
     private static SharedPreferences prefs;
     private static Method[] loads;

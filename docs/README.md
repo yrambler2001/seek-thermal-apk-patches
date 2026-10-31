@@ -13,6 +13,7 @@ release.  Each name links to its page: what the stock app does, what changes, ho
 | [`default_palette`](default-palette.md) | the camera starts in the Tyrian palette instead of Spectra, until another is picked | 2.0 – 2.3.4 | ✓ |
 | [`default_unit`](default-unit.md) | a new install shows Celsius, also on a phone set to English (US), until another unit is picked | 1.9.1 – 2.3.4 | ✓ |
 | [`sharp_scaling`](sharp-scaling.md) | iOS-like upscaling: blend over half a pixel instead of a whole one (GPU shader) | 2.0 – 2.3.4 | ✓ |
+| [`rotation`](rotation.md) | Image rotation (90°, 180°, 270°) and Mirroring in Settings: the thermal picture turns, the markers stay upright | 2.0 – 2.3.4 | ✓ |
 | [`smoothing_settings`](smoothing-settings.md) | Settings switches for Seek's temporal / spatial smoothing and pattern correction, and Smart smoothing | 2.2.0 – 2.3.4 | ✓ |
 | [`png_photos`](png-photos.md) | save photos as lossless PNG (the app's hidden "Save Uncompressed" setting, forced on) | 2.1.2 – 2.3.4 | ✓ |
 | [`hidden_settings`](hidden-settings.md) | Settings always shows the app's hidden switches (Show Frame Rate, Save Uncompressed, ...), each saying what it does | 1.9.3 – 2.3.4 | ✓ |

@@ -128,3 +128,15 @@
 
     return-void
 .end method
+
+.method protected F0(Landroid/graphics/Canvas;FFFFLandroid/graphics/Bitmap;Ljava/lang/String;)V
+    .locals 7
+
+    new-instance v1, Landroid/graphics/Paint;
+
+    invoke-direct {v1}, Landroid/graphics/Paint;-><init>()V
+
+    invoke-virtual {p1, p7, p2, p3, v1}, Landroid/graphics/Canvas;->drawText(Ljava/lang/String;FFLandroid/graphics/Paint;)V
+
+    return-void
+.end method

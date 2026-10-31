@@ -23,7 +23,7 @@ APKS = sorted(p for ext in ("apk", "xapk", "apks", "apkm")
               for p in glob.glob(os.path.join(os.path.expanduser(APK_DIR), "*." + ext))) if APK_DIR else []
 
 # first version each patch supports (all run through 2.3.4, but those in LAST)
-FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "debug_log": (2, 0),
+FIRST = {"full_fps": (1, 9, 1), "sharp_scaling": (2, 0), "rotation": (2, 0), "debug_log": (2, 0),
          "png_photos": (2, 1, 2), "photo_1x": (2, 1, 1), "video_quality": (2, 1, 2), "resume_fix": (1, 9, 1),
          "mic_prompt": (2, 3, 1), "flat_field": (2, 2, 0), "smart_smoothing": (2, 2, 3),
          "smoothing_settings": (2, 2, 0), "default_palette": (2, 0), "default_unit": (1, 9, 1), "lock_range": (2, 2, 3),
@@ -79,8 +79,13 @@ def test_patch_matrix(toolchain, path, tmp_path):
         # each patch's settings, wherever it applies (the settings screen exists from 2.0 on)
         for patch, section in (("sharp_scaling", b"Lseekpatch/Upscale;"), ("video_quality", b"Lseekpatch/VideoSettings;"),
                                ("smoothing_settings", b"Lseekpatch/Filters;"), ("flat_field", b"Lseekpatch/FlatSettings;"),
-                               ("photo_1x", b"Lseekpatch/PhotoSettings;")):
+                               ("photo_1x", b"Lseekpatch/PhotoSettings;"), ("rotation", b"Lseekpatch/RotationSettings;")):
             assert (section in dex) == expected[patch], patch
+        # rotation: the markers move with the picture, the photo turns with it (3 draws up to 2.2.3, 2 from 2.3.0)
+        if expected["rotation"]:
+            draws = 3 if version <= (2, 2, 3) else 2
+            assert any("moves each marker with the picture" in line and line.endswith(f"() turns {draws} photo draw(s)")
+                       for line in log), log
         assert (b"Lseekpatch/Shutter;" in dex) == expected["shutter"]
         assert (b"Lseekpatch/Language;" in dex) == expected["language"]
         # the hidden switches' lines, on the Settings screen of 2.0 on: registration up to 2.2.3, the TIFF from 2.1.1

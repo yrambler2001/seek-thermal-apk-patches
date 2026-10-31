@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-A language setting, the patches' text in every language of the app's, and a line under each
-developer switch on what it does.
+A language setting, the patches' text in every language of the app's, a line under each
+developer switch on what it does, and the thermal picture turned or mirrored from Settings.
 
 - `language`, in the default set (2.0 – 2.3.4): *Settings* starts with *Language*, the phone's
   language or any other the app has text in, each named in itself (English, German, Spanish,
@@ -25,6 +25,12 @@ developer switch on what it does.
   save PNG photos before Android 11; *Disable Registration* and *Use Staging Server* say they do
   nothing from 2.3.0, which no longer registers cameras; *Store All Thermal Data* (always shown)
   says it saves a TIFF with every pixel's temperature with each photo.
+- `rotation`, in the default set (2.0 – 2.3.4): *Settings → Image & Video* gets *Image rotation*
+  (off, 90°, 180°, 270° clockwise) and *Mirroring* (off, horizontally, vertically, both), for a
+  camera that does not sit in the phone's port the usual way.  Only the thermal picture turns, in
+  the live view, photos, videos and the 1× copy; the markers keep to their spots with their
+  temperatures upright, and the temperature bar and the text box stay where they are.  Turned by
+  90° or 270°, the picture is shrunk to fit the width, with black above and below.
 
 ## 1.0.0 — 2026-10-26
 

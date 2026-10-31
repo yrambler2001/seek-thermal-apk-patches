@@ -167,6 +167,10 @@ one reference only, keep k = 1 and set b to the true temperature minus the readi
 - Settings always shows the five switches the stock app hides behind five taps on *About → Image
   Processing Software*: *Show Frame Rate*, *Save Uncompressed*, *Set Simulation Mode* and two
   registration switches, each with a line on what it does.  [`hidden_settings`](docs/hidden-settings.md)
+- *Settings → Image & Video → Image rotation* (90°, 180°, 270° clockwise) and *Mirroring*
+  (horizontally, vertically, both), for a camera on a cable or a mount, on its side or facing you.
+  Only the thermal picture turns, in the live view, photos and videos: the markers with their
+  temperatures and the temperature bar stay upright, each marker on its spot.  [`rotation`](docs/rotation.md)
 - *Show Frame Rate*'s number updates every 0.5 s instead of every 3 s.  [`fps_readout`](docs/fps-readout.md)
 - Opt-in: the SDK's USB and frame-timing log in `adb logcat -s Seekware`
   ([`debug_log`](docs/debug-log.md)).

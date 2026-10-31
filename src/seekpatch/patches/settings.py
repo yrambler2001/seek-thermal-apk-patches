@@ -1,5 +1,5 @@
 """seek-thermal-apk-patches' settings in the app's Settings -> Image & Video screen, shared by the patches that have
-any (smoothing_settings, flat_field, sharp_scaling, photo_1x, video_quality).
+any (smoothing_settings, flat_field, sharp_scaling, rotation, photo_1x, video_quality).
 
 Two hooks, added once by whichever of those patches comes first, call the Java helper
 seekpatch.Settings (helpers/java/seekpatch/Settings.java):
@@ -12,8 +12,8 @@ seekpatch.Settings (helpers/java/seekpatch/Settings.java):
 The fragment is found by behaviour: the one PreferenceFragment that names the "Image smoothing"
 preference ("use_smoothing", which it logs when it changes) and inflates its preferences in onCreate.
 Resources are never read, so the hooks work with `apktool d -r` as well as with --side-by-side.
-A patch adds its own section class (seekpatch.Filters, FlatSettings, Upscale, PhotoSettings,
-VideoSettings); Settings finds them by name at run time.
+A patch adds its own section class (seekpatch.Filters, FlatSettings, Upscale, RotationSettings,
+PhotoSettings, VideoSettings); Settings finds them by name at run time.
 
 seekpatch.Screens comes with Settings: from Settings.attach it makes the settings screens'
 navigation bar dark (they have no theme, so Android 15+ draws them a light one) and puts a divider

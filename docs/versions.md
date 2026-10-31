@@ -4,7 +4,8 @@ Every release below was decoded, checked, patched with all applicable patches, r
 signed by `tests/test_real_apks.py`.  2.3.4 was also run on a phone (Pixel 8 Pro, Android 16):
 live view, photos, video recording, the microphone prompt, the Flat field, Lock range, k·x+b and Shutter
 buttons, Smart smoothing, the smoothing switches and the hidden switches in Settings, the
-frame-rate readout, the *Language* list and the patches' text in Russian, the steady live view, the phone camera opening and closing with Thermal+, and the camera coming
+frame-rate readout, the *Language* list and the patches' text in Russian, *Image rotation* and
+*Mirroring* (live view, photos, video, 16:9, with a Compact PRO FF), the steady live view, the phone camera opening and closing with Thermal+, and the camera coming
 back after Back.  2.3.4 also ran on a Redmi 4X (Android 7.1.2): the floating buttons in one row,
 the settings' summaries, the *Video codec* setting, the *Video quality* bitrates, the sound's
 timestamps and clicks, one USB permission dialog, and the *Language* list (Russian and back) with the
@@ -23,30 +24,30 @@ same treatment, and Play Protect is not consistent: one 2.2.2 build installed, a
 blocked.  To install anyway, turn off *Scan apps with Play Protect* in the Play Store's Play
 Protect settings for the install, then turn it back on.
 
-| app | versionCode | `full_fps` | `steady_fps` | `default_palette` | `default_unit` | `sharp_scaling` | `smoothing_settings` | `png_photos` | `hidden_settings` | `language` | `fps_readout` | `photo_1x` | `video_quality` | `phone_camera` | `resume_fix` | `reconnect_fix` | `usb_prompt` | `relaunch_fix` | `no_analytics` | `http_legacy` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1.9.1 | 103 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.2 | 104 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | – ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.3 | 106 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | ✓ ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.4 | 108 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | ✓ ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 1.9.5 | 109 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – | – | ✓ ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
-| 2.0 | 156 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.1 | 158 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.0.3 | 160 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.1 | 162 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | ✓ | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.2 | 180 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.4 | 210 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.5 | 217 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
-| 2.1.6 | 240 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.1.7 | 250 | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
-| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| app | versionCode | `full_fps` | `steady_fps` | `default_palette` | `default_unit` | `sharp_scaling` | `rotation` | `smoothing_settings` | `png_photos` | `hidden_settings` | `language` | `fps_readout` | `photo_1x` | `video_quality` | `phone_camera` | `resume_fix` | `reconnect_fix` | `usb_prompt` | `relaunch_fix` | `no_analytics` | `http_legacy` | `mic_prompt` | `flat_field` | `lock_range` | `shutter` | `calibration` | `smart_smoothing` | `debug_log` |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1.9.1 | 103 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – ¹⁸ | – | – | – ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.2 | 104 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – ¹⁸ | – | – | – ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.3 | 106 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – ¹⁸ | – | – | ✓ ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.4 | 108 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – ¹⁸ | – | – | ✓ ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 1.9.5 | 109 | ✓ | ✓ | – ⁷ | ✓ | – ¹ | – ¹⁸ | – | – | ✓ ¹⁰ | – ¹⁷ | – ¹¹ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – | – | ✓ | – | – ³ | – ² |
+| 2.0 | 156 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.1 | 158 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.0.3 | 160 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | – | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.1 | 162 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | – | ✓ | ✓ | ✓ | ✓ | – | – ¹⁶ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.2 | 180 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.4 | 210 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.5 | 217 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | – ¹² | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ³ | ✓ |
+| 2.1.6 | 240 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.1.7 | 250 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁴ | ✓ | ✓ | ✓ | ✓ | – ⁴ | – ³ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.0 | 260 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.1 | 265 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.2 | 272 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ⁶ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | – ⁸ | ✓ | – ⁹ | – ⁵ | ✓ |
+| 2.2.3 | 276 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ ¹⁵ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.0 | 285 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ⁴ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.1 | 290 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.3 | 293 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2.3.4 | 294 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – ¹³ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 1. 1.9.x saves photos with a different code path; the live-view part would work, but the patch is
    all or nothing.
@@ -88,6 +89,8 @@ Protect settings for the install, then turn it back on.
     which starts at 2.1.2; the code it changes has the same shape back to 1.9.1.
 17. 1.9.x has another settings screen, without the *Image & Video* entry `language` looks for.  The
     patches' own text follows the phone's language in every release (see [language.md](language.md)).
+18. `rotation`'s two lists go in the *Image & Video* settings, which 1.9.x does not have; 1.9.x also
+    saves photos differently.
 
 The settings in *Settings → Image & Video* come with their patches wherever those apply: upscaling
 (`sharp_scaling`) 2.0 – 2.3.4, the 1x PNG (`photo_1x`) 2.1.1 – 2.3.4, video codec and quality

@@ -22,7 +22,7 @@
 .method constructor <init>()V
     .locals 0
 
-    .line 64
+    .line 65
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -33,7 +33,7 @@
 .method public onSharedPreferenceChanged(Landroid/content/SharedPreferences;Ljava/lang/String;)V
     .locals 0
 
-    .line 67
+    .line 68
     invoke-static {p1}, Lseekpatch/Settings;->access$000(Landroid/content/SharedPreferences;)V
 
     return-void
